@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atomic Structure // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --bg2:#080b1c; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --exo-glow:rgba(255,59,92,.55);
+    --endo:#2de2ff; --endo2:#4a9bff; --endo-glow:rgba(45,226,255,.5);
+    --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
+    --green:#46e6a0; --blue:#5aa6ff; --teal:#39d6c8;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;
+    background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);
+    text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--amber);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;
+    letter-spacing:.02em;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);
+    border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;
+    border:1px solid var(--line);border-left:6px solid var(--lilac);
+    opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px;letter-spacing:.02em}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+
+  .particles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:640px){.particles{grid-template-columns:1fr}}
+  .pcard{border-radius:16px;padding:18px;border:1px solid;text-align:center;background:rgba(255,255,255,.02)}
+  .pcard.p{border-color:var(--exo)} .pcard.n{border-color:#9fb0d0} .pcard.e{border-color:var(--endo)}
+  .pdot{width:42px;height:42px;border-radius:50%;margin:2px auto 10px}
+  .pcard.p .pdot{background:var(--exo);box-shadow:0 0 18px var(--exo-glow)}
+  .pcard.n .pdot{background:#9fb0d0;box-shadow:0 0 14px rgba(159,176,208,.5)}
+  .pcard.e .pdot{background:var(--endo);box-shadow:0 0 18px var(--endo-glow)}
+  .pcard h3{font-family:var(--disp);font-size:1.05rem;margin:.1em 0 .3em}
+  .pcard.p h3{color:var(--exo)} .pcard.n h3{color:#c3cfe6} .pcard.e h3{color:var(--endo)}
+  .pcard .row{font-family:var(--ui);font-size:.86rem;color:var(--muted);display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--line)}
+  .pcard .row:last-child{border-bottom:0}
+  .pcard .row b{color:var(--ink);font-weight:600}
+
+  .notation{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:6px}
+  .nbox{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+  .nstack{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+  .nstack .big{font-family:var(--disp);font-size:1.1rem}
+  .nstack .top{color:var(--amber);font-weight:700;font-family:var(--ui)}
+  .nstack .bot{color:var(--endo);font-weight:700;font-family:var(--ui)}
+  .nsym{font-family:var(--disp);font-size:2.4rem;color:#fff}
+  .nlegend{font-family:var(--ui);font-size:.9rem;color:var(--muted);max-width:320px}
+  .nlegend .a{color:var(--amber)} .nlegend .b{color:var(--endo)}
+
+  .reactor{display:grid;grid-template-columns:340px 1fr;gap:22px;align-items:center}
+  @media(max-width:720px){.reactor{grid-template-columns:1fr;justify-items:center}}
+  .atom{position:relative;width:320px;height:320px;flex:0 0 auto}
+  .atom .glow{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(120,140,220,.12),transparent 62%)}
+  .nucleus{position:absolute;inset:0;z-index:3}
+  .pn{position:absolute;width:13px;height:13px;border-radius:50%;transform:translate(-50%,-50%)}
+  .pn.p{background:var(--exo);box-shadow:0 0 7px var(--exo)}
+  .pn.nn{background:#9fb0d0;box-shadow:0 0 6px rgba(159,176,208,.6)}
+  .ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border:1px solid rgba(122,140,210,.32);border-radius:50%;z-index:1}
+  .orbit{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;z-index:2;animation:spin linear infinite}
+  @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+  .elec{position:absolute;top:50%;left:50%;width:12px;height:12px;border-radius:50%;background:var(--endo);box-shadow:0 0 9px var(--endo);margin:-6px}
+  .panel-r{width:100%}
+  .elname{font-family:var(--disp);font-size:1.9rem;margin:0;color:#fff;text-shadow:0 0 16px var(--lav)}
+  .elsub{font-family:var(--ui);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-size:.8rem;margin-bottom:12px}
+  .ion{font-family:var(--ui);font-weight:700;font-size:.82rem;letter-spacing:.06em;padding:3px 10px;border-radius:999px;margin-left:8px}
+  .ion.neutral{background:rgba(70,230,160,.16);color:var(--green)}
+  .ion.pos{background:rgba(255,59,92,.16);color:var(--exo)}
+  .ion.neg{background:rgba(45,226,255,.16);color:var(--endo)}
+  .ctrls{display:grid;gap:10px;margin-top:6px}
+  .ctrl{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 10px 8px 14px}
+  .ctrl .lab{font-family:var(--ui);font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:9px}
+  .ctrl .lab .sw{width:13px;height:13px;border-radius:50%}
+  .ctrl.p .sw{background:var(--exo)} .ctrl.n .sw{background:#9fb0d0} .ctrl.e .sw{background:var(--endo)}
+  .ctrl .grp{display:flex;align-items:center;gap:8px}
+  .ctrl .grp .val{font-family:var(--disp);font-size:1.05rem;min-width:24px;text-align:center}
+  .ctrl button{font-family:var(--ui);font-weight:700;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);cursor:pointer;font-size:1.1rem;transition:.15s}
+  .ctrl button:hover{border-color:var(--lilac);color:var(--lav)}
+  .readline{font-family:var(--ui);margin-top:12px;color:var(--muted);font-size:.92rem;display:flex;gap:16px;flex-wrap:wrap}
+  .readline b{color:var(--amber);font-family:var(--disp);font-weight:700}
+  .config{font-family:var(--disp);color:var(--endo);font-weight:700}
+
+  .pthint{font-family:var(--ui);color:var(--muted);font-size:.88rem;margin-bottom:12px}
+  .pt{display:grid;grid-template-columns:repeat(18,1fr);gap:4px;overflow-x:auto;padding-bottom:6px}
+  .cell{aspect-ratio:1;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.03);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.15s;min-width:30px;padding:2px}
+  .cell:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.4);border-color:#fff}
+  .cell.sel{outline:2px solid var(--lav);outline-offset:1px}
+  .cell .num{font-family:var(--ui);font-size:.52rem;color:var(--muted);line-height:1}
+  .cell .sym{font-family:var(--disp);font-size:.82rem;font-weight:700;line-height:1.1}
+  @media(max-width:560px){.cell .sym{font-size:.62rem}.cell .num{font-size:.42rem}}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;font-family:var(--ui);font-size:.78rem;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1400px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}
+  .key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}
+  .qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}
+  .fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}
+  .fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;scroll-behavior:auto}
+    section{opacity:1;transform:none}.cursor{display:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="../index.html"><span class="blink"></span> ◄ Stellar Lab</a>
+    <span>Chem-02 // Atomic Structure</span>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Science Station · Year 9</div>
+    <h1>INSIDE THE<br><span class="lav">ATOM</span></h1>
+    <p>Everything is built from atoms. Build your own, then explore the periodic table — the map of every element there is.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 PARTICLES -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>The three building blocks</h2>
+    <p class="lead">An atom has a tiny central <strong>nucleus</strong> (protons + neutrons) with <strong>electrons</strong> whizzing around it in shells. Each particle has its own charge and mass.</p>
+    <div class="particles">
+      <div class="pcard p"><div class="pdot"></div><h3>Proton</h3>
+        <div class="row"><span>Charge</span><b>+1</b></div><div class="row"><span>Mass</span><b>1</b></div><div class="row"><span>Found in</span><b>Nucleus</b></div></div>
+      <div class="pcard n"><div class="pdot"></div><h3>Neutron</h3>
+        <div class="row"><span>Charge</span><b>0</b></div><div class="row"><span>Mass</span><b>1</b></div><div class="row"><span>Found in</span><b>Nucleus</b></div></div>
+      <div class="pcard e"><div class="pdot"></div><h3>Electron</h3>
+        <div class="row"><span>Charge</span><b>−1</b></div><div class="row"><span>Mass</span><b>≈0</b></div><div class="row"><span>Found in</span><b>Shells</b></div></div>
+    </div>
+  </section>
+
+  <!-- 2 NUMBERS -->
+  <section>
+    <div class="seclabel">Section 02 // The Numbers</div>
+    <h2>Atomic number &amp; mass number</h2>
+    <p class="lead">Two numbers next to a symbol tell you exactly what an atom is made of.</p>
+    <div class="notation">
+      <div class="nbox">
+        <div class="nstack"><span class="big top">23</span><span class="big bot">11</span></div>
+        <span class="nsym">Na</span>
+      </div>
+      <div class="nlegend">
+        <p><span class="a">Top = mass number (23)</span> → protons + neutrons.</p>
+        <p><span class="b">Bottom = atomic number (11)</span> → number of protons. This decides which element it is.</p>
+        <p>So sodium has 11 protons, 11 electrons and 23 − 11 = <strong>12 neutrons</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 ATOM REACTOR -->
+  <section>
+    <div class="seclabel">Section 03 // Atom Reactor</div>
+    <h2>Build an atom</h2>
+    <p class="lead">Add or remove particles and watch the atom change. Protons decide the element. Change the electrons and you make an <strong>ion</strong>.</p>
+    <div class="reactor">
+      <div class="atom" id="atom"><div class="glow"></div><div class="nucleus" id="nucleus"></div></div>
+      <div class="panel-r">
+        <h3 class="elname" id="elName">Hydrogen<span class="ion neutral" id="ionTag">atom</span></h3>
+        <div class="elsub" id="elSym">Symbol H</div>
+        <div class="ctrls">
+          <div class="ctrl p"><div class="lab"><span class="sw"></span>Protons</div>
+            <div class="grp"><button onclick="adj('p',-1)">−</button><span class="val" id="vP">1</span><button onclick="adj('p',1)">+</button></div></div>
+          <div class="ctrl n"><div class="lab"><span class="sw"></span>Neutrons</div>
+            <div class="grp"><button onclick="adj('n',-1)">−</button><span class="val" id="vN">0</span><button onclick="adj('n',1)">+</button></div></div>
+          <div class="ctrl e"><div class="lab"><span class="sw"></span>Electrons</div>
+            <div class="grp"><button onclick="adj('e',-1)">−</button><span class="val" id="vE">1</span><button onclick="adj('e',1)">+</button></div></div>
+        </div>
+        <div class="readline">
+          <span>Atomic no: <b id="rAtomic">1</b></span>
+          <span>Mass no: <b id="rMass">1</b></span>
+          <span>Config: <span class="config" id="rConfig">1</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 PERIODIC TABLE -->
+  <section>
+    <div class="seclabel">Section 04 // The Element Map</div>
+    <h2>Interactive periodic table</h2>
+    <p class="pthint">Showing the first 20 elements. Tap any one to load it into the reactor above. Columns = <strong>groups</strong> (same outer electrons), rows = <strong>periods</strong> (number of shells).</p>
+    <div class="pt" id="pt"></div>
+    <div class="legend">
+      <span><i style="background:var(--exo)"></i>Alkali metals</span>
+      <span><i style="background:var(--amber)"></i>Alkaline earth</span>
+      <span><i style="background:var(--blue)"></i>Other metals</span>
+      <span><i style="background:var(--teal)"></i>Metalloids</span>
+      <span><i style="background:var(--endo)"></i>Non-metals</span>
+      <span><i style="background:var(--green)"></i>Halogens</span>
+      <span><i style="background:var(--lilac)"></i>Noble gases</span>
+    </div>
+  </section>
+
+  <!-- 5 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 05 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()">
+        <span class="t">🔒 Electron shells, groups &amp; isotopes</span>
+        <button class="btn" id="decBtn">Decrypt ▸</button>
+      </div>
+      <div class="body"><div class="inner">
+        <p><strong>Electron shells fill in order.</strong> For the first 20 elements the shells hold <code>2, 8, 8</code> electrons. So sodium (11) is <code>2, 8, 1</code>.</p>
+        <div class="key"><span class="dot" style="background:var(--amber)"></span><span><strong>Group number</strong> = electrons in the outer shell. Sodium has 1 outer electron → Group 1.</span></div>
+        <div class="key"><span class="dot" style="background:var(--lav)"></span><span><strong>Period number</strong> = number of shells. Sodium uses 3 shells → Period 3.</span></div>
+        <p style="margin-top:14px"><strong>Isotopes</strong> are atoms of the same element with different numbers of neutrons — same protons, different mass. Chlorine has two: Cl-35 and Cl-37, which is why its average (relative atomic) mass is <code>35.5</code>.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 6 QUIZ -->
+  <section>
+    <div class="seclabel">Section 06 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 02 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* starfield + spores */
+(function(){
+  const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(255,59,92,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);
+  else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+
+/* cursor */
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+  addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+
+/* scroll reveal */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* ---- element data (first 20) ---- */
+const ELEMENTS=[
+  {z:1,sym:'H',name:'Hydrogen',mass:1,cat:'nonmetal',col:1,row:1},
+  {z:2,sym:'He',name:'Helium',mass:4,cat:'noble',col:18,row:1},
+  {z:3,sym:'Li',name:'Lithium',mass:7,cat:'alkali',col:1,row:2},
+  {z:4,sym:'Be',name:'Beryllium',mass:9,cat:'alkaline',col:2,row:2},
+  {z:5,sym:'B',name:'Boron',mass:11,cat:'metalloid',col:13,row:2},
+  {z:6,sym:'C',name:'Carbon',mass:12,cat:'nonmetal',col:14,row:2},
+  {z:7,sym:'N',name:'Nitrogen',mass:14,cat:'nonmetal',col:15,row:2},
+  {z:8,sym:'O',name:'Oxygen',mass:16,cat:'nonmetal',col:16,row:2},
+  {z:9,sym:'F',name:'Fluorine',mass:19,cat:'halogen',col:17,row:2},
+  {z:10,sym:'Ne',name:'Neon',mass:20,cat:'noble',col:18,row:2},
+  {z:11,sym:'Na',name:'Sodium',mass:23,cat:'alkali',col:1,row:3},
+  {z:12,sym:'Mg',name:'Magnesium',mass:24,cat:'alkaline',col:2,row:3},
+  {z:13,sym:'Al',name:'Aluminium',mass:27,cat:'metal',col:13,row:3},
+  {z:14,sym:'Si',name:'Silicon',mass:28,cat:'metalloid',col:14,row:3},
+  {z:15,sym:'P',name:'Phosphorus',mass:31,cat:'nonmetal',col:15,row:3},
+  {z:16,sym:'S',name:'Sulfur',mass:32,cat:'nonmetal',col:16,row:3},
+  {z:17,sym:'Cl',name:'Chlorine',mass:35,cat:'halogen',col:17,row:3},
+  {z:18,sym:'Ar',name:'Argon',mass:40,cat:'noble',col:18,row:3},
+  {z:19,sym:'K',name:'Potassium',mass:39,cat:'alkali',col:1,row:4},
+  {z:20,sym:'Ca',name:'Calcium',mass:40,cat:'alkaline',col:2,row:4}
+];
+const CATCOLOR={alkali:'var(--exo)',alkaline:'var(--amber)',metal:'var(--blue)',metalloid:'var(--teal)',nonmetal:'var(--endo)',halogen:'var(--green)',noble:'var(--lilac)'};
+
+/* state */
+let protons=1,neutrons=0,electrons=1;
+
+function shellsOf(e){const caps=[2,8,8,2];const out=[];for(const cap of caps){if(e<=0)break;const t=Math.min(e,cap);out.push(t);e-=t;}return out;}
+
+function render(){
+  document.getElementById('vP').textContent=protons;
+  document.getElementById('vN').textContent=neutrons;
+  document.getElementById('vE').textContent=electrons;
+  document.getElementById('rAtomic').textContent=protons;
+  document.getElementById('rMass').textContent=protons+neutrons;
+  const dist=shellsOf(electrons);
+  document.getElementById('rConfig').textContent=dist.length?dist.join(', '):'—';
+
+  const el=ELEMENTS.find(x=>x.z===protons);
+  const nameEl=document.getElementById('elName');
+  const charge=protons-electrons;
+  let tagTxt,tagCls;
+  if(charge===0){tagTxt='atom';tagCls='ion neutral';}
+  else if(charge>0){tagTxt=(charge)+'+ ion';tagCls='ion pos';}
+  else{tagTxt=(-charge)+'− ion';tagCls='ion neg';}
+  const base = el? el.name : (protons===0?'No nucleus':'Beyond first 20');
+  nameEl.innerHTML = base + '<span class="'+tagCls+'">'+tagTxt+'</span>';
+  document.getElementById('elSym').textContent = el? 'Symbol '+el.sym : (protons===0?'Add a proton to begin':'Protons = '+protons);
+
+  drawNucleus(); drawShells(dist);
+  document.querySelectorAll('.cell').forEach(c=>c.classList.toggle('sel', +c.dataset.z===protons));
+}
+
+function drawNucleus(){
+  const nuc=document.getElementById('nucleus'); nuc.innerHTML='';
+  let dots=[]; const m=Math.max(protons,neutrons);
+  for(let i=0;i<m;i++){ if(i<protons)dots.push('p'); if(i<neutrons)dots.push('nn'); }
+  const total=dots.length; const R=Math.min(30, 8+total*0.9);
+  dots.forEach((t,i)=>{
+    const ang=i*2.39996; const rad=total>1?Math.sqrt(i/total)*R:0;
+    const x=Math.cos(ang)*rad, y=Math.sin(ang)*rad;
+    const d=document.createElement('div'); d.className='pn '+t;
+    d.style.left='calc(50% + '+x.toFixed(1)+'px)';
+    d.style.top='calc(50% + '+y.toFixed(1)+'px)';
+    nuc.appendChild(d);
+  });
+}
+
+function drawShells(dist){
+  const atom=document.getElementById('atom');
+  atom.querySelectorAll('.ring,.orbit').forEach(n=>n.remove());
+  const radii=[48,80,114,146];
+  dist.forEach((count,si)=>{
+    const r=radii[si]||(146+(si-3)*30);
+    const ring=document.createElement('div'); ring.className='ring';
+    ring.style.width=ring.style.height=(r*2)+'px';
+    atom.appendChild(ring);
+    const orbit=document.createElement('div'); orbit.className='orbit';
+    orbit.style.width=orbit.style.height=(r*2)+'px';
+    orbit.style.animationDuration=(reduce?0:(13+si*5))+'s';
+    if(reduce)orbit.style.animation='none';
+    if(si%2===1)orbit.style.animationDirection='reverse';
+    for(let i=0;i<count;i++){
+      const e=document.createElement('div'); e.className='elec';
+      const ang=(360/count)*i;
+      e.style.transform='rotate('+ang+'deg) translateY(-'+r+'px)';
+      orbit.appendChild(e);
+    }
+    atom.appendChild(orbit);
+  });
+}
+
+function adj(kind,delta){
+  if(kind==='p') protons=Math.max(0,Math.min(20,protons+delta));
+  if(kind==='n') neutrons=Math.max(0,Math.min(30,neutrons+delta));
+  if(kind==='e') electrons=Math.max(0,Math.min(20,electrons+delta));
+  render();
+}
+function loadElement(z){
+  const el=ELEMENTS.find(x=>x.z===z); if(!el)return;
+  protons=z; electrons=z; neutrons=el.mass-z; render();
+  document.getElementById('atom').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+}
+
+/* build periodic table */
+(function(){
+  const pt=document.getElementById('pt');
+  ELEMENTS.forEach(el=>{
+    const c=document.createElement('div'); c.className='cell'; c.dataset.z=el.z;
+    c.style.gridColumn=el.col; c.style.gridRow=el.row;
+    const color=CATCOLOR[el.cat];
+    c.style.background='color-mix(in srgb, '+color+' 22%, transparent)';
+    c.style.borderColor=color;
+    c.innerHTML='<span class="num">'+el.z+'</span><span class="sym" style="color:'+color+'">'+el.sym+'</span>';
+    c.title=el.name;
+    c.onclick=()=>loadElement(el.z);
+    pt.appendChild(c);
+  });
+})();
+
+/* decrypt */
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');
+  document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"Which particle has no electric charge?",opts:["Proton","Neutron","Electron"],correct:1,why:"Neutrons are neutral — charge 0."},
+  {q:"The atomic number of an element tells you the number of...",opts:["Protons","Neutrons","Shells"],correct:0,why:"Atomic number = number of protons, which defines the element."},
+  {q:"Where are electrons found in an atom?",opts:["In the nucleus","In shells around the nucleus","Glued to protons"],correct:1,why:"Electrons orbit the nucleus in shells (energy levels)."},
+  {q:"A carbon atom has 6 protons and 6 neutrons. Its mass number is...",opts:["6","12","18"],correct:1,why:"Mass number = protons + neutrons = 6 + 6 = 12."},
+  {q:"Elements in the same group have the same number of...",opts:["Neutrons","Outer-shell electrons","Total shells"],correct:1,why:"Same group = same number of electrons in the outer shell."},
+  {q:"What is the relative charge of a proton?",opts:["+1","0","−1"],correct:0,why:"Protons carry a charge of +1."},
+  {q:"What is the relative mass of an electron?",opts:["1","2","Almost 0"],correct:2,why:"An electron is about 1/1836 of a proton, so we treat its mass as nearly 0."},
+  {q:"The nucleus of an atom contains...",opts:["Protons and electrons","Protons and neutrons","Electrons only"],correct:1,why:"The nucleus holds protons and neutrons; electrons sit outside in shells."},
+  {q:"Why does a complete atom have no overall charge?",opts:["Equal protons and electrons","It has more neutrons","It has no electrons"],correct:0,why:"Equal numbers of +1 protons and −1 electrons cancel out."},
+  {q:"How do you calculate the mass number?",opts:["Protons + electrons","Protons + neutrons","Neutrons only"],correct:1,why:"Mass number = protons + neutrons."},
+  {q:"Isotopes of an element have the same protons but a different number of...",opts:["Electrons","Neutrons","Protons"],correct:1,why:"Isotopes differ only in neutron number, so they have different masses."},
+  {q:"Sodium's electron arrangement is 2,8,1. Which group is it in?",opts:["Group 1","Group 8","Group 3"],correct:0,why:"Its outer shell has 1 electron → Group 1."},
+  {q:"Sodium's arrangement is 2,8,1. Which period is it in?",opts:["Period 1","Period 2","Period 3"],correct:2,why:"It uses 3 shells → Period 3."},
+  {q:"What is the maximum number of electrons in the first shell?",opts:["2","8","18"],correct:0,why:"The first shell holds a maximum of 2 electrons."},
+  {q:"An atom that loses an electron becomes...",opts:["A positive ion","A negative ion","A neutron"],correct:0,why:"Losing a −1 electron leaves more protons than electrons → a positive ion."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;
+  document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){
+    document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');
+  }
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+
+nextSet();buildQuiz();
+loadElement(1);
+</script>
+</body>
+</html>

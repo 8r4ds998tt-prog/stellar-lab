@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energy Reactions // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --bg2:#080b1c; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --exo-glow:rgba(255,59,92,.55);
+    --endo:#2de2ff; --endo2:#4a9bff; --endo-glow:rgba(45,226,255,.5);
+    --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;
+    background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+
+  /* top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);
+    text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* hero */
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--amber);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;
+    letter-spacing:.02em;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+
+  /* LCARS section frame */
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);
+    border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;
+    border:1px solid var(--line);border-left:6px solid var(--lilac);
+    opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px;letter-spacing:.02em}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+
+  /* core cards */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .core{position:relative;border-radius:16px;padding:22px;overflow:hidden;border:1px solid;text-align:center}
+  .core.exo{border-color:var(--exo);background:radial-gradient(120% 100% at 50% 0,rgba(255,59,92,.18),rgba(255,59,92,.03))}
+  .core.endo{border-color:var(--endo);background:radial-gradient(120% 100% at 50% 0,rgba(45,226,255,.16),rgba(45,226,255,.03))}
+  .core h3{font-family:var(--disp);margin:.2em 0 .1em;font-size:1.25rem}
+  .core.exo h3{color:var(--exo);text-shadow:0 0 16px var(--exo-glow)}
+  .core.endo h3{color:var(--endo);text-shadow:0 0 16px var(--endo-glow)}
+  .core .word{font-family:var(--ui);letter-spacing:.2em;text-transform:uppercase;font-size:.72rem;color:var(--muted)}
+  .core .flow{font-family:var(--ui);font-weight:700;font-size:1.05rem;margin-top:14px;letter-spacing:.04em}
+  .core.exo .flow{color:var(--exo2)} .core.endo .flow{color:var(--endo2)}
+  /* energy orb animation */
+  .orb{width:92px;height:92px;margin:6px auto 4px;border-radius:50%;position:relative}
+  .orb .core-dot{position:absolute;inset:34px;border-radius:50%}
+  .core.exo .orb .core-dot{background:var(--exo);box-shadow:0 0 22px var(--exo)}
+  .core.endo .orb .core-dot{background:var(--endo);box-shadow:0 0 22px var(--endo)}
+  .orb .ring{position:absolute;inset:0;border-radius:50%;border:2px solid}
+  .core.exo .orb .ring{border-color:var(--exo);animation:pulseOut 2.2s ease-out infinite}
+  .core.endo .orb .ring{border-color:var(--endo);animation:pulseIn 2.2s ease-in infinite}
+  .orb .ring:nth-child(2){animation-delay:.7s}
+  .orb .ring:nth-child(3){animation-delay:1.4s}
+  @keyframes pulseOut{0%{transform:scale(.4);opacity:.9}100%{transform:scale(1.15);opacity:0}}
+  @keyframes pulseIn{0%{transform:scale(1.15);opacity:0}100%{transform:scale(.4);opacity:.9}}
+
+  /* field guide chips */
+  .guide{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:640px){.guide{grid-template-columns:1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .chip{font-family:var(--ui);font-weight:600;font-size:.86rem;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);display:inline-flex;gap:7px;align-items:center}
+  .gtitle{font-family:var(--ui);text-transform:uppercase;letter-spacing:.16em;font-size:.84rem;font-weight:700}
+  .gtitle.exo{color:var(--exo)} .gtitle.endo{color:var(--endo)}
+
+  /* comparison console */
+  .console{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .crow{display:grid;grid-template-columns:1.1fr 1fr 1fr;border-bottom:1px solid var(--line)}
+  .crow:last-child{border-bottom:0}
+  .crow>div{padding:11px 14px;font-size:.92rem}
+  .crow .h{font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.74rem;color:var(--muted)}
+  .crow.head{background:rgba(255,255,255,.03)}
+  .crow .ex{color:var(--exo)} .crow .en{color:var(--endo)}
+  @media(max-width:560px){.crow>div{font-size:.82rem;padding:9px 9px}}
+
+  /* simulation */
+  .sim-toggle{display:inline-flex;background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:999px;padding:5px;gap:6px;margin-bottom:18px}
+  .sim-toggle button{font-family:var(--ui);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.84rem;border:0;background:transparent;color:var(--muted);padding:10px 22px;border-radius:999px;cursor:pointer;transition:.2s}
+  .sim-toggle button.on.exo{background:var(--exo);color:#fff;box-shadow:0 0 22px var(--exo-glow)}
+  .sim-toggle button.on.endo{background:var(--endo);color:#04121a;box-shadow:0 0 22px var(--endo-glow)}
+  .screen{background:radial-gradient(120% 120% at 50% 0,rgba(120,140,220,.06),transparent),#060a18;border:1px solid var(--line);border-radius:14px;padding:14px;position:relative}
+  .screen::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
+  svg{width:100%;height:auto;display:block;position:relative;z-index:1}
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:560px){.readout{grid-template-columns:1fr}}
+  .stat{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .stat .k{font-family:var(--ui);font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .stat .v{font-family:var(--disp);font-size:1rem;font-weight:700;margin-top:4px}
+  .therm-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:16px}
+  .thermo{width:50px;height:190px;background:#060a18;border-radius:30px;border:1px solid var(--line);position:relative;overflow:hidden;box-shadow:inset 0 0 18px rgba(0,0,0,.6)}
+  .merc{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;width:16px;border-radius:12px;transition:height 1.1s ease,background .6s,box-shadow .6s;height:54px;background:var(--muted)}
+  .bulb{position:absolute;left:50%;transform:translateX(-50%);bottom:6px;width:30px;height:30px;border-radius:50%;background:var(--muted);transition:background .6s,box-shadow .6s}
+  .therm-temp{font-family:var(--disp);font-size:1.7rem;font-weight:700}
+  .therm-label{font-size:.92rem;color:var(--muted);max-width:260px}
+
+  /* applications */
+  .apps{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.apps{grid-template-columns:1fr}}
+  .app{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:16px;transition:.2s}
+  .app:hover{transform:translateY(-4px)}
+  .app.exo:hover{border-color:var(--exo);box-shadow:0 10px 30px rgba(255,59,92,.18)}
+  .app.endo:hover{border-color:var(--endo);box-shadow:0 10px 30px rgba(45,226,255,.18)}
+  .app .emoji{font-size:1.9rem}
+  .app h4{font-family:var(--ui);margin:.35em 0 .15em;font-size:1.02rem;letter-spacing:.02em}
+  .app.exo h4{color:var(--exo)} .app.endo h4{color:var(--endo)}
+  .app p{margin:0;color:var(--muted);font-size:.88rem}
+  .tag{font-family:var(--ui);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;font-weight:700}
+  .tag.exo{background:var(--exo);color:#fff} .tag.endo{background:var(--endo);color:#04121a}
+
+  /* decrypt panel */
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:.0}
+  .decrypt.open .body{max-height:1200px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}
+  .key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  /* quiz */
+  .q{margin-bottom:18px}
+  .qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px;letter-spacing:.01em}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(45,226,255,.14);border-color:var(--endo);color:#cdf6ff}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}
+  .fb.ok{background:rgba(45,226,255,.1);color:#bff0ff}
+  .fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em;letter-spacing:.02em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;scroll-behavior:auto}
+    section{opacity:1;transform:none}
+    .cursor{display:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+
+  <div class="topbar">
+    <a href="../index.html"><span class="blink"></span> ◄ Stellar Lab</a>
+    <span>Chem-01 // Energy Changes</span>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Science Station · Year 9</div>
+    <h1>ENERGY<br><span class="lav">REACTIONS</span></h1>
+    <p>Every reaction either fires energy <em>out</em> or pulls it <em>in</em>. Run the simulations below and find out which is which.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 CORE -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>Energy on the move</h2>
+    <p class="lead">When chemicals react, bonds break and reform — and energy moves between the reaction and its surroundings. We feel that as a <strong>temperature change</strong>. Two outcomes:</p>
+    <div class="cards">
+      <div class="core exo">
+        <div class="orb"><span class="ring"></span><span class="ring"></span><span class="ring"></span><span class="core-dot"></span></div>
+        <h3>EXOTHERMIC</h3>
+        <div class="word">exo = exit</div>
+        <div class="flow">Energy OUT → 🌡️ heats up</div>
+      </div>
+      <div class="core endo">
+        <div class="orb"><span class="ring"></span><span class="ring"></span><span class="ring"></span><span class="core-dot"></span></div>
+        <h3>ENDOTHERMIC</h3>
+        <div class="word">endo = into</div>
+        <div class="flow">Energy IN → 🌡️ cools down</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 FIELD GUIDE -->
+  <section>
+    <div class="seclabel">Section 02 // Field Guide</div>
+    <h2>Spot them in the wild</h2>
+    <div class="guide">
+      <div>
+        <div class="gtitle exo">🔥 Exothermic</div>
+        <div class="chips">
+          <span class="chip">🔥 Combustion</span>
+          <span class="chip">⚗️ Neutralisation</span>
+          <span class="chip">🦠 Respiration</span>
+          <span class="chip">🛠️ Rusting</span>
+        </div>
+      </div>
+      <div>
+        <div class="gtitle endo">❄️ Endothermic</div>
+        <div class="chips">
+          <span class="chip">🔬 Thermal decomposition</span>
+          <span class="chip">🧪 Citric acid + bicarb</span>
+          <span class="chip">🌱 Photosynthesis</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 COMPARISON -->
+  <section>
+    <div class="seclabel">Section 03 // Comparison</div>
+    <h2>Side by side</h2>
+    <div class="console">
+      <div class="crow head"><div class="h">Reading</div><div class="h ex">🔥 Exothermic</div><div class="h en">❄️ Endothermic</div></div>
+      <div class="crow"><div>Energy flow</div><div class="ex">Given out</div><div class="en">Taken in</div></div>
+      <div class="crow"><div>Surroundings</div><div class="ex">Warmer ↑</div><div class="en">Colder ↓</div></div>
+      <div class="crow"><div>Products vs reactants</div><div class="ex">Less energy</div><div class="en">More energy</div></div>
+      <div class="crow"><div>Thermometer</div><div class="ex">Rises</div><div class="en">Falls</div></div>
+    </div>
+  </section>
+
+  <!-- 4 SIMULATION -->
+  <section>
+    <div class="seclabel">Section 04 // Live Simulation</div>
+    <h2>Reaction profile scanner</h2>
+    <p class="lead">A <strong>reaction profile</strong> tracks energy from reactants to products. Pick a mode and watch the energy packet travel.</p>
+    <div class="sim-toggle">
+      <button id="btnExo" class="exo on" onclick="setType('exo')">🔥 Exothermic</button>
+      <button id="btnEndo" class="endo" onclick="setType('endo')">❄️ Endothermic</button>
+    </div>
+    <div class="screen">
+      <svg viewBox="0 0 600 340" role="img" aria-label="Reaction profile diagram">
+        <line x1="70" y1="30" x2="70" y2="290" stroke="#3a4480" stroke-width="2"/>
+        <line x1="70" y1="290" x2="560" y2="290" stroke="#3a4480" stroke-width="2"/>
+        <text x="22" y="170" fill="#8fa0c8" font-family="Rajdhani" font-size="14" transform="rotate(-90 22,170)">ENERGY →</text>
+        <text x="250" y="318" fill="#8fa0c8" font-family="Rajdhani" font-size="14">REACTION PROGRESS →</text>
+        <line id="reactLine" x1="90" y1="120" x2="180" y2="120" stroke="#6f7db8" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line id="prodLine"  x1="430" y1="230" x2="540" y2="230" stroke="#6f7db8" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <path id="curve" d="" fill="none" stroke-width="4" stroke-linecap="round"/>
+        <line id="aeLine" x1="260" y1="0" x2="260" y2="0" stroke="#cc88ff" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <text id="aeText" x="272" y="60" fill="#cc88ff" font-family="Rajdhani" font-size="13">Activation energy</text>
+        <text id="reactLabel" x="92" y="110" fill="#eaf2ff" font-family="Rajdhani" font-size="14" font-weight="700">Reactants</text>
+        <text id="prodLabel"  x="432" y="252" fill="#eaf2ff" font-family="Rajdhani" font-size="14" font-weight="700">Products</text>
+        <line id="dhArrow" x1="505" y1="0" x2="505" y2="0" stroke-width="2.5" marker-end="url(#ah)"/>
+        <text id="dhText" x="514" y="180" font-family="Orbitron" font-size="13" font-weight="700"></text>
+        <circle id="packet" r="7" fill="#fff" opacity="0"/>
+        <defs><marker id="ah" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" id="ahFill"/></marker></defs>
+      </svg>
+    </div>
+    <div class="readout">
+      <div class="stat"><div class="k">Energy change (ΔH)</div><div class="v" id="dhStat">—</div></div>
+      <div class="stat"><div class="k">Surroundings</div><div class="v" id="surStat">—</div></div>
+    </div>
+    <div class="therm-row">
+      <div class="thermo"><div class="merc" id="merc"></div><div class="bulb" id="bulb"></div></div>
+      <div><div class="therm-temp" id="thermTemp">21°C</div><div class="therm-label" id="thermLabel">Select a mode to scan the temperature shift.</div></div>
+    </div>
+  </section>
+
+  <!-- 5 APPLICATIONS -->
+  <section>
+    <div class="seclabel">Section 05 // Applications</div>
+    <h2>Tech in the real world</h2>
+    <div class="apps">
+      <div class="app exo"><div class="emoji">🧤</div><span class="tag exo">Exo</span><h4>Hand warmers</h4><p>Iron oxidising releases heat — instant warmth in your pocket.</p></div>
+      <div class="app endo"><div class="emoji">🧊</div><span class="tag endo">Endo</span><h4>Cold packs</h4><p>A salt dissolving pulls energy in, so the pack turns icy for injuries.</p></div>
+      <div class="app exo"><div class="emoji">🚀</div><span class="tag exo">Exo</span><h4>Rocket fuel</h4><p>Combustion releases huge energy — enough to reach orbit.</p></div>
+      <div class="app endo"><div class="emoji">🌱</div><span class="tag endo">Endo</span><h4>Photosynthesis</h4><p>Plants absorb light energy to build glucose — energy goes in.</p></div>
+    </div>
+  </section>
+
+  <!-- 6 DECRYPT (GCSE) -->
+  <section>
+    <div class="seclabel">Section 06 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()">
+        <span class="t">🔒 Reaction profiles &amp; energy change</span>
+        <button class="btn" id="decBtn">Decrypt ▸</button>
+      </div>
+      <div class="body"><div class="inner">
+        <p>The <strong>hump</strong> on the scanner is the <strong>activation energy</strong> — the push needed to start a reaction. Every reaction has one.</p>
+        <p>The vertical gap between reactants and products is the overall <strong>energy change (ΔH)</strong>:</p>
+        <div class="key"><span class="dot" style="background:var(--exo)"></span><span><strong>Exothermic:</strong> products lower → energy released → ΔH is <strong>negative</strong>.</span></div>
+        <div class="key"><span class="dot" style="background:var(--endo)"></span><span><strong>Endothermic:</strong> products higher → energy absorbed → ΔH is <strong>positive</strong>.</span></div>
+        <p style="margin-top:14px"><strong>Bond energy shortcut:</strong></p>
+        <p><code>ΔH = bonds broken − bonds made</code></p>
+        <p style="color:var(--muted)">Make more than you break → negative → exothermic. Break more than you make → positive → endothermic.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 7 QUIZ -->
+  <section>
+    <div class="seclabel">Section 07 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions. Tap an answer for instant feedback.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 01 · For Lyra</footer>
+</div>
+
+<script>
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---- starfield + spores ---- */
+(function(){
+  const c=document.getElementById('stars'), x=c.getContext('2d');
+  let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}
+  size(); addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*Math.PI*2,s:Math.random()*.5+.2});
+  const palette=['rgba(204,136,255,','rgba(45,226,255,','rgba(255,59,92,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:palette[i%3],a:Math.random()*.4+.2});
+  function draw(t){
+    x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*0.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(0.25+tw*0.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}
+      x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);
+  }
+  if(!reduce) requestAnimationFrame(draw);
+  else { for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();} }
+})();
+
+/* ---- cursor glow ---- */
+if(!reduce){
+  const cur=document.getElementById('cursor');
+  addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+  addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});
+  addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});
+}
+
+/* ---- scroll reveal ---- */
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});},{threshold:.15});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* ---- simulation ---- */
+const profiles = {
+  exo:{react:120,prod:230,curve:"M90,120 C150,120 200,40 260,40 C320,40 360,230 540,230",color:"#ff3b5c",
+    dh:"Negative — released",dhColor:"#ff3b5c",sur:"Heat OUT → warmer",temp:38,tempTxt:"Energy floods out into the surroundings — the reading climbs.",mercCol:"#ff3b5c",mercH:148},
+  endo:{react:230,prod:120,curve:"M90,230 C160,230 200,40 260,40 C320,40 380,120 540,120",color:"#2de2ff",
+    dh:"Positive — absorbed",dhColor:"#2de2ff",sur:"Heat IN → colder",temp:6,tempTxt:"The reaction drains energy from its surroundings — the reading drops.",mercCol:"#2de2ff",mercH:40}
+};
+let packetAnim=null;
+function setType(t){
+  const p=profiles[t];
+  document.getElementById('btnExo').classList.toggle('on',t==='exo');
+  document.getElementById('btnEndo').classList.toggle('on',t==='endo');
+  const curve=document.getElementById('curve');
+  curve.setAttribute('d',p.curve); curve.setAttribute('stroke',p.color);
+  curve.style.filter='drop-shadow(0 0 6px '+p.color+')';
+  document.getElementById('reactLine').setAttribute('y1',p.react);document.getElementById('reactLine').setAttribute('y2',p.react);
+  document.getElementById('reactLabel').setAttribute('y',p.react-10);
+  document.getElementById('prodLine').setAttribute('y1',p.prod);document.getElementById('prodLine').setAttribute('y2',p.prod);
+  document.getElementById('prodLabel').setAttribute('y',p.prod+22);
+  const ae=document.getElementById('aeLine');ae.setAttribute('y1',p.react);ae.setAttribute('y2',40);
+  document.getElementById('aeText').setAttribute('y',(t==='exo'?p.react-8:70));
+  const arrow=document.getElementById('dhArrow');arrow.setAttribute('y1',p.react);arrow.setAttribute('y2',p.prod);
+  arrow.setAttribute('stroke',p.dhColor);document.getElementById('ahFill').setAttribute('fill',p.dhColor);
+  const dhT=document.getElementById('dhText');dhT.setAttribute('y',(p.react+p.prod)/2);dhT.setAttribute('fill',p.dhColor);
+  dhT.textContent=(t==='exo'?'−ΔH':'+ΔH');
+  document.getElementById('dhStat').textContent=p.dh;document.getElementById('dhStat').style.color=p.dhColor;
+  document.getElementById('surStat').textContent=p.sur;document.getElementById('surStat').style.color=p.dhColor;
+  document.getElementById('thermTemp').textContent=p.temp+'°C';
+  document.getElementById('thermLabel').textContent=p.tempTxt;
+  const merc=document.getElementById('merc'),bulb=document.getElementById('bulb');
+  merc.style.height=p.mercH+'px';merc.style.background=p.mercCol;merc.style.boxShadow='0 0 16px '+p.mercCol;
+  bulb.style.background=p.mercCol;bulb.style.boxShadow='0 0 16px '+p.mercCol;
+  animatePacket(p.color);
+}
+function animatePacket(color){
+  const path=document.getElementById('curve'), packet=document.getElementById('packet');
+  if(reduce){packet.setAttribute('opacity','0');return;}
+  if(packetAnim) cancelAnimationFrame(packetAnim);
+  let len; try{len=path.getTotalLength();}catch(e){return;}
+  if(!len){return;}
+  packet.setAttribute('fill',color); packet.style.filter='drop-shadow(0 0 8px '+color+')';
+  let start=null;
+  function step(ts){
+    if(!start)start=ts; let prog=((ts-start)%2600)/2600;
+    const pt=path.getPointAtLength(prog*len);
+    packet.setAttribute('cx',pt.x);packet.setAttribute('cy',pt.y);packet.setAttribute('opacity','1');
+    packetAnim=requestAnimationFrame(step);
+  }
+  packetAnim=requestAnimationFrame(step);
+}
+setTimeout(()=>setType('exo'),200);
+
+/* ---- decrypt ---- */
+function toggleDecrypt(){
+  const d=document.getElementById('decrypt'); d.classList.toggle('open');
+  document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';
+}
+
+/* ---- quiz ---- */
+const questionBank=[
+  {q:"A test tube feels hot during a reaction. What type is it?",opts:["Exothermic","Endothermic"],correct:0,why:"Heat is released to the surroundings — exothermic."},
+  {q:"In an endothermic reaction the surroundings...",opts:["Get warmer","Get colder","Stay the same"],correct:1,why:"Energy is taken in, so the surroundings cool down."},
+  {q:"Which is exothermic?",opts:["Photosynthesis","Combustion","Thermal decomposition"],correct:1,why:"Burning releases energy as heat — classic exothermic."},
+  {q:"On a profile, products are HIGHER than reactants. This is...",opts:["Exothermic, ΔH negative","Endothermic, ΔH positive"],correct:1,why:"Products higher = energy absorbed = endothermic, ΔH positive."},
+  {q:"An instant cold pack works because the reaction is...",opts:["Exothermic","Endothermic"],correct:1,why:"It pulls energy in from its surroundings, so it feels cold."},
+  {q:"Which reaction transfers energy OUT to the surroundings?",opts:["Exothermic","Endothermic"],correct:0,why:"Exo = exit: energy leaves the reaction."},
+  {q:"Neutralising an acid with an alkali is usually...",opts:["Exothermic","Endothermic"],correct:0,why:"Neutralisation releases heat — it's exothermic."},
+  {q:"In an exothermic reaction, a thermometer reading will...",opts:["Rise","Fall","Stay the same"],correct:0,why:"Energy is released, warming the surroundings, so the reading rises."},
+  {q:"Photosynthesis is endothermic because plants...",opts:["Take in light energy","Release heat","Give out light"],correct:0,why:"They absorb light energy to make glucose — energy goes in."},
+  {q:"The value of ΔH for an exothermic reaction is...",opts:["Negative","Positive","Always zero"],correct:0,why:"Energy is released, so ΔH is negative."},
+  {q:"The minimum energy needed to start a reaction is called the...",opts:["Bond energy","Activation energy","Mass number"],correct:1,why:"That's the activation energy — the 'hump' on a reaction profile."},
+  {q:"Which of these is endothermic?",opts:["Combustion","Rusting","Thermal decomposition"],correct:2,why:"Thermal decomposition needs energy put in — it's endothermic."},
+  {q:"A reusable hand warmer feels hot. The reaction inside is...",opts:["Exothermic","Endothermic"],correct:0,why:"It releases heat to your hands — exothermic."},
+  {q:"When new chemical bonds form, energy is...",opts:["Released","Taken in","Destroyed"],correct:0,why:"Making bonds releases energy."},
+  {q:"Breaking chemical bonds requires energy to be...",opts:["Given out","Taken in","Created"],correct:1,why:"Breaking bonds always needs energy taken in."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;
+  document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){
+    document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');
+  }
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+nextSet();buildQuiz();
+</script>
+</body>
+</html>
