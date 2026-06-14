@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science Deck // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
+    --bio:#46e6a0; --chem:#ff7a3d; --phys:#2de2ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden;min-height:100vh}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:24px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:26px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  header.hero{text-align:center;margin-bottom:6px}
+  .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.4em;font-size:.8rem;color:var(--amber);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.4rem,8vw,4.6rem);line-height:.95;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 46px rgba(255,31,61,.45);animation:flicker 7s infinite}
+  h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 46px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,18%,20%,22%,80%,100%{opacity:1}19%,21%{opacity:.7}}
+  .sub{color:var(--muted);max-width:540px;margin:18px auto 0;font-size:1.05rem}
+  .strands{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:36px 0 8px}
+  @media(max-width:680px){.strands{grid-template-columns:1fr}}
+  .strand{position:relative;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s,box-shadow .25s,border-color .25s}
+  .strand.in{opacity:1;transform:none}
+  .strand .ic{font-size:2.3rem}
+  .strand h2{font-family:var(--disp);font-size:1.05rem;margin:.4em 0 .1em;letter-spacing:.04em}
+  .strand.bio h2{color:var(--bio)} .strand.chem h2{color:var(--chem)} .strand.phys h2{color:var(--phys)}
+  .strand .count{font-family:var(--ui);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+  .strand.chem:hover{border-color:var(--chem);box-shadow:0 12px 34px rgba(255,122,61,.18)}
+  .strand.bio:hover{border-color:var(--bio);box-shadow:0 12px 34px rgba(70,230,160,.18)}
+  .strand.phys:hover{border-color:var(--phys);box-shadow:0 12px 34px rgba(45,226,255,.18)}
+  .section-title{display:flex;align-items:center;gap:12px;margin:42px 0 16px;font-family:var(--ui);text-transform:uppercase;letter-spacing:.2em;font-size:1rem;color:var(--amber)}
+  .section-title .bar{width:6px;height:22px;border-radius:3px;background:var(--amber);box-shadow:0 0 12px var(--amber)}
+  .lessons{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:680px){.lessons{grid-template-columns:1fr}}
+  a.lesson{display:block;text-decoration:none;color:inherit;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-left:5px solid var(--chem);border-radius:6px 16px 16px 6px;padding:22px;transition:.22s;opacity:0;transform:translateY(22px)}
+  a.lesson.in{opacity:1;transform:none}
+  a.lesson:hover{transform:translateY(-4px);border-color:var(--chem);box-shadow:0 14px 36px rgba(255,122,61,.2)}
+  .tagrow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .chip{font-family:var(--ui);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:999px;font-weight:700}
+  .chip.chem{background:rgba(255,122,61,.18);color:var(--chem)}
+  .chip.ready{background:rgba(70,230,160,.16);color:var(--bio)}
+  .chip.soon{background:rgba(255,255,255,.05);color:var(--muted)}
+  a.lesson h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.18rem;letter-spacing:.01em}
+  a.lesson p{margin:0;color:var(--muted);font-size:.92rem}
+  .go{font-family:var(--ui);margin-top:14px;font-size:.82rem;color:var(--lav);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .lesson.locked{opacity:.55;cursor:default;border-left-color:var(--line)}
+  .lesson.locked.in{opacity:.55}
+  .lesson.locked:hover{transform:none;border-color:var(--line);box-shadow:none}
+  .chip.bio{background:rgba(70,230,160,.16);color:var(--bio)}
+  a.lesson.bio{border-left-color:var(--bio)}
+  a.lesson.bio:hover{border-color:var(--bio);box-shadow:0 14px 36px rgba(70,230,160,.2)}
+  /* reference library */
+  .reflib{background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:18px;opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
+  .reflib.in{opacity:1;transform:none}
+  .reflib p{color:var(--muted);font-size:.9rem;margin:.2em 0 14px}
+  .reflinks{display:flex;flex-wrap:wrap;gap:10px}
+  .reflinks a{font-family:var(--ui);font-weight:600;text-decoration:none;color:var(--lav);border:1px solid var(--line);border-radius:10px;padding:10px 16px;display:inline-flex;gap:8px;align-items:center;transition:.15s;font-size:.9rem}
+  .reflinks a:hover{border-color:var(--lilac);box-shadow:0 0 18px rgba(204,136,255,.25)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:50px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}.strand,a.lesson,.reflib{opacity:1!important;transform:none!important}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="index.html"><span class="blink"></span> ◄ Station Hub</a>
+    <span>Science Deck · Year 9</span>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Science Station</div>
+    <h1>SCIENCE<br><span class="lav">DECK</span></h1>
+    <p class="sub">Biology, Chemistry and Physics missions — matched to your Year 9 curriculum. Pick a strand.</p>
+  </header>
+
+  <div class="strands">
+    <div class="strand bio"><div class="ic">🧬</div><h2>Biology</h2><div class="count">1 mission ready</div></div>
+    <div class="strand chem"><div class="ic">⚗️</div><h2>Chemistry</h2><div class="count">4 missions ready</div></div>
+    <div class="strand phys"><div class="ic">🔭</div><h2>Physics</h2><div class="count">Coming soon</div></div>
+  </div>
+
+  <div class="section-title"><span class="bar"></span> Chemistry · Missions</div>
+  <div class="lessons">
+    <a class="lesson" href="lessons/endothermic-exothermic.html">
+      <div class="tagrow"><span class="chip chem">Energy changes</span><span class="chip ready">● Ready</span></div>
+      <h3>Energy Reactions</h3>
+      <p>Endothermic vs exothermic — live reaction-profile scanner, real-world tech, and a diagnostic quiz.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson" href="lessons/atomic-structure.html">
+      <div class="tagrow"><span class="chip chem">Atomic structure</span><span class="chip ready">● Ready</span></div>
+      <h3>Inside the Atom</h3>
+      <p>Build your own element in the Atom Reactor, then explore an interactive periodic table of the first 20 elements.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson" href="lessons/balancing-equations.html">
+      <div class="tagrow"><span class="chip chem">Balancing equations</span><span class="chip ready">● Ready</span></div>
+      <h3>Balancing Equations</h3>
+      <p>Conservation of mass and a hands-on equation balancer with a tilting atom-counting scale.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson" href="lessons/periodic-table.html">
+      <div class="tagrow"><span class="chip chem">Periodic table</span><span class="chip ready">● Ready</span></div>
+      <h3>The Periodic Table</h3>
+      <p>Groups, periods and families — an interactive table you can highlight and explore element by element.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+  </div>
+
+  <div class="section-title"><span class="bar" style="background:var(--bio);box-shadow:0 0 12px var(--bio)"></span> Biology · Missions</div>
+  <div class="lessons">
+    <a class="lesson bio" href="lessons/cells.html">
+      <div class="tagrow"><span class="chip bio">Cells</span><span class="chip ready">● Ready</span></div>
+      <h3>Inside the Cell</h3>
+      <p>Explore an interactive animal and plant cell — tap each part to learn its job — plus specialised cells.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <div class="lesson locked">
+      <div class="tagrow"><span class="chip bio">Ecology</span><span class="chip soon">○ Planned</span></div>
+      <h3>Ecology &amp; Ecosystems</h3>
+      <p>Food chains, energy transfer and how living things depend on each other. Next on the build list.</p>
+      <div class="go" style="color:var(--muted)">Locked</div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="bar"></span> Reference Library</div>
+  <div class="reflib">
+    <p>The official Year 9 Science curriculum documents from Sir William Robertson Academy (open in a new tab).</p>
+    <div class="reflinks">
+      <a href="https://www.swracademy.org/attachments/download.asp?file=41&type=pdf" target="_blank" rel="noopener">📄 Science Curriculum Plan</a>
+      <a href="https://www.swracademy.org/attachments/download.asp?file=79&type=pdf" target="_blank" rel="noopener">🗺️ Science Curriculum Map</a>
+    </div>
+  </div>
+
+  <footer>Stellar Lab · Science Deck · Built for Lyra</footer>
+</div>
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<150;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(255,59,92,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.1});
+document.querySelectorAll('.strand,a.lesson,.reflib').forEach(s=>io.observe(s));
+</script>
+</body>
+</html>

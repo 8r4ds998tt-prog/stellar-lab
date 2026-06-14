@@ -11,7 +11,7 @@
   :root{
     --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
     --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
-    --bio:#2de2ff; --chem:#ff7a3d; --phys:#c8a2ff;
+    --sci:#2de2ff; --eng:#ff7ad9; --maths:#46e6a0;
     --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
     --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
   }
@@ -19,93 +19,63 @@
   html{scroll-behavior:smooth}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden;min-height:100vh}
   canvas#stars{position:fixed;inset:0;z-index:0;display:block}
-  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;
-    background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
-  .wrap{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:40px 20px 90px}
-
-  .hero{text-align:center;padding:24px 0 8px}
-  .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.4em;font-size:.8rem;color:var(--amber);margin-bottom:16px}
-  h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.4rem,8vw,5rem);line-height:.95;margin:0;color:#fff;
-    text-shadow:0 0 18px var(--st),0 0 46px rgba(255,31,61,.45);animation:flicker 7s infinite}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:52px 20px 90px}
+  header{text-align:center;margin-bottom:8px}
+  .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.82rem;color:var(--amber);margin-bottom:16px}
+  h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.6rem,9vw,5.4rem);line-height:.93;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 46px rgba(255,31,61,.45);animation:flicker 7s infinite}
   h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 46px rgba(200,162,255,.5)}
   @keyframes flicker{0%,18%,20%,22%,80%,100%{opacity:1}19%,21%{opacity:.7}}
-  .sub{color:var(--muted);max-width:540px;margin:18px auto 0;font-size:1.05rem}
-
-  .subjects{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:38px 0 8px}
-  @media(max-width:680px){.subjects{grid-template-columns:1fr}}
-  .subj{position:relative;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;
-    opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s,box-shadow .25s,border-color .25s}
-  .subj.in{opacity:1;transform:none}
-  .subj .ic{font-size:2.3rem}
-  .subj h2{font-family:var(--disp);font-size:1.05rem;margin:.4em 0 .1em;letter-spacing:.04em}
-  .subj.bio h2{color:var(--bio)} .subj.chem h2{color:var(--chem)} .subj.phys h2{color:var(--phys)}
-  .subj .count{font-family:var(--ui);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
-  .subj.bio:hover{border-color:var(--bio);box-shadow:0 12px 34px rgba(45,226,255,.18)}
-  .subj.chem:hover{border-color:var(--chem);box-shadow:0 12px 34px rgba(255,122,61,.18)}
-  .subj.phys:hover{border-color:var(--phys);box-shadow:0 12px 34px rgba(200,162,255,.18)}
-
-  .section-title{display:flex;align-items:center;gap:12px;margin:44px 0 16px;font-family:var(--ui);
-    text-transform:uppercase;letter-spacing:.2em;font-size:1rem;color:var(--amber)}
-  .section-title .bar{width:6px;height:22px;border-radius:3px;background:var(--amber);box-shadow:0 0 12px var(--amber)}
-
-  .lessons{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-  @media(max-width:680px){.lessons{grid-template-columns:1fr}}
-  a.lesson{display:block;text-decoration:none;color:inherit;background:var(--panel);backdrop-filter:blur(6px);
-    border:1px solid var(--line);border-left:5px solid var(--chem);border-radius:6px 16px 16px 6px;padding:22px;transition:.22s;
-    opacity:0;transform:translateY(22px)}
-  a.lesson.in{opacity:1;transform:none}
-  a.lesson:hover{transform:translateY(-4px);border-color:var(--chem);box-shadow:0 14px 36px rgba(255,122,61,.2)}
-  .tagrow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-  .chip{font-family:var(--ui);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:999px;font-weight:700}
-  .chip.chem{background:rgba(255,122,61,.18);color:var(--chem)}
-  .chip.ready{background:rgba(45,226,255,.16);color:var(--bio)}
-  .chip.soon{background:rgba(255,255,255,.05);color:var(--muted)}
-  a.lesson h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.18rem;letter-spacing:.01em}
-  a.lesson p{margin:0;color:var(--muted);font-size:.92rem}
-  .go{font-family:var(--ui);margin-top:14px;font-size:.82rem;color:var(--lav);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-  .lesson.locked{opacity:.55;cursor:default;border-left-color:var(--line)}
-  .lesson.locked.in{opacity:.55}
-  .lesson.locked:hover{transform:none;border-color:var(--line);box-shadow:none}
-
-  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:50px}
-  @media (prefers-reduced-motion: reduce){*{animation:none!important}.subj,a.lesson{opacity:1!important;transform:none!important}.cursor{display:none}}
+  .sub{color:var(--muted);max-width:540px;margin:18px auto 0;font-size:1.08rem}
+  .prompt{font-family:var(--ui);text-transform:uppercase;letter-spacing:.3em;font-size:.78rem;color:var(--muted);text-align:center;margin:40px 0 16px}
+  .decks{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:720px){.decks{grid-template-columns:1fr}}
+  .deck{position:relative;display:block;text-decoration:none;color:inherit;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:18px;padding:30px 22px;text-align:center;transition:.22s;opacity:0;transform:translateY(24px)}
+  .deck.in{opacity:1;transform:none}
+  .deck .ic{font-size:3rem;display:block;margin-bottom:6px}
+  .deck h2{font-family:var(--disp);font-size:1.25rem;margin:.3em 0 .15em;letter-spacing:.04em}
+  .deck .count{font-family:var(--ui);font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .deck .go{font-family:var(--ui);margin-top:16px;font-size:.82rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .deck.sci{cursor:pointer}
+  .deck.sci h2{color:var(--sci)} .deck.sci .go{color:var(--lav)}
+  .deck.sci:hover{transform:translateY(-5px);border-color:var(--sci);box-shadow:0 16px 40px rgba(45,226,255,.2)}
+  .deck.eng h2{color:var(--eng)} .deck.maths h2{color:var(--maths)}
+  .deck.locked{opacity:.5}
+  .deck.locked.in{opacity:.5}
+  .deck.locked .go{color:var(--muted)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:54px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}.deck{opacity:1!important;transform:none!important}.cursor{display:none}}
 </style>
 </head>
 <body>
 <canvas id="stars"></canvas>
 <div class="cursor" id="cursor"></div>
 <div class="wrap">
-  <header class="hero">
+  <header>
     <div class="kicker">Year 9 · Science Station Online</div>
     <h1>STELLAR<br><span class="lav">LAB</span></h1>
-    <p class="sub">Lyra's learning hub. Interactive missions matched to your curriculum. Choose a station.</p>
+    <p class="sub">Lyra's learning hub. Interactive missions matched to your curriculum.</p>
   </header>
 
-  <div class="subjects">
-    <div class="subj bio"><div class="ic">🧬</div><h2>Biology</h2><div class="count">Coming soon</div></div>
-    <div class="subj chem"><div class="ic">⚗️</div><h2>Chemistry</h2><div class="count">2 missions ready</div></div>
-    <div class="subj phys"><div class="ic">🔭</div><h2>Physics</h2><div class="count">Coming soon</div></div>
-  </div>
-
-  <div class="section-title"><span class="bar"></span> Chemistry · Missions</div>
-  <div class="lessons">
-    <a class="lesson" href="lessons/endothermic-exothermic.html">
-      <div class="tagrow"><span class="chip chem">Energy changes</span><span class="chip ready">● Ready</span></div>
-      <h3>Energy Reactions</h3>
-      <p>Endothermic vs exothermic — live reaction-profile scanner, real-world tech, and a diagnostic quiz.</p>
-      <div class="go">Launch mission →</div>
+  <div class="prompt">▾ Select a deck ▾</div>
+  <div class="decks">
+    <a class="deck sci" href="science.html">
+      <span class="ic">🔬</span>
+      <h2>Science</h2>
+      <div class="count">4 missions ready</div>
+      <div class="go">Enter deck →</div>
     </a>
-    <a class="lesson" href="lessons/atomic-structure.html">
-      <div class="tagrow"><span class="chip chem">Atomic structure</span><span class="chip ready">● Ready</span></div>
-      <h3>Inside the Atom</h3>
-      <p>Build your own element in the Atom Reactor, then explore an interactive periodic table of the first 20 elements.</p>
-      <div class="go">Launch mission →</div>
-    </a>
-    <div class="lesson locked">
-      <div class="tagrow"><span class="chip chem">Balancing equations</span><span class="chip soon">○ Planned</span></div>
-      <h3>Balancing Equations</h3>
-      <p>Conservation of mass and how to balance a chemical equation. Next on the build list.</p>
-      <div class="go" style="color:var(--muted)">Locked</div>
+    <div class="deck eng locked">
+      <span class="ic">📖</span>
+      <h2>English</h2>
+      <div class="count">Coming soon</div>
+      <div class="go">Locked</div>
+    </div>
+    <div class="deck maths locked">
+      <span class="ic">📐</span>
+      <h2>Maths</h2>
+      <div class="count">Coming soon</div>
+      <div class="go">Locked</div>
     </div>
   </div>
 
@@ -113,22 +83,20 @@
 </div>
 <script>
 const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-(function(){
-  const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
   function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
-  for(let i=0;i<150;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  for(let i=0;i<160;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
   const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(255,59,92,'];
-  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  for(let i=0;i<28;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
   function draw(t){x.clearRect(0,0,w,h);
     for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
     for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
     requestAnimationFrame(draw);}
-  if(!reduce)requestAnimationFrame(draw);
-  else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
 })();
 if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
-document.querySelectorAll('.subj,a.lesson,.lesson').forEach(s=>io.observe(s));
+document.querySelectorAll('.deck').forEach(s=>io.observe(s));
 </script>
 </body>
 </html>
