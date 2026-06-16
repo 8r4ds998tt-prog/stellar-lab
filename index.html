@@ -44,6 +44,26 @@
   .deck.locked.in{opacity:.5}
   .deck.locked .go{color:var(--muted)}
   footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:54px}
+  /* floating test banner */
+  .testbanner{position:relative;display:block;text-decoration:none;color:inherit;margin:34px 0 6px;border:1px solid rgba(255,177,59,.42);border-radius:18px;padding:18px 22px;background:linear-gradient(120deg,rgba(255,31,61,.12),rgba(204,136,255,.10) 55%,rgba(45,226,255,.10));overflow:hidden;animation:floaty 6s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .testbanner::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 38px,rgba(255,255,255,.025) 39px,transparent 40px);pointer-events:none}
+  .testbanner:hover{border-color:var(--amber);box-shadow:0 14px 40px rgba(255,177,59,.18)}
+  .tb-grid{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;position:relative;z-index:1}
+  @media(max-width:640px){.tb-grid{grid-template-columns:1fr;text-align:center;gap:12px}}
+  .tb-ic{font-size:2.2rem}
+  .tb-mid .k{font-family:var(--ui);text-transform:uppercase;letter-spacing:.24em;font-size:.66rem;color:var(--amber)}
+  .tb-mid h3{font-family:var(--disp);font-size:1.12rem;margin:.1em 0 .2em;color:#fff}
+  .tb-mid .meta{font-family:var(--ui);font-size:.86rem;color:var(--muted);letter-spacing:.02em}
+  .tb-mid .meta b{color:var(--lav)}
+  .tb-prog{min-width:160px}
+  @media(max-width:640px){.tb-prog{margin:0 auto}}
+  .tb-prog .top{display:flex;justify-content:space-between;gap:14px;font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.66rem;color:var(--muted);margin-bottom:5px}
+  .tb-prog .top b{font-family:var(--disp);color:var(--amber);font-size:.9rem}
+  .tb-meter{height:10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--line);overflow:hidden}
+  .tb-meter .fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--maths),var(--amber));transition:width .6s ease}
+  .tb-cta{font-family:var(--ui);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;color:var(--lav);margin-top:7px;text-align:right}
+  @media(max-width:640px){.tb-cta{text-align:center}}
   @media (prefers-reduced-motion: reduce){*{animation:none!important}.deck{opacity:1!important;transform:none!important}.cursor{display:none}}
 </style>
 </head>
@@ -56,6 +76,22 @@
     <h1>STELLAR<br><span class="lav">LAB</span></h1>
     <p class="sub">Lyra's learning hub. Interactive missions matched to your curriculum.</p>
   </header>
+
+  <a class="testbanner" id="testBanner" href="lessons/eoy-test-2026.html">
+    <div class="tb-grid">
+      <div class="tb-ic">📡</div>
+      <div class="tb-mid">
+        <div class="k">Incoming Transmission · Year 9 Science</div>
+        <h3>End-of-Year Test</h3>
+        <div class="meta" id="tbMeta"><b id="tbDays">–</b> days to go · 6 July 2026</div>
+      </div>
+      <div class="tb-prog">
+        <div class="top"><span>Revision readiness</span><span><b id="tbNum">0</b> / 10</span></div>
+        <div class="tb-meter"><div class="fill" id="tbFill"></div></div>
+        <div class="tb-cta">Open revision station →</div>
+      </div>
+    </div>
+  </a>
 
   <div class="prompt">▾ Select a deck ▾</div>
   <div class="decks">
@@ -97,6 +133,20 @@ const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
 document.querySelectorAll('.deck').forEach(s=>io.observe(s));
+/* test banner: live countdown + readiness from saved progress */
+(function(){
+  const b=document.getElementById('testBanner');if(!b)return;
+  const test=new Date(2026,6,6),now=new Date();
+  const days=Math.ceil((test-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
+  if(days>0)document.getElementById('tbDays').textContent=days;
+  else if(days===0)document.getElementById('tbMeta').innerHTML='<b>Test day</b> — good luck! · 6 July 2026';
+  else{b.style.display='none';return;}
+  let prog={};try{prog=JSON.parse(localStorage.getItem('stellar_eoy_2026')||'{}')||{};}catch(e){}
+  const ids=['b1','b2','b4','c1','c2','c7','p1','p2','p3','p6'];
+  const n=ids.filter(id=>prog[id]).length;
+  document.getElementById('tbNum').textContent=n;
+  document.getElementById('tbFill').style.width=(n/10*100)+'%';
+})();
 </script>
 </body>
 </html>

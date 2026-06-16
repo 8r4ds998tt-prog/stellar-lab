@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>End-of-Year Test // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff; --chem:#ff7a3d;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:1560px;margin:0 auto;padding:18px clamp(20px,3vw,44px) 70px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:18px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- banner ---------- */
+  .banner{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;padding:22px 24px;background:linear-gradient(120deg,rgba(255,31,61,.12),rgba(204,136,255,.10) 55%,rgba(45,226,255,.10));display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:center}
+  .banner::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 38px,rgba(255,255,255,.025) 39px,transparent 40px);pointer-events:none}
+  @media(max-width:760px){.banner{grid-template-columns:1fr;gap:14px}}
+  .bL .kick{font-family:var(--ui);text-transform:uppercase;letter-spacing:.34em;font-size:.72rem;color:var(--amber);margin-bottom:6px}
+  .bL h1{font-family:var(--disp);font-weight:900;font-size:clamp(1.5rem,4.2vw,2.5rem);line-height:1;margin:0;color:#fff;text-shadow:0 0 16px var(--st),0 0 38px rgba(255,31,61,.45);animation:flicker 7s infinite}
+  .bL h1 .lav{color:var(--lav);text-shadow:0 0 16px var(--lav)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.74}}
+  .bL p{color:var(--muted);margin:8px 0 0;font-size:.92rem;max-width:42ch}
+  .bR{display:flex;flex-direction:column;gap:12px}
+  .cdrow{display:flex;gap:10px}
+  .cdcell{flex:1;text-align:center;border:1px solid var(--line);border-radius:12px;padding:8px 4px;background:rgba(4,6,15,.4)}
+  .cdcell b{display:block;font-family:var(--disp);font-size:1.5rem;color:#fff;line-height:1}
+  .cdcell span{font-family:var(--ui);text-transform:uppercase;letter-spacing:.12em;font-size:.6rem;color:var(--muted)}
+  .cdlabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.16em;font-size:.7rem;color:var(--lav);text-align:center}
+  .bmeter{margin-top:2px}
+  .bmeter .top{display:flex;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.12em;font-size:.7rem;color:var(--muted);margin-bottom:5px}
+  .bmeter .top b{font-family:var(--disp);color:var(--amber);font-size:.95rem}
+  .meter{height:12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);overflow:hidden}
+  .meter .fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--green),var(--amber));transition:width .5s ease}
+
+  /* ---------- filters ---------- */
+  .filters{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 16px}
+  .ftab{font-family:var(--ui);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:.84rem;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:11px 18px;border-radius:12px;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:8px}
+  .ftab:hover{color:var(--ink);border-color:var(--lilac)}
+  .ftab .c{font-family:var(--ui);font-size:.7rem;background:rgba(255,255,255,.08);padding:1px 8px;border-radius:999px}
+  .ftab.on{color:#04060f;border-color:transparent}
+  .ftab.on[data-f="all"]{background:var(--lav);color:#0c0820}
+  .ftab.on[data-f="bio"]{background:var(--green);color:#04120c}
+  .ftab.on[data-f="chem"]{background:var(--chem);color:#1a0a02}
+  .ftab.on[data-f="phys"]{background:var(--endo);color:#04161a}
+  .ftab.on[data-f="exam"]{background:var(--amber);color:#1a1200}
+  .ftab.on .c{background:rgba(0,0,0,.18)}
+
+  /* ---------- console ---------- */
+  .console{display:grid;grid-template-columns:230px minmax(0,1fr);gap:26px;align-items:start}
+  @media(max-width:860px){.console{grid-template-columns:1fr}}
+  .sidebar{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;position:sticky;top:14px}
+  @media(max-width:860px){.sidebar{position:static}}
+  .sbhead{font-family:var(--ui);text-transform:uppercase;letter-spacing:.16em;font-size:.7rem;color:var(--muted);margin:2px 4px 10px;display:flex;justify-content:space-between;align-items:center}
+  .sbgroup{margin-bottom:6px}
+  .sbgroup h4{font-family:var(--ui);text-transform:uppercase;letter-spacing:.14em;font-size:.72rem;margin:10px 4px 6px}
+  .sbgroup.bio h4{color:var(--green)} .sbgroup.chem h4{color:var(--chem)} .sbgroup.phys h4{color:var(--endo)}
+  .srow{display:flex;align-items:center;gap:9px;border:1px solid transparent;border-radius:10px;padding:7px 8px;cursor:pointer;transition:.15s}
+  .srow:hover{background:rgba(255,255,255,.04)}
+  .srow.active{background:rgba(204,136,255,.12);border-color:rgba(204,136,255,.4)}
+  .srow .tick{flex:0 0 auto;width:24px;height:24px;border-radius:7px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .srow .tick.on{background:var(--green);color:#04120c;border-color:var(--green);box-shadow:0 0 12px rgba(70,230,160,.4)}
+  .srow .nm{flex:1;font-family:var(--ui);font-weight:600;font-size:.92rem;line-height:1.15}
+  .srow .nm small{display:block;color:var(--muted);font-weight:500;font-size:.72rem}
+  .clearbtn{font-family:var(--ui);text-transform:uppercase;letter-spacing:.08em;font-size:.66rem;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:7px;padding:5px 9px;cursor:pointer}
+  .clearbtn:hover{border-color:var(--exo);color:#ffc0c9}
+  @media(max-width:860px){
+    .sbgroup{display:inline-block;vertical-align:top}
+    .sidebarScroll{}
+  }
+
+  /* ---------- focus / carousel ---------- */
+  .focus{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:0;overflow:hidden;min-height:760px;display:flex;flex-direction:column}
+  @media(max-width:860px){.focus{min-height:0}}
+  .fhead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:rgba(4,6,15,.35)}
+  .fhead .ttl{font-family:var(--disp);font-size:1.05rem;color:#fff;display:flex;align-items:center;gap:10px;min-width:0}
+  .fhead .ttl .chip{flex:0 0 auto;font-family:var(--ui);font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:999px;font-weight:700}
+  .chip.bio{background:rgba(70,230,160,.16);color:var(--green)} .chip.chem{background:rgba(255,122,61,.18);color:var(--chem)} .chip.phys{background:rgba(45,226,255,.16);color:var(--endo)}
+  .fnav{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .navbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--lav);font-size:1.1rem;cursor:pointer;transition:.15s}
+  .navbtn:hover{border-color:var(--lilac);box-shadow:0 0 14px rgba(204,136,255,.25)}
+  .counter{font-family:var(--ui);font-size:.74rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;min-width:74px;text-align:center}
+  .fbody{padding:20px 22px 22px;flex:1}
+  .slide{display:none}
+  .slide.on{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .dots{display:flex;gap:6px;justify-content:center;padding:0 0 16px}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.15s}
+  .dot.on{background:var(--lav);box-shadow:0 0 8px var(--lav);width:20px;border-radius:999px}
+
+  .lead{color:var(--muted);margin:0 0 14px;font-size:.96rem}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:14px}
+  @media(max-width:520px){.cards{grid-template-columns:1fr}}
+  .cards.three{grid-template-columns:repeat(3,1fr)} @media(max-width:680px){.cards.three{grid-template-columns:1fr}}
+  .fact{border-radius:13px;padding:15px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1rem;color:var(--amber)}
+  .slide.bio .fact h3{color:var(--green)} .slide.chem .fact h3{color:var(--chem)} .slide.phys .fact h3{color:var(--endo)}
+  .fact p{margin:0;color:var(--muted);font-size:.9rem}
+  .fact p+p{margin-top:.5em}
+  .mlink{display:inline-flex;align-items:center;gap:7px;font-family:var(--ui);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.76rem;text-decoration:none;color:var(--lav);border:1px solid var(--line);border-radius:9px;padding:9px 14px;margin:4px 6px 0 0;transition:.15s}
+  .mlink:hover{border-color:var(--lilac);box-shadow:0 0 14px rgba(204,136,255,.25)}
+  .mlink.ext{color:var(--green);border-color:rgba(70,230,160,.4)}
+  .gapnote{font-family:var(--ui);font-size:.74rem;letter-spacing:.04em;color:var(--amber);background:rgba(255,177,59,.08);border:1px solid rgba(255,177,59,.3);border-radius:9px;padding:8px 12px;margin-top:12px}
+
+  /* shared interactive bits */
+  .explorer{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start;margin-top:6px}
+  @media(max-width:620px){.explorer{grid-template-columns:1fr}}
+  .screen{background:radial-gradient(120% 120% at 50% 0,rgba(120,140,220,.06),transparent),#060a18;border:1px solid var(--line);border-radius:13px;padding:10px}
+  svg{width:100%;height:auto;display:block}
+  .hot{cursor:pointer;transition:filter .15s,opacity .15s}
+  .hot:hover{filter:drop-shadow(0 0 6px #fff)} .hot.sel{filter:drop-shadow(0 0 8px #fff)}
+  .lbl{font-family:var(--ui);font-size:11px;fill:#cdd6f5;pointer-events:none}
+  .lbl.b{font-weight:700;font-size:12px}
+  .infopanel{border:1px solid var(--line);border-radius:13px;padding:15px;background:rgba(255,255,255,.03);min-height:140px}
+  .infopanel .pk{font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;color:var(--amber)}
+  .infopanel h3{font-family:var(--disp);font-size:1.05rem;margin:.2em 0 .3em;color:#fff}
+  .infopanel p{margin:.2em 0 0;color:var(--muted);font-size:.9rem}
+  .infopanel ul{margin:.4em 0 0;padding-left:1.1em;color:var(--muted);font-size:.88rem}
+  .infopanel li{margin:.15em 0}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.68rem;font-weight:700;font-family:var(--ui);text-transform:uppercase;letter-spacing:.06em;margin-top:8px}
+  .pill.renew{background:rgba(70,230,160,.16);color:var(--green)} .pill.nonrenew{background:rgba(255,122,61,.18);color:var(--chem)}
+  .pill.oxy{background:rgba(255,59,92,.16);color:#ff90a2} .pill.deoxy{background:rgba(90,166,255,.18);color:var(--blue)}
+  .toggle{display:inline-flex;flex-wrap:wrap;background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:999px;padding:5px;gap:6px;margin-bottom:12px}
+  .toggle button{font-family:var(--ui);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:.78rem;border:0;background:transparent;color:var(--muted);padding:8px 15px;border-radius:999px;cursor:pointer;transition:.2s}
+  .toggle button.on{background:var(--endo);color:#04161a;box-shadow:0 0 16px rgba(45,226,255,.4)}
+  .slide.bio .toggle button.on{background:var(--green);color:#04120c}
+  .slide.chem .toggle button.on{background:var(--chem);color:#1a0a02}
+  .resgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:7px;margin-bottom:6px}
+  .resbtn{font-family:var(--ui);font-weight:600;font-size:.78rem;text-align:center;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 5px;cursor:pointer;transition:.15s}
+  .resbtn .ic{display:block;font-size:1.2rem;margin-bottom:2px}
+  .resbtn:hover{border-color:var(--endo)} .resbtn.sel{border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,.25)} .resbtn.dim{opacity:.26}
+  .resbtn.r{border-left:4px solid var(--green)} .resbtn.n{border-left:4px solid var(--chem)}
+  .eqs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px;margin-top:6px}
+  .eq{border:1px solid var(--line);border-radius:11px;padding:11px;background:rgba(255,255,255,.02)}
+  .eq .nm{font-family:var(--ui);font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .eq .f{font-family:var(--disp);font-size:.95rem;color:var(--amber);margin-top:4px}
+  .eq .f small{font-family:var(--body);color:var(--muted);font-size:.7rem;letter-spacing:0}
+  .states{display:grid;grid-template-columns:240px 1fr;gap:16px;align-items:center}
+  @media(max-width:560px){.states{grid-template-columns:1fr}}
+  .pbox{aspect-ratio:1/1;max-width:240px;margin:0 auto;border:2px solid var(--line);border-radius:12px;position:relative;overflow:hidden;background:#060a18}
+  .ptcl{position:absolute;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9fe8ff,#2de2ff);box-shadow:0 0 6px rgba(45,226,255,.6)}
+  .vib .ptcl{animation:vib .5s infinite alternate}
+  @keyframes vib{from{transform:translate(-1px,-1px)}to{transform:translate(1px,1px)}}
+  .cyc{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .cyc .st{flex:1;min-width:120px;border:1px solid var(--line);border-radius:12px;padding:13px;background:rgba(255,255,255,.02);position:relative}
+  .cyc .st .num{font-family:var(--disp);font-size:1.3rem;color:var(--green)}
+  .cyc .st h4{font-family:var(--ui);margin:.2em 0 .2em;font-size:.92rem;color:var(--ink)}
+  .cyc .st p{margin:0;color:var(--muted);font-size:.82rem}
+  .cyc .arr{align-self:center;color:var(--green);font-size:1.3rem}
+  @media(max-width:560px){.cyc .arr{display:none}}
+
+  /* mini decrypt */
+  .mdec{border:1px dashed var(--lilac);border-radius:12px;padding:12px 14px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent);margin-top:14px}
+  .mdec .h{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer}
+  .mdec .h .t{font-family:var(--ui);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--lav);font-size:.82rem}
+  .mdec .h .b{font-family:var(--ui);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:5px 11px;border-radius:7px;cursor:pointer}
+  .mdec .body{max-height:0;overflow:hidden;transition:max-height .5s ease;opacity:0}
+  .mdec.open .body{max-height:600px;opacity:1;transition:max-height .7s ease,opacity .7s ease .1s}
+  .mdec .body .in{padding-top:10px}
+  .mdec p{margin:.4em 0;color:var(--muted);font-size:.88rem}
+  code{font-family:var(--ui);background:#060a18;padding:2px 8px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  /* quiz */
+  .q{margin-bottom:16px}.qtext{font-family:var(--ui);font-weight:600;font-size:1rem;margin-bottom:9px}
+  .qtag{font-family:var(--ui);font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;padding:2px 8px;border-radius:999px;margin-left:8px;font-weight:700}
+  .qtag.bio{background:rgba(70,230,160,.16);color:var(--green)} .qtag.chem{background:rgba(255,122,61,.18);color:var(--chem)} .qtag.phys{background:rgba(45,226,255,.16);color:var(--endo)}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:11px 14px;border-radius:10px;cursor:pointer;font-size:.93rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.88rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.05rem;margin-top:14px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  /* mission drawer */
+  .moverlay{position:fixed;inset:0;z-index:200;display:none}
+  .moverlay.on{display:block}
+  .moverlay .backdrop{position:absolute;inset:0;background:rgba(2,4,10,.66);backdrop-filter:blur(3px);animation:mfade .25s}
+  @keyframes mfade{from{opacity:0}to{opacity:1}}
+  .moverlay .panel{position:absolute;top:0;right:0;height:100%;width:min(940px,94vw);background:var(--bg);border-left:1px solid var(--line);box-shadow:-22px 0 70px rgba(0,0,0,.55);display:flex;flex-direction:column;transform:translateX(100%);animation:slidein .32s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes slidein{to{transform:translateX(0)}}
+  .mbar{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .mbar .mt{font-family:var(--ui);font-weight:700;letter-spacing:.03em;color:var(--ink);font-size:.96rem;flex:1;display:flex;align-items:center;gap:9px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .mbar .mt .chip{flex:0 0 auto;font-family:var(--ui);font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:999px;font-weight:700}
+  .mbar a.mopen{flex:0 0 auto;font-family:var(--ui);text-transform:uppercase;letter-spacing:.08em;font-size:.7rem;font-weight:700;color:var(--lav);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:7px 11px;transition:.15s}
+  .mbar a.mopen:hover{border-color:var(--lilac);box-shadow:0 0 12px rgba(204,136,255,.25)}
+  .mbar .mx{flex:0 0 auto;width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--lav);font-size:1.05rem;cursor:pointer;transition:.15s}
+  .mbar .mx:hover{border-color:var(--exo);color:#ffc0c9}
+  .mframe{flex:1;border:0;width:100%;background:var(--bg)}
+  .mload{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--ui);text-transform:uppercase;letter-spacing:.2em;font-size:.78rem;color:var(--muted)}
+  @media(max-width:640px){.moverlay .panel{width:100vw}}
+  @media (prefers-reduced-motion: reduce){.moverlay .panel{animation:none;transform:none}.moverlay .backdrop{animation:none}}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.72rem;margin-top:34px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}.cursor{display:none}.vib .ptcl{animation:none!important}.slide.on{animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../science.html"><span class="blink"></span> ◄ Science Deck</a>
+    <span>Year 9 // End-of-Year Test</span>
+  </div>
+
+  <!-- BANNER -->
+  <div class="banner">
+    <div class="bL">
+      <div class="kick">Mission Control · Exam Prep</div>
+      <h1>END-OF-YEAR <span class="lav">SCIENCE TEST</span></h1>
+      <p>Pick a science to focus your revision, work through the topics, then sit the mock exam. Your progress is saved automatically.</p>
+    </div>
+    <div class="bR">
+      <div class="cdrow" id="cdrow">
+        <div class="cdcell"><b id="cdD">–</b><span>days</span></div>
+        <div class="cdcell"><b id="cdW">–</b><span>weeks</span></div>
+        <div class="cdcell"><b>6 Jul</b><span>test day</span></div>
+      </div>
+      <div class="cdlabel" id="cdLabel">Counting down to 6 July 2026</div>
+      <div class="bmeter">
+        <div class="top"><span>Revision readiness</span><span><b id="mNum">0</b> / 10</span></div>
+        <div class="meter"><div class="fill" id="mFill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters" id="filters">
+    <button class="ftab on" data-f="all" onclick="setFilter('all')">◎ All topics <span class="c">10</span></button>
+    <button class="ftab" data-f="bio" onclick="setFilter('bio')">🧬 Biology <span class="c">3</span></button>
+    <button class="ftab" data-f="chem" onclick="setFilter('chem')">⚗️ Chemistry <span class="c">3</span></button>
+    <button class="ftab" data-f="phys" onclick="setFilter('phys')">🔭 Physics <span class="c">4</span></button>
+    <button class="ftab" data-f="exam" onclick="setFilter('exam')">📡 Mock Exam</button>
+  </div>
+
+  <!-- CONSOLE -->
+  <div class="console">
+    <aside class="sidebar" id="sidebar">
+      <div class="sbhead"><span>Topic index</span><button class="clearbtn" onclick="clearProgress()">↺ Reset</button></div>
+      <div class="sbgroup bio" data-sci="bio"><h4>🧬 Biology</h4><div id="sb-bio"></div></div>
+      <div class="sbgroup chem" data-sci="chem"><h4>⚗️ Chemistry</h4><div id="sb-chem"></div></div>
+      <div class="sbgroup phys" data-sci="phys"><h4>🔭 Physics</h4><div id="sb-phys"></div></div>
+    </aside>
+
+    <main class="focus">
+      <div class="fhead" id="fhead">
+        <div class="ttl" id="fttl">—</div>
+        <div class="fnav">
+          <button class="navbtn" onclick="step(-1)" aria-label="Previous topic">◄</button>
+          <span class="counter" id="counter">1 / 10</span>
+          <button class="navbtn" onclick="step(1)" aria-label="Next topic">►</button>
+        </div>
+      </div>
+      <div class="fbody">
+        <div id="slides">
+
+          <!-- ===== BIOLOGY ===== -->
+          <div class="slide bio" id="slide-b1">
+            <p class="lead">You explored cells in the <strong>Inside the Cell</strong> mission. The test also wants the three ways materials move in and out of cells.</p>
+            <div class="cards">
+              <div class="fact"><h3>Cell types &amp; parts</h3><p>Animal &amp; plant cells are <strong>eukaryotic</strong> (DNA in a nucleus); bacteria are <strong>prokaryotic</strong> (DNA as a loop, no nucleus). Plant extras: cell wall, chloroplasts, vacuole.</p></div>
+              <div class="fact"><h3>Specialised cells</h3><p>Structure fits function — red blood cells (no nucleus, more O₂), nerve cells (long), sperm (tail + mitochondria), root hair (big surface area).</p></div>
+              <div class="fact"><h3>Diffusion &amp; osmosis</h3><p><strong>Diffusion:</strong> particles spread high→low concentration (passive). <strong>Osmosis:</strong> water moving across a partially permeable membrane, dilute→concentrated.</p></div>
+              <div class="fact"><h3>Active transport</h3><p>Moves particles <strong>low→high</strong> concentration (against the gradient) using energy from <strong>respiration</strong> — e.g. root hair cells absorbing mineral ions.</p></div>
+            </div>
+            <div class="gapnote">⚠ The cells mission doesn't cover transport — revise diffusion, osmosis &amp; active transport from the cards above.</div>
+            <div><a class="mlink ext" href="cells.html">🧬 Inside the Cell mission →</a></div>
+          </div>
+
+          <div class="slide bio" id="slide-b2">
+            <p class="lead">How one cell becomes two — for growth, repair and asexual reproduction.</p>
+            <div class="cyc">
+              <div class="st"><div class="num">1</div><h4>Grow &amp; copy</h4><p>The cell grows and the DNA is replicated — chromosomes are duplicated.</p></div>
+              <div class="arr">→</div>
+              <div class="st"><div class="num">2</div><h4>Mitosis</h4><p>One full set of chromosomes is pulled to each end; the nucleus divides.</p></div>
+              <div class="arr">→</div>
+              <div class="st"><div class="num">3</div><h4>Split</h4><p>Cytoplasm and membrane divide into <strong>two identical daughter cells</strong>.</p></div>
+            </div>
+            <div class="cards" style="margin-top:14px">
+              <div class="fact"><h3>Stem cells</h3><p>Undifferentiated cells. <strong>Adult</strong> (e.g. bone marrow) → limited types; <strong>embryonic</strong> → any type. Fewer ethical issues with adult; embryonic raise ethical questions.</p></div>
+              <div class="fact"><h3>Binary fission</h3><p>How bacteria divide — in ideal conditions, as often as every 20 minutes.</p></div>
+            </div>
+          </div>
+
+          <div class="slide bio" id="slide-b4">
+            <p class="lead">Blood passes through the heart <strong>twice</strong> per circuit. Tap a part, or trace one loop with the buttons.</p>
+            <div class="toggle">
+              <button id="hbAll" class="on" onclick="setCircuit('all')">Whole system</button>
+              <button id="hbLung" onclick="setCircuit('lung')">Lung loop</button>
+              <button id="hbBody" onclick="setCircuit('body')">Body loop</button>
+            </div>
+            <div class="explorer">
+              <div class="screen">
+                <svg viewBox="0 0 460 250" role="img" aria-label="Double circulation diagram">
+                  <g id="loopLung">
+                    <path d="M150,70 C90,52 60,78 70,100" fill="none" stroke="#5aa6ff" stroke-width="9" stroke-linecap="round" class="hot" data-k="pa" onclick="pickH('pa',this)"/>
+                    <path d="M70,130 C60,160 95,182 150,172" fill="none" stroke="#ff3b5c" stroke-width="9" stroke-linecap="round" class="hot" data-k="pv" onclick="pickH('pv',this)"/>
+                  </g>
+                  <g id="loopBody">
+                    <path d="M310,70 C380,52 405,78 395,100" fill="none" stroke="#ff3b5c" stroke-width="9" stroke-linecap="round" class="hot" data-k="aorta" onclick="pickH('aorta',this)"/>
+                    <path d="M395,130 C405,160 375,182 310,172" fill="none" stroke="#5aa6ff" stroke-width="9" stroke-linecap="round" class="hot" data-k="vc" onclick="pickH('vc',this)"/>
+                  </g>
+                  <g class="hot" data-k="lungs" onclick="pickH('lungs',this)" id="orgLung">
+                    <ellipse cx="55" cy="115" rx="33" ry="38" fill="rgba(90,166,255,.16)" stroke="#5aa6ff" stroke-width="2"/>
+                    <text class="lbl b" x="55" y="119" text-anchor="middle" fill="#9cc4ff">LUNGS</text>
+                  </g>
+                  <g class="hot" data-k="body" onclick="pickH('body',this)" id="orgBody">
+                    <ellipse cx="410" cy="115" rx="33" ry="38" fill="rgba(255,59,92,.12)" stroke="#ff3b5c" stroke-width="2"/>
+                    <text class="lbl b" x="410" y="119" text-anchor="middle" fill="#ff90a2">BODY</text>
+                  </g>
+                  <rect x="170" y="52" width="120" height="150" rx="16" fill="rgba(255,255,255,.03)" stroke="var(--line)"/>
+                  <text class="lbl b" x="230" y="44" text-anchor="middle" fill="#eaf2ff">HEART</text>
+                  <rect class="hot" data-k="ra" onclick="pickH('ra',this)" x="178" y="62" width="50" height="60" rx="9" fill="rgba(90,166,255,.18)" stroke="#5aa6ff" stroke-width="2"/>
+                  <text class="lbl" x="203" y="96" text-anchor="middle">R atrium</text>
+                  <rect class="hot" data-k="rv" onclick="pickH('rv',this)" x="178" y="130" width="50" height="64" rx="9" fill="rgba(90,166,255,.28)" stroke="#5aa6ff" stroke-width="2"/>
+                  <text class="lbl" x="203" y="165" text-anchor="middle">R ventricle</text>
+                  <rect class="hot" data-k="la" onclick="pickH('la',this)" x="232" y="62" width="50" height="60" rx="9" fill="rgba(255,59,92,.14)" stroke="#ff3b5c" stroke-width="2"/>
+                  <text class="lbl" x="257" y="96" text-anchor="middle">L atrium</text>
+                  <rect class="hot" data-k="lv" onclick="pickH('lv',this)" x="232" y="130" width="50" height="64" rx="9" fill="rgba(255,59,92,.24)" stroke="#ff3b5c" stroke-width="2"/>
+                  <text class="lbl" x="257" y="165" text-anchor="middle">L ventricle</text>
+                </svg>
+              </div>
+              <div class="infopanel" id="hinfo">
+                <div class="pk">Circulatory system</div>
+                <h3>Tap a part →</h3>
+                <p>Blue = deoxygenated, red = oxygenated blood. Blood, vessels and the heart all appear in the mock exam.</p>
+              </div>
+            </div>
+            <div class="cards" style="margin-top:14px">
+              <div class="fact"><h3>Blood &amp; vessels</h3><p>Blood = red cells (O₂), white cells (defence), platelets (clotting), plasma (transport). <strong>Artery</strong> away from heart (high pressure); <strong>vein</strong> back (valves); <strong>capillary</strong> one cell thick.</p></div>
+              <div class="fact"><h3>Gas exchange</h3><p>In the <strong>alveoli</strong>: O₂ diffuses into the blood, CO₂ out. Big surface area, moist, thin walls, good blood supply.</p></div>
+            </div>
+          </div>
+
+          <!-- ===== CHEMISTRY ===== -->
+          <div class="slide chem" id="slide-c1">
+            <p class="lead">Inside the atom — and how we separate mixtures. Two missions back this up.</p>
+            <div class="cards">
+              <div class="fact"><h3>Sub-atomic particles</h3><p>Proton <strong>+1</strong> (mass 1), neutron <strong>0</strong> (mass 1), electron <strong>−1</strong> (~0). Atomic number = protons. Shells fill <strong>2, 8, 8</strong>.</p></div>
+              <div class="fact"><h3>Isotopes</h3><p>Same element, <strong>different number of neutrons</strong> (so different mass number). Relative atomic mass is the average across all isotopes.</p></div>
+              <div class="fact"><h3>Separating mixtures</h3><p><strong>Filtration</strong> (insoluble solid + liquid), <strong>crystallisation</strong> &amp; <strong>simple distillation</strong> (solute from solvent), <strong>fractional distillation</strong> (liquids), <strong>chromatography</strong>.</p></div>
+              <div class="fact"><h3>Atom models</h3><p>Dalton → plum pudding → alpha scattering → nuclear (Bohr) shells. Alpha scattering showed the atom is mostly empty space with a tiny dense nucleus.</p></div>
+            </div>
+            <div class="gapnote">⚠ Separating mixtures isn't in the atom mission — use the card above.</div>
+            <div><a class="mlink ext" href="atomic-structure.html">⚗️ Inside the Atom →</a><a class="mlink ext" href="balancing-equations.html">⚗️ Balancing Equations →</a></div>
+          </div>
+
+          <div class="slide chem" id="slide-c2">
+            <p class="lead">How the table is built, and the group trends you must be able to explain.</p>
+            <div class="cards">
+              <div class="fact"><h3>Building the table</h3><p>Modern table is ordered by <strong>atomic number</strong> and grouped by electrons in the outer shell. Mendeleev left <strong>gaps</strong> for undiscovered elements.</p></div>
+              <div class="fact"><h3>Group 1 — alkali metals</h3><p>One outer electron. <strong>More</strong> reactive down the group — the outer electron is further out and more shielded, so lost more easily.</p></div>
+              <div class="fact"><h3>Group 7 — halogens</h3><p>Seven outer electrons. <strong>Less</strong> reactive down the group — harder to gain an electron when the outer shell is further from the nucleus.</p></div>
+              <div class="fact"><h3>Group 0 — noble gases</h3><p>Full outer shells, so <strong>inert</strong> (unreactive). Boiling points increase down the group.</p></div>
+            </div>
+            <div><a class="mlink ext" href="periodic-table.html">⚗️ The Periodic Table →</a></div>
+          </div>
+
+          <div class="slide chem" id="slide-c7">
+            <p class="lead">Reactions that give out or take in energy. Tap to compare the two reaction profiles.</p>
+            <div class="explorer">
+              <div>
+                <div class="toggle">
+                  <button id="rpExo" class="on" onclick="setProfile('exo')">Exothermic</button>
+                  <button id="rpEndo" onclick="setProfile('endo')">Endothermic</button>
+                </div>
+                <div class="screen">
+                  <svg viewBox="0 0 300 150" aria-label="Reaction profile">
+                    <line x1="40" y1="120" x2="285" y2="120" stroke="var(--line)"/>
+                    <line x1="40" y1="120" x2="40" y2="15" stroke="var(--line)"/>
+                    <text class="lbl" x="14" y="70" transform="rotate(-90 14,70)" text-anchor="middle">energy</text>
+                    <text class="lbl" x="160" y="138" text-anchor="middle">progress of reaction</text>
+                    <path id="rpPath" d="M60,95 C110,95 120,30 160,30 C200,30 210,80 250,80" fill="none" stroke="var(--chem)" stroke-width="3"/>
+                    <text id="rpR" class="lbl" x="60" y="108" text-anchor="middle">reactants</text>
+                    <text id="rpP" class="lbl" x="255" y="73" text-anchor="middle">products</text>
+                  </svg>
+                </div>
+              </div>
+              <div class="infopanel" id="rpInfo"></div>
+            </div>
+            <div class="mdec" id="dec-c7">
+              <div class="h" onclick="toggleBox('dec-c7')"><span class="t">🔒 GCSE stretch · bond energies</span><button class="b">Decrypt ▸</button></div>
+              <div class="body"><div class="in">
+                <p><strong>Breaking</strong> bonds takes in energy (endothermic); <strong>making</strong> bonds releases energy (exothermic).</p>
+                <p>Overall energy change = <code>energy to break bonds − energy to make bonds</code>. A positive answer = endothermic; negative = exothermic.</p>
+              </div></div>
+            </div>
+            <div><a class="mlink ext" href="endothermic-exothermic.html">⚗️ Energy Reactions →</a></div>
+          </div>
+
+          <!-- ===== PHYSICS ===== -->
+          <div class="slide phys" id="slide-p1">
+            <p class="lead">Energy is stored, transferred and dissipated — never created or destroyed.</p>
+            <div class="cards">
+              <div class="fact"><h3>Energy stores</h3><p>Kinetic, gravitational, elastic, thermal, chemical, nuclear, magnetic, electrostatic.</p></div>
+              <div class="fact"><h3>Transfers &amp; dissipation</h3><p>By heating, waves, electricity and mechanically (forces). Wasted energy is <strong>dissipated</strong> — usually to the thermal store of the surroundings.</p></div>
+            </div>
+            <div class="eqs">
+              <div class="eq"><div class="nm">Kinetic energy</div><div class="f">Eₖ = ½ m v²</div></div>
+              <div class="eq"><div class="nm">Gravitational PE</div><div class="f">Eₚ = m g h</div></div>
+              <div class="eq"><div class="nm">Work done</div><div class="f">W = F d</div></div>
+              <div class="eq"><div class="nm">Power</div><div class="f">P = E / t <small>watts</small></div></div>
+              <div class="eq"><div class="nm">Efficiency</div><div class="f">useful / total <small>×100 = %</small></div></div>
+            </div>
+          </div>
+
+          <div class="slide phys" id="slide-p2">
+            <p class="lead">How quickly energy moves by heating — and how we slow it down.</p>
+            <div class="cards">
+              <div class="fact"><h3>Thermal conductivity</h3><p>How fast a material conducts heat. Test it by timing how fast wax melts on rods of different metals. <strong>Low</strong> conductivity = good <strong>insulator</strong>.</p></div>
+              <div class="fact"><h3>Insulating buildings</h3><p>Reduce heat loss with thick walls, loft &amp; cavity-wall insulation, double glazing, draught excluders, foil behind radiators.</p></div>
+              <div class="fact"><h3>Specific heat capacity</h3><p>The energy to raise <strong>1 kg</strong> of a substance by <strong>1 °C</strong>. Materials with a high value heat up and cool down slowly.</p></div>
+              <div class="fact"><h3>Rate of heat loss depends on</h3><p>The material's conductivity, the temperature difference across it, and its thickness.</p></div>
+            </div>
+            <div class="mdec" id="dec-p2">
+              <div class="h" onclick="toggleBox('dec-p2')"><span class="t">🔒 GCSE stretch · the equation</span><button class="b">Decrypt ▸</button></div>
+              <div class="body"><div class="in">
+                <p><strong>Specific heat capacity:</strong> <code>ΔE = m c Δθ</code> — energy = mass × specific heat capacity × temperature change.</p>
+              </div></div>
+            </div>
+          </div>
+
+          <div class="slide phys" id="slide-p3">
+            <p class="lead">How we power the world. Tap a resource; filter by type to spot the pattern.</p>
+            <div class="toggle">
+              <button id="efAll" class="on" onclick="filterRes('all')">All</button>
+              <button id="efR" onclick="filterRes('r')">Renewable</button>
+              <button id="efN" onclick="filterRes('n')">Non-renewable</button>
+            </div>
+            <div class="explorer">
+              <div><div class="resgrid" id="resGrid"></div></div>
+              <div class="infopanel" id="rinfo">
+                <div class="pk">Energy resource</div>
+                <h3>Tap a resource →</h3>
+                <p>Renewables are replaced as fast as we use them; non-renewables will run out.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="slide phys" id="slide-p6">
+            <p class="lead">Heating gives particles more kinetic energy. Tap a state to see the arrangement.</p>
+            <div class="toggle">
+              <button id="stSolid" class="on" onclick="setState('solid')">Solid</button>
+              <button id="stLiquid" onclick="setState('liquid')">Liquid</button>
+              <button id="stGas" onclick="setState('gas')">Gas</button>
+            </div>
+            <div class="states">
+              <div class="pbox" id="pbox"></div>
+              <div class="infopanel" id="sinfo"></div>
+            </div>
+            <div class="cards" style="margin-top:14px">
+              <div class="fact"><h3>Changing state</h3><p>A physical change — <strong>mass is conserved</strong> because no particles are lost. The flat part of a heating curve is a change of state (latent heat).</p></div>
+              <div class="fact"><h3>Density &amp; gas pressure</h3><p>Density <code>ρ = m / V</code>. Heating a sealed gas raises its pressure — particles hit the walls more often and harder.</p></div>
+            </div>
+            <div class="mdec" id="dec-p6">
+              <div class="h" onclick="toggleBox('dec-p6')"><span class="t">🔒 GCSE stretch · latent heat</span><button class="b">Decrypt ▸</button></div>
+              <div class="body"><div class="in">
+                <p><strong>Latent heat:</strong> <code>E = m L</code> — energy to change the state of mass <em>m</em> with no temperature change.</p>
+                <p><strong>Internal energy</strong> = total kinetic + potential energy of all the particles.</p>
+              </div></div>
+            </div>
+          </div>
+
+        </div><!-- /slides -->
+
+        <!-- MOCK EXAM PANEL -->
+        <div id="examPanel" style="display:none">
+          <p class="lead">Ten questions at a time, drawn from a bank of 40+ across all three sciences. Each is tagged so you know which topic to revisit.</p>
+          <div id="quiz"></div>
+          <div class="score" id="scoreLine"></div>
+          <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+        </div>
+      </div>
+      <div class="dots" id="dots"></div>
+    </main>
+  </div>
+
+  <footer>Stellar Lab · Exam Prep · For Lyra</footer>
+</div>
+
+<!-- MISSION DRAWER -->
+<div class="moverlay" id="moverlay" aria-hidden="true">
+  <div class="backdrop" onclick="closeMission()"></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Mission viewer">
+    <div class="mbar">
+      <div class="mt"><span class="chip" id="mvChip">Mission</span><span id="mvTitle">—</span></div>
+      <a class="mopen" id="mvOpen" href="#" target="_blank" rel="noopener">Full page ↗</a>
+      <button class="mx" onclick="closeMission()" aria-label="Close mission viewer">✕</button>
+    </div>
+    <div style="position:relative;flex:1;display:flex">
+      <div class="mload" id="mvLoad">Loading mission…</div>
+      <iframe class="mframe" id="mvFrame" title="Mission viewer" src="about:blank" onload="document.getElementById('mvLoad').style.display='none'"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* starfield + spores */
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<130;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(255,177,59,'];
+  for(let i=0;i<24;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+function toggleBox(id){const d=document.getElementById(id);d.classList.toggle('open');const b=d.querySelector('.b');b.textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* ---------- countdown ---------- */
+(function(){
+  const test=new Date(2026,6,6); const now=new Date();
+  const days=Math.ceil((test-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
+  const lab=document.getElementById('cdLabel');
+  if(days>0){document.getElementById('cdD').textContent=days;document.getElementById('cdW').textContent=Math.floor(days/7);lab.textContent='Counting down to 6 July 2026';}
+  else if(days===0){document.getElementById('cdD').textContent='0';document.getElementById('cdW').textContent='0';lab.textContent='★ Test day — you’ve got this!';}
+  else{document.getElementById('cdrow').style.display='none';lab.textContent='Test complete · 6 July 2026';}
+})();
+
+/* ---------- topics + progress ---------- */
+const TOPICS=[
+  {id:'b1',sci:'bio',nm:'Cells &amp; transport',sub:'Cells, microscopes, diffusion, osmosis'},
+  {id:'b2',sci:'bio',nm:'Cell division',sub:'Cell cycle, mitosis, stem cells'},
+  {id:'b4',sci:'bio',nm:'Organising animals',sub:'Blood, vessels, heart, gas exchange'},
+  {id:'c1',sci:'chem',nm:'Atomic structure',sub:'Particles, isotopes, separating mixtures'},
+  {id:'c2',sci:'chem',nm:'Periodic table',sub:'Groups 1, 7 &amp; 0 and their trends'},
+  {id:'c7',sci:'chem',nm:'Energy changes',sub:'Exo/endo, reaction profiles'},
+  {id:'p1',sci:'phys',nm:'Energy &amp; resources',sub:'Stores, transfers, work, power'},
+  {id:'p2',sci:'phys',nm:'Transfer by heating',sub:'Conduction, insulation, heat capacity'},
+  {id:'p3',sci:'phys',nm:'Energy resources',sub:'Renewable vs non-renewable'},
+  {id:'p6',sci:'phys',nm:'Molecules &amp; matter',sub:'States, density, latent heat'}
+];
+const SCI_NAME={bio:'Biology',chem:'Chemistry',phys:'Physics'};
+let progress={};
+function loadProg(){try{progress=JSON.parse(localStorage.getItem('stellar_eoy_2026')||'{}')||{};}catch(e){progress={};}}
+function saveProg(){try{localStorage.setItem('stellar_eoy_2026',JSON.stringify(progress));}catch(e){}}
+function countDone(){return TOPICS.filter(t=>progress[t.id]).length;}
+function updateMeter(){const n=countDone();document.getElementById('mNum').textContent=n;document.getElementById('mFill').style.width=(n/TOPICS.length*100)+'%';}
+function buildSidebar(){
+  ['bio','chem','phys'].forEach(sci=>{
+    const box=document.getElementById('sb-'+sci);box.innerHTML='';
+    TOPICS.filter(t=>t.sci===sci).forEach(t=>{
+      const row=document.createElement('div');row.className='srow';row.dataset.id=t.id;
+      const tick=document.createElement('button');tick.className='tick'+(progress[t.id]?' on':'');tick.innerHTML=progress[t.id]?'✓':'';
+      tick.setAttribute('aria-label','Mark revised');
+      tick.onclick=(e)=>{e.stopPropagation();progress[t.id]=!progress[t.id];tick.classList.toggle('on',progress[t.id]);tick.innerHTML=progress[t.id]?'✓':'';saveProg();updateMeter();};
+      const nm=document.createElement('div');nm.className='nm';nm.innerHTML=t.nm+'<small>'+t.sub+'</small>';
+      row.append(tick,nm);
+      row.onclick=()=>openTopic(t.id);
+      box.appendChild(row);
+    });
+  });
+}
+function clearProgress(){progress={};saveProg();buildSidebar();updateMeter();}
+
+/* ---------- filter + carousel ---------- */
+let filter='all', order=[], idx=0;
+function computeOrder(){order=(filter==='all'?TOPICS:TOPICS.filter(t=>t.sci===filter)).map(t=>t.id);}
+function setFilter(f){
+  filter=f;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
+  const exam=(f==='exam');
+  document.getElementById('examPanel').style.display=exam?'block':'none';
+  document.getElementById('slides').style.display=exam?'none':'block';
+  document.getElementById('dots').style.display=exam?'none':'flex';
+  document.getElementById('sidebar').style.display=exam?'none':'block';
+  document.querySelector('.console').style.gridTemplateColumns=exam?'1fr':'';
+  document.querySelector('.fnav').style.visibility=exam?'hidden':'visible';
+  // show/hide sidebar groups by filter
+  document.querySelectorAll('.sbgroup').forEach(g=>{g.style.display=(f==='all'||f==='exam'||g.dataset.sci===f)?'':'none';});
+  if(exam){document.getElementById('fttl').innerHTML='<span class="chip" style="background:rgba(255,177,59,.18);color:var(--amber)">Mock Exam</span> Sit the test';if(!quizBuilt){nextSet();buildQuiz();quizBuilt=true;}return;}
+  computeOrder();idx=0;render();
+}
+function render(){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('on'));
+  const id=order[idx];const t=TOPICS.find(x=>x.id===id);
+  const el=document.getElementById('slide-'+id);if(el)el.classList.add('on');
+  document.getElementById('fttl').innerHTML='<span class="chip '+t.sci+'">'+SCI_NAME[t.sci]+'</span>'+t.nm;
+  document.getElementById('counter').textContent=(idx+1)+' / '+order.length;
+  // dots
+  const dots=document.getElementById('dots');dots.innerHTML='';
+  order.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===idx?' on':'');d.onclick=()=>{idx=i;render();};dots.appendChild(d);});
+  // sidebar active
+  document.querySelectorAll('.srow').forEach(r=>r.classList.toggle('active',r.dataset.id===id));
+}
+function step(dir){if(!order.length)return;idx=(idx+dir+order.length)%order.length;render();}
+function openTopic(id){
+  const t=TOPICS.find(x=>x.id===id);if(!t)return;
+  if(filter!=='all'&&filter!==t.sci)setFilter(t.sci); else if(filter==='exam')setFilter('all');
+  computeOrder();idx=Math.max(0,order.indexOf(id));render();
+  if(window.matchMedia('(max-width:860px)').matches)document.querySelector('.focus').scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.addEventListener('keydown',e=>{if(missionOpen())return;if(filter==='exam')return;if(e.key==='ArrowRight')step(1);if(e.key==='ArrowLeft')step(-1);});
+
+/* ---------- mission drawer ---------- */
+function missionOpen(){const o=document.getElementById('moverlay');return o&&o.classList.contains('on');}
+function openMission(url,title,sci){
+  const ov=document.getElementById('moverlay');
+  document.getElementById('mvLoad').style.display='';
+  document.getElementById('mvFrame').src=url;
+  document.getElementById('mvTitle').textContent=title;
+  document.getElementById('mvOpen').href=url;
+  const chip=document.getElementById('mvChip');chip.textContent=sci?SCI_NAME[sci]:'Mission';chip.className='chip '+(sci||'');
+  ov.classList.add('on');ov.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+}
+function closeMission(){const ov=document.getElementById('moverlay');ov.classList.remove('on');ov.setAttribute('aria-hidden','true');document.getElementById('mvFrame').src='about:blank';document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&missionOpen())closeMission();});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a.mlink');if(!a)return;
+  const href=a.getAttribute('href');
+  if(!href||/^(https?:|#|mailto:)/.test(href))return;   /* only intercept internal mission pages */
+  e.preventDefault();
+  const slide=a.closest('.slide');
+  const sci=slide?(slide.classList.contains('bio')?'bio':slide.classList.contains('chem')?'chem':slide.classList.contains('phys')?'phys':''):'';
+  openMission(href,a.textContent.replace(/[→↗🧬⚗️🔭🔬]/g,'').trim(),sci);
+});
+
+/* ---------- heart ---------- */
+const HINFO={
+  lungs:{t:'Lungs',d:'Gas exchange — oxygen diffuses into the blood, carbon dioxide out, across the alveoli.',tag:'gas'},
+  body:{t:'Body tissues',d:'Oxygenated blood delivers oxygen and glucose for respiration; returns deoxygenated.',tag:'oxy'},
+  ra:{t:'Right atrium',d:'Receives deoxygenated blood from the body via the vena cava.',tag:'deoxy'},
+  rv:{t:'Right ventricle',d:'Pumps deoxygenated blood to the lungs via the pulmonary artery.',tag:'deoxy'},
+  la:{t:'Left atrium',d:'Receives oxygenated blood from the lungs via the pulmonary vein.',tag:'oxy'},
+  lv:{t:'Left ventricle',d:'Pumps oxygenated blood around the whole body — thickest, most muscular wall.',tag:'oxy'},
+  pa:{t:'Pulmonary artery',d:'Carries deoxygenated blood from the right ventricle to the lungs.',tag:'deoxy'},
+  pv:{t:'Pulmonary vein',d:'Carries oxygenated blood from the lungs to the left atrium.',tag:'oxy'},
+  aorta:{t:'Aorta',d:'Main artery — oxygenated blood from the left ventricle to the body at high pressure.',tag:'oxy'},
+  vc:{t:'Vena cava',d:'Main vein — returns deoxygenated blood from the body to the right atrium.',tag:'deoxy'}
+};
+function pickH(key,el){
+  document.querySelectorAll('#slide-b4 .hot').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');
+  const i=HINFO[key];const pill=i.tag==='oxy'?'<span class="pill oxy">Oxygenated</span>':i.tag==='deoxy'?'<span class="pill deoxy">Deoxygenated</span>':'<span class="pill oxy">Gas exchange</span>';
+  document.getElementById('hinfo').innerHTML='<div class="pk">Circulatory system</div><h3>'+i.t+'</h3><p>'+i.d+'</p><div>'+pill+'</div>';
+}
+function setCircuit(which){
+  document.getElementById('hbAll').classList.toggle('on',which==='all');
+  document.getElementById('hbLung').classList.toggle('on',which==='lung');
+  document.getElementById('hbBody').classList.toggle('on',which==='body');
+  const dim='0.18',full='1';
+  document.getElementById('loopLung').style.opacity=(which==='body')?dim:full;document.getElementById('orgLung').style.opacity=(which==='body')?dim:full;
+  document.getElementById('loopBody').style.opacity=(which==='lung')?dim:full;document.getElementById('orgBody').style.opacity=(which==='lung')?dim:full;
+  const h=document.getElementById('hinfo');
+  if(which==='lung')h.innerHTML='<div class="pk">Lung loop (pulmonary)</div><h3>Heart → lungs → heart</h3><p>The right ventricle pumps deoxygenated blood to the lungs (pulmonary artery); it returns oxygenated to the left atrium (pulmonary vein).</p>';
+  else if(which==='body')h.innerHTML='<div class="pk">Body loop (systemic)</div><h3>Heart → body → heart</h3><p>The left ventricle pumps oxygenated blood around the body (aorta); it returns deoxygenated to the right atrium (vena cava).</p>';
+  else h.innerHTML='<div class="pk">Circulatory system</div><h3>Double circulation</h3><p>Blood passes through the heart twice per circuit — once for the lungs, once for the body. Tap any part.</p>';
+}
+
+/* ---------- reaction profile ---------- */
+function setProfile(t){
+  document.getElementById('rpExo').classList.toggle('on',t==='exo');
+  document.getElementById('rpEndo').classList.toggle('on',t==='endo');
+  const path=document.getElementById('rpPath');
+  if(t==='exo'){path.setAttribute('d','M60,95 C110,95 120,30 160,30 C200,30 210,80 250,80');document.getElementById('rpP').setAttribute('y','73');
+    document.getElementById('rpInfo').innerHTML='<div class="pk">Exothermic</div><h3>Energy released</h3><p>Products end <strong>lower</strong> than reactants — energy is given out to the surroundings, so the temperature rises. Examples: combustion, neutralisation, hand warmers.</p>';}
+  else{path.setAttribute('d','M60,95 C110,95 120,30 160,30 C200,30 210,55 250,55');document.getElementById('rpP').setAttribute('y','48');
+    document.getElementById('rpInfo').innerHTML='<div class="pk">Endothermic</div><h3>Energy absorbed</h3><p>Products end <strong>higher</strong> than reactants — energy is taken in from the surroundings, so the temperature falls. Examples: thermal decomposition, sports injury packs.</p>';}
+}
+
+/* ---------- energy resources ---------- */
+const RES=[
+  {id:'coal',nm:'Coal',ic:'🪨',type:'n',use:'Generating electricity',src:'Extracted from underground',adv:['Reliable, meets demand','Relatively cheap to use'],dis:['Will run out','Releases CO₂ &amp; acid rain']},
+  {id:'oil',nm:'Oil',ic:'🛢️',type:'n',use:'Electricity, transport, heating',src:'Extracted from underground',adv:['Reliable, controllable'],dis:['Will run out','CO₂; oil spills harm life']},
+  {id:'gas',nm:'Natural gas',ic:'🔥',type:'n',use:'Electricity, heating',src:'Extracted from underground',adv:['Reliable; flexible supply'],dis:['Will run out','Releases CO₂']},
+  {id:'nuclear',nm:'Nuclear',ic:'☢️',type:'n',use:'Generating electricity',src:'Uranium / plutonium',adv:['No greenhouse gases','Huge energy from tiny mass'],dis:['Dangerous radioactive waste','Costly to build &amp; shut down']},
+  {id:'solar',nm:'Solar',ic:'☀️',type:'r',use:'Electricity &amp; heating',src:'Sunlight',adv:['No pollution','Good for remote places'],dis:['Depends on weather','Not for large-scale demand']},
+  {id:'wind',nm:'Wind',ic:'💨',type:'r',use:'Generating electricity',src:'Turbines turned by wind',adv:['No pollution; no fuel cost'],dis:['Depends on weather','Needs land; noise']},
+  {id:'hydro',nm:'Hydro',ic:'🌊',type:'r',use:'Generating electricity',src:'Flowing water turns generators',adv:['Reliable, controllable','Low running cost'],dis:['Expensive to build','Floods land behind dam']},
+  {id:'tidal',nm:'Tidal',ic:'🌗',type:'r',use:'Generating electricity',src:'Tidal barrages turned by tides',adv:['Predictable; large output'],dis:['Harms marine habitats','Supply varies with tide']},
+  {id:'wave',nm:'Wave',ic:'〰️',type:'r',use:'Generating electricity',src:'Floating generators on waves',adv:['No pollution; low running cost'],dis:['Depends on weather','Not for large-scale demand']},
+  {id:'geo',nm:'Geothermal',ic:'🌋',type:'r',use:'Electricity &amp; heating',src:'Heat from underground rock',adv:['No pollution; reliable'],dis:['Only a few locations','Expensive to set up']},
+  {id:'bio',nm:'Biofuel',ic:'🌱',type:'r',use:'Electricity, transport',src:'Living / recent organic matter',adv:['Can be carbon neutral','Reliable']},
+];
+function buildRes(){const g=document.getElementById('resGrid');g.innerHTML='';RES.forEach(r=>{const b=document.createElement('button');b.className='resbtn '+r.type;b.dataset.id=r.id;b.innerHTML='<span class="ic">'+r.ic+'</span>'+r.nm;b.onclick=()=>pickRes(r,b);g.appendChild(b);});}
+function pickRes(r,b){
+  document.querySelectorAll('#resGrid .resbtn').forEach(o=>o.classList.remove('sel'));b.classList.add('sel');
+  const pill=r.type==='r'?'<span class="pill renew">Renewable</span>':'<span class="pill nonrenew">Non-renewable</span>';
+  document.getElementById('rinfo').innerHTML='<div class="pk">'+r.use+'</div><h3>'+r.ic+' '+r.nm+'</h3>'+pill+
+    '<p style="margin-top:8px"><strong>Source:</strong> '+r.src+'</p>'+
+    '<p style="margin-top:6px;color:var(--green)"><strong>Advantages</strong></p><ul>'+r.adv.map(a=>'<li>'+a+'</li>').join('')+'</ul>'+
+    (r.dis?'<p style="margin-top:6px;color:var(--chem)"><strong>Disadvantages</strong></p><ul>'+r.dis.map(a=>'<li>'+a+'</li>').join('')+'</ul>':'');
+}
+function filterRes(f){
+  document.getElementById('efAll').classList.toggle('on',f==='all');document.getElementById('efR').classList.toggle('on',f==='r');document.getElementById('efN').classList.toggle('on',f==='n');
+  document.querySelectorAll('#resGrid .resbtn').forEach(b=>{const t=b.classList.contains('r')?'r':'n';b.classList.toggle('dim',f!=='all'&&t!==f);});
+}
+
+/* ---------- states of matter ---------- */
+const STATES={
+  solid:{t:'Solid',d:'Particles packed in a fixed, regular arrangement held by strong forces. They only vibrate. Fixed shape and volume; high density.',rows:5,jitter:false,fixed:true},
+  liquid:{t:'Liquid',d:'Particles close together but no fixed arrangement; they move around each other. Fixed volume, no fixed shape — flows.',rows:4,jitter:true,fixed:false},
+  gas:{t:'Gas',d:'Particles far apart, almost no forces, moving randomly at high speed. No fixed shape or volume; low density; fills the container.',rows:3,jitter:true,fixed:false}
+};
+function setState(s){
+  document.getElementById('stSolid').classList.toggle('on',s==='solid');document.getElementById('stLiquid').classList.toggle('on',s==='liquid');document.getElementById('stGas').classList.toggle('on',s==='gas');
+  const box=document.getElementById('pbox');box.innerHTML='';box.classList.toggle('vib',STATES[s].jitter&&!reduce);const cfg=STATES[s];
+  if(s==='gas'){for(let i=0;i<10;i++){const p=document.createElement('div');p.className='ptcl';p.style.left=(8+Math.random()*80)+'%';p.style.top=(8+Math.random()*80)+'%';box.appendChild(p);}}
+  else{const n=cfg.rows,gap=80/(n-1);for(let r=0;r<n;r++)for(let c=0;c<n;c++){const p=document.createElement('div');p.className='ptcl';const off=cfg.fixed?0:(Math.random()*7-3.5);p.style.left=(10+c*gap+off)+'%';p.style.top=(10+r*gap+off)+'%';box.appendChild(p);}}
+  document.getElementById('sinfo').innerHTML='<div class="pk">State of matter</div><h3>'+cfg.t+'</h3><p>'+cfg.d+'</p>';
+}
+
+/* ---------- quiz ---------- */
+const questionBank=[
+  {q:"Where is the DNA found in animal and plant cells?",opts:["In the nucleus","In the cytoplasm","In the cell membrane"],correct:0,why:"Eukaryotic cells keep their DNA inside the nucleus.",tag:"bio"},
+  {q:"What type of cell is a bacterium?",opts:["Eukaryotic","Prokaryotic","Plant"],correct:1,why:"Bacteria are prokaryotic — no nucleus, DNA is a single free loop.",tag:"bio"},
+  {q:"Diffusion is the net movement of particles from an area of...",opts:["low to high concentration","high to low concentration","equal concentration"],correct:1,why:"Diffusion moves particles down the gradient, high to low — passive.",tag:"bio"},
+  {q:"Osmosis is the movement of which substance across a partially permeable membrane?",opts:["Water","Oxygen","Mineral ions"],correct:0,why:"Osmosis is the diffusion of water, dilute to concentrated.",tag:"bio"},
+  {q:"Active transport moves particles against the gradient using energy from...",opts:["sunlight","respiration","diffusion"],correct:1,why:"Active transport needs energy released by respiration.",tag:"bio"},
+  {q:"Mitosis produces...",opts:["two genetically identical daughter cells","four different cells","sex cells (gametes)"],correct:0,why:"Mitosis makes two identical daughter cells for growth and repair.",tag:"bio"},
+  {q:"An undifferentiated cell that can become specialised is a...",opts:["nerve cell","stem cell","daughter cell"],correct:1,why:"Stem cells are undifferentiated and can develop into specialised cells.",tag:"bio"},
+  {q:"Embryonic stem cells can differentiate into...",opts:["any type of cell","only blood cells","only nerve cells"],correct:0,why:"Embryonic stem cells can form any specialised cell type.",tag:"bio"},
+  {q:"Cell division in bacteria is called...",opts:["mitosis","binary fission","meiosis"],correct:1,why:"Bacteria reproduce by binary fission.",tag:"bio"},
+  {q:"Which blood vessel carries blood away from the heart at high pressure?",opts:["Artery","Vein","Capillary"],correct:0,why:"Arteries carry blood away from the heart with thick, muscular walls.",tag:"bio"},
+  {q:"Which vessel is just one cell thick for efficient exchange?",opts:["Artery","Vein","Capillary"],correct:2,why:"Capillaries are one cell thick — a short diffusion distance.",tag:"bio"},
+  {q:"The left ventricle pumps blood to...",opts:["the lungs","the whole body","the right atrium"],correct:1,why:"The left ventricle pumps oxygenated blood around the whole body.",tag:"bio"},
+  {q:"Gas exchange in the lungs happens in the...",opts:["bronchi","alveoli","trachea"],correct:1,why:"Oxygen and CO₂ are exchanged across the alveoli (air sacs).",tag:"bio"},
+  {q:"Red blood cells have no nucleus so they can...",opts:["carry more oxygen","divide faster","fight disease"],correct:0,why:"No nucleus leaves more room to carry oxygen.",tag:"bio"},
+  {q:"What is the relative charge of a proton?",opts:["+1","−1","0"],correct:0,why:"Protons are +1, electrons −1, neutrons 0.",tag:"chem"},
+  {q:"Which sub-atomic particle has no charge?",opts:["Proton","Neutron","Electron"],correct:1,why:"The neutron is neutral (charge 0).",tag:"chem"},
+  {q:"The atomic number of an element tells you the number of...",opts:["neutrons","protons","neutrons and electrons"],correct:1,why:"Atomic number = number of protons.",tag:"chem"},
+  {q:"In the alpha scattering experiment, most alpha particles...",opts:["bounced straight back","passed straight through","were absorbed"],correct:1,why:"Most passed through — the atom is mostly empty space with a tiny nucleus.",tag:"chem"},
+  {q:"Atoms of the same element with different numbers of neutrons are called...",opts:["ions","isotopes","compounds"],correct:1,why:"Isotopes have the same protons but different neutrons.",tag:"chem"},
+  {q:"Which technique separates an insoluble solid from a liquid?",opts:["Filtration","Chromatography","Distillation"],correct:0,why:"Filtration separates an insoluble solid from a liquid.",tag:"chem"},
+  {q:"The first electron shell can hold a maximum of how many electrons?",opts:["2","8","18"],correct:0,why:"The first shell holds up to 2; later shells up to 8 (simple model).",tag:"chem"},
+  {q:"The modern periodic table is arranged in order of...",opts:["atomic mass","atomic number","reactivity"],correct:1,why:"Modern tables are ordered by atomic number.",tag:"chem"},
+  {q:"Group 1 elements are known as the...",opts:["halogens","alkali metals","noble gases"],correct:1,why:"Group 1 are the alkali metals.",tag:"chem"},
+  {q:"Reactivity of the Group 1 metals down the group...",opts:["increases","decreases","stays the same"],correct:0,why:"It increases — the outer electron is lost more easily.",tag:"chem"},
+  {q:"Reactivity of the Group 7 halogens down the group...",opts:["increases","decreases","stays the same"],correct:1,why:"It decreases — it gets harder to gain an electron.",tag:"chem"},
+  {q:"Group 0 noble gases are unreactive because they have...",opts:["full outer shells","one outer electron","no electrons"],correct:0,why:"Full outer shells mean they don't gain or lose electrons.",tag:"chem"},
+  {q:"In an exothermic reaction the temperature of the surroundings...",opts:["increases","decreases","stays the same"],correct:0,why:"Exothermic reactions give out energy, so surroundings warm up.",tag:"chem"},
+  {q:"In terms of bonds, breaking bonds is...",opts:["endothermic","exothermic","neither"],correct:0,why:"Breaking bonds takes in energy; making bonds releases it.",tag:"chem"},
+  {q:"A moving object has energy in its... store.",opts:["kinetic","gravitational potential","thermal"],correct:0,why:"Movement = kinetic energy store.",tag:"phys"},
+  {q:"An object held high above the ground has energy in its... store.",opts:["elastic","gravitational potential","chemical"],correct:1,why:"Height above the ground = gravitational potential energy.",tag:"phys"},
+  {q:"Wasted (dissipated) energy usually ends up in the...",opts:["kinetic store","thermal store of the surroundings","chemical store"],correct:1,why:"Dissipated energy normally goes to the thermal store of the surroundings.",tag:"phys"},
+  {q:"The unit of power is the...",opts:["joule","watt","newton"],correct:1,why:"Power is in watts; 1 watt = 1 joule per second.",tag:"phys"},
+  {q:"Efficiency = useful energy transfer ÷ ...",opts:["total energy input","time","power"],correct:0,why:"Efficiency = useful output ÷ total input (×100 for %).",tag:"phys"},
+  {q:"Which of these is a renewable energy resource?",opts:["Coal","Natural gas","Wind"],correct:2,why:"Wind is renewable; coal and gas are non-renewable fossil fuels.",tag:"phys"},
+  {q:"Which resource produces no greenhouse gases but creates radioactive waste?",opts:["Coal","Nuclear","Biofuel"],correct:1,why:"Nuclear makes no greenhouse gases but produces radioactive waste.",tag:"phys"},
+  {q:"A disadvantage of solar power is that it...",opts:["produces lots of CO₂","depends on the weather","will run out"],correct:1,why:"Solar depends on weather/daylight.",tag:"phys"},
+  {q:"A material with LOW thermal conductivity is good for...",opts:["conducting heat quickly","insulating (reducing heat loss)","generating electricity"],correct:1,why:"Low conductivity = slow heat transfer = a good insulator.",tag:"phys"},
+  {q:"Specific heat capacity is the energy needed to raise...",opts:["1 kg of a substance by 1 °C","1 litre of water by 10 °C","any mass by 100 °C"],correct:0,why:"It's the energy to raise 1 kg of a substance by 1 °C.",tag:"phys"},
+  {q:"In a gas, the particles are...",opts:["fixed in a regular pattern","spread out, moving randomly at high speed","packed in neat rows"],correct:1,why:"Gas particles are far apart and move randomly at high speed.",tag:"phys"},
+  {q:"When a substance changes state, its mass...",opts:["increases","stays the same","decreases"],correct:1,why:"No particles are gained or lost, so mass is conserved.",tag:"phys"},
+  {q:"Heating a sealed gas increases its pressure because the particles...",opts:["get bigger","hit the walls more often and harder","disappear"],correct:1,why:"Faster particles collide with the walls more often and harder.",tag:"phys"},
+  {q:"On a heating graph, a flat (horizontal) section shows the substance is...",opts:["heating up","changing state","cooling down"],correct:1,why:"During a change of state the temperature stays constant.",tag:"phys"},
+  {q:"Density is calculated as...",opts:["mass ÷ volume","volume ÷ mass","mass × volume"],correct:0,why:"Density ρ = mass ÷ volume.",tag:"phys"}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0,quizBuilt=false;const PER=10;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<PER)pool=shuffle(questionBank.slice());questions=pool.splice(0,PER);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const tag=document.createElement('span');tag.className='qtag '+item.tag;tag.textContent=item.tag;qt.appendChild(tag);
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){const pct=score/questions.length;document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(pct===1?' — PERFECT 🎉':pct>=0.7?' — STRONG 👏':pct>=0.5?' — GETTING THERE 💪':' — REVISIT THOSE TOPICS 🔁');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.getElementById('examPanel').scrollIntoView({behavior:'smooth',block:'start'});}
+
+/* ---------- init ---------- */
+loadProg();buildSidebar();updateMeter();
+buildRes();pickRes(RES[4],document.querySelector('#resGrid .resbtn[data-id="solar"]'));
+setState('solid');setProfile('exo');setCircuit('all');
+setFilter('all');
+</script>
+</body>
+</html>
