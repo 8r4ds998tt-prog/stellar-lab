@@ -77,6 +77,9 @@
   .chip.test{background:rgba(255,177,59,.18);color:var(--amber)}
   a.lesson.test{border-left-color:var(--amber)}
   a.lesson.test:hover{border-color:var(--amber);box-shadow:0 14px 36px rgba(255,177,59,.2)}
+  .chip.phys{background:rgba(45,226,255,.16);color:var(--phys)}
+  a.lesson.phys{border-left-color:var(--phys)}
+  a.lesson.phys:hover{border-color:var(--phys);box-shadow:0 14px 36px rgba(45,226,255,.2)}
   /* reference library */
   .reflib{background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:18px;opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
   .reflib.in{opacity:1;transform:none}
@@ -122,7 +125,7 @@
   <div class="strands">
     <div class="strand bio" data-sci="bio" role="button" tabindex="0" onclick="sliceStrand('bio')"><div class="ic">🧬</div><h2>Biology</h2><div class="count">4 missions ready</div></div>
     <div class="strand chem" data-sci="chem" role="button" tabindex="0" onclick="sliceStrand('chem')"><div class="ic">⚗️</div><h2>Chemistry</h2><div class="count">4 missions ready</div></div>
-    <div class="strand phys" data-sci="phys" role="button" tabindex="0" onclick="sliceStrand('phys')"><div class="ic">🔭</div><h2>Physics</h2><div class="count">Coming soon</div></div>
+    <div class="strand phys" data-sci="phys" role="button" tabindex="0" onclick="sliceStrand('phys')"><div class="ic">🔭</div><h2>Physics</h2><div class="count">3 missions ready</div></div>
     <div class="strand test" data-sci="test" role="button" tabindex="0" onclick="sliceStrand('test')"><div class="ic">📡</div><h2>Tests</h2><div class="count">1 test ready</div></div>
   </div>
   <div class="slicehint" id="sliceHint"><span class="lab"></span><button onclick="showAllStrands()">✕ Show all</button></div>
@@ -193,8 +196,27 @@
     </a>
   </div>
 
-  <div class="section-title mg hide" data-sci="phys"><span class="bar" style="background:var(--phys);box-shadow:0 0 12px var(--phys)"></span> Physics · Missions</div>
-  <div class="mg hide" data-sci="phys" style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;color:var(--muted);font-family:var(--ui);letter-spacing:.03em">🔭 Physics missions are coming soon — waves, energy stores and electric circuits are next on the build list.</div>
+  <div class="section-title mg" data-sci="phys"><span class="bar" style="background:var(--phys);box-shadow:0 0 12px var(--phys)"></span> Physics · Missions</div>
+  <div class="lessons mg" data-sci="phys">
+    <a class="lesson phys" href="lessons/waves.html">
+      <div class="tagrow"><span class="chip phys">Waves</span><span class="chip ready">● Ready</span></div>
+      <h3>Riding the Wave</h3>
+      <p>Transverse vs longitudinal, amplitude, wavelength and v = f × λ — build a live wave with sliders, plus sound vs light.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson phys" href="lessons/energy-stores.html">
+      <div class="tagrow"><span class="chip phys">Energy stores</span><span class="chip ready">● Ready</span></div>
+      <h3>Energy Flow</h3>
+      <p>Stores, pathways, conservation and dissipation — trace the energy through everyday machines and see what's wasted.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson phys" href="lessons/electric-circuits.html">
+      <div class="tagrow"><span class="chip phys">Electric circuits</span><span class="chip ready">● Ready</span></div>
+      <h3>Power Up</h3>
+      <p>Current, voltage and resistance — a live series/parallel circuit simulator with sliders, a switch and glowing bulbs.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+  </div>
 
   <div class="section-title"><span class="bar"></span> Reference Library</div>
   <div class="reflib">
@@ -247,7 +269,7 @@ let activeStrand=null;
 function applySlice(){
   document.querySelectorAll('.mg').forEach(el=>{
     const s=el.dataset.sci;
-    const show=activeStrand?(s===activeStrand):(s!=='phys');
+    const show=activeStrand?(s===activeStrand):true;
     el.classList.toggle('hide',!show);
   });
   document.querySelectorAll('.strand').forEach(c=>c.classList.toggle('active',!!activeStrand&&c.dataset.sci===activeStrand));

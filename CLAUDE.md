@@ -40,10 +40,13 @@ stellar-lab/              ← THE WEBSITE = the Git repo root (this folder)
 **Missions built (Year 9 Science):**
 - Chemistry: `endothermic-exothermic.html`, `atomic-structure.html`, `balancing-equations.html`, `periodic-table.html`
 - Biology: `cells.html`, `ecology.html`, `variation.html`, `evolution-inheritance.html` (Biology strand complete)
+- Physics: `waves.html`, `energy-stores.html`, `electric-circuits.html` (Physics strand complete & active on the deck)
+
+All three Science strands are now complete for Year 9.
 
 **Backlog (build in this order unless the user picks):**
-1. Physics — **Waves (sound/light)** (next) → Energy stores & pathways → Electric circuits (first Physics mission: activate the strand on `science.html`)
-2. Later: build the **English** and **Maths** decks (new deck page + unlock card on `index.html`), then their missions.
+1. Build the **English** deck (new `english.html` deck page + unlock card on `index.html`), then Year 9 English missions (DNA, Media, Non-fiction, Creative Writing, THUG).
+2. Build the **Maths** deck (new `maths.html` deck page + unlock card on `index.html`), then Year 9 Maths topics.
 
 Curriculum source of truth: `References/` and https://www.swracademy.org/page/?title=Subject+Curriculum&pid=29 (Science is AQA-aligned; Maths uses White Rose/Edexcel).
 

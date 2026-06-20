@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electric Circuits // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff;
+    --acc:#2de2ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(45,226,255,.5),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--acc);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--acc);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--acc)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+
+  /* circuit lab */
+  .toggle{display:inline-flex;background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:999px;padding:5px;gap:6px;margin-bottom:16px}
+  .toggle button{font-family:var(--ui);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.84rem;border:0;background:transparent;color:var(--muted);padding:10px 18px;border-radius:999px;cursor:pointer;transition:.2s}
+  .toggle button.on{background:var(--acc);color:#042029;box-shadow:0 0 20px rgba(45,226,255,.4)}
+  .lab{display:grid;grid-template-columns:1.25fr .85fr;gap:18px;align-items:start}
+  @media(max-width:720px){.lab{grid-template-columns:1fr}}
+  .screen{background:radial-gradient(120% 120% at 50% 0,rgba(45,226,255,.06),transparent),#060a18;border:1px solid var(--line);border-radius:14px;padding:10px}
+  svg{width:100%;height:auto;display:block}
+  .wire{fill:none;stroke:#7fb6d8;stroke-width:4;stroke-linejoin:round;stroke-linecap:round}
+  .sym{fill:none;stroke:#cfe6f5;stroke-width:4}
+  .lbl{font-family:var(--ui);font-size:13px;fill:#cdd6f5}
+  .lblA{font-family:var(--ui);font-size:13px;fill:#ffb13b}
+  .controls{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.03)}
+  .ctrl{margin-bottom:14px}
+  .ctrl label{font-family:var(--ui);font-size:.84rem;letter-spacing:.04em;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:5px}
+  .ctrl label b{color:var(--acc)}
+  input[type=range]{width:100%;accent-color:var(--acc);cursor:pointer}
+  .swbtn{font-family:var(--ui);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.82rem;width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;cursor:pointer;background:rgba(70,230,160,.14);color:var(--green)}
+  .swbtn.open{background:rgba(255,59,92,.14);color:var(--exo)}
+  .readouts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .ro{border:1px solid var(--line);border-radius:11px;padding:10px;background:rgba(255,255,255,.03);text-align:center}
+  .ro .k{font-family:var(--ui);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .ro .v{font-family:var(--disp);font-size:1.05rem;color:#fff;margin-top:2px}
+  .ro.amp .v{color:var(--amber)} .ro.bright .v{color:var(--acc)}
+  .msg{font-family:var(--ui);font-size:.86rem;color:var(--muted);margin-top:12px;min-height:2.4em}
+  .msg b{color:var(--acc)}
+
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard h4{font-family:var(--ui);margin:.1em 0 .15em;font-size:1.02rem;color:var(--acc)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+  .symrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .symcell{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--line);border-radius:11px;padding:10px 8px;background:rgba(255,255,255,.03);width:88px}
+  .symcell span{font-family:var(--ui);font-size:.72rem;color:var(--muted);text-align:center}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1500px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../science.html"><span class="blink"></span> ◄ Science Deck</a>
+    <span>Phys-03 // Circuits</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Science Station · Year 9</div>
+    <h1>POWER<br><span class="lav">UP</span></h1>
+    <p>Electricity only flows around a complete loop. Build a circuit, flick the switch, and see how voltage and resistance control the current — and how bright the bulbs glow.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 BASICS -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>Current, voltage &amp; resistance</h2>
+    <p class="lead">A circuit needs a complete <b>loop</b> and an energy source (a cell or battery). Three quantities describe what's happening inside it.</p>
+    <div class="cards">
+      <div class="fact"><h3>Current (I)</h3><p>The flow of electric charge, measured in <b>amps (A)</b> with an <b>ammeter</b> connected <b>in series</b>.</p></div>
+      <div class="fact"><h3>Potential difference (V)</h3><p>The "push" from the battery, measured in <b>volts (V)</b> with a <b>voltmeter</b> connected <b>across</b> a component (in parallel).</p></div>
+      <div class="fact"><h3>Resistance (R)</h3><p>How much a component <b>opposes</b> the current, measured in <b>ohms (Ω)</b>. More resistance → smaller current.</p></div>
+      <div class="fact"><h3>The loop rule</h3><p>Break the loop anywhere — open a switch — and the current stops <b>everywhere</b>. Charge can only flow in a complete circuit.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 CIRCUIT LAB -->
+  <section>
+    <div class="seclabel">Section 02 // Circuit Lab</div>
+    <h2>Wire it up</h2>
+    <p class="lead">Switch between a <b>series</b> and a <b>parallel</b> circuit, change the battery voltage and the bulb resistance, and flick the switch. Watch the current and the brightness respond.</p>
+    <div class="toggle">
+      <button id="btnS" class="on" onclick="setMode('series')">➖ Series</button>
+      <button id="btnP" onclick="setMode('parallel')">⫴ Parallel</button>
+    </div>
+    <div class="lab">
+      <div class="screen">
+        <svg viewBox="0 0 440 260" role="img" aria-label="Circuit diagram">
+          <!-- SERIES -->
+          <g id="gSeries">
+            <path class="wire" d="M70 70 H370 V190 H70 Z"/>
+            <!-- battery on bottom wire -->
+            <line class="sym" x1="205" y1="176" x2="205" y2="204"/>
+            <line class="sym" x1="225" y1="183" x2="225" y2="197" stroke-width="8"/>
+            <text class="lblA" id="sV" x="200" y="226" text-anchor="middle">6 V</text>
+            <!-- switch on left wire -->
+            <circle cx="70" cy="120" r="3" fill="#cfe6f5"/>
+            <circle cx="70" cy="150" r="3" fill="#cfe6f5"/>
+            <line class="sym" id="sLever" x1="70" y1="120" x2="70" y2="150"/>
+            <!-- bulb 1 -->
+            <g>
+              <circle id="s1glow" cx="170" cy="70" r="20" fill="#2de2ff" opacity="0"/>
+              <circle cx="170" cy="70" r="14" fill="#0b1426" stroke="#cfe6f5" stroke-width="3"/>
+              <path d="M161 61 L179 79 M179 61 L161 79" stroke="#cfe6f5" stroke-width="2" fill="none"/>
+            </g>
+            <!-- bulb 2 -->
+            <g>
+              <circle id="s2glow" cx="290" cy="70" r="20" fill="#2de2ff" opacity="0"/>
+              <circle cx="290" cy="70" r="14" fill="#0b1426" stroke="#cfe6f5" stroke-width="3"/>
+              <path d="M281 61 L299 79 M299 61 L281 79" stroke="#cfe6f5" stroke-width="2" fill="none"/>
+            </g>
+            <text class="lbl" x="220" y="20" text-anchor="middle">Two bulbs in series</text>
+          </g>
+          <!-- PARALLEL -->
+          <g id="gParallel" style="display:none">
+            <!-- outer rails -->
+            <path class="wire" d="M70 60 H370 M70 200 H370 M70 60 V200 M370 60 V200"/>
+            <!-- battery on left wire -->
+            <line class="sym" x1="56" y1="118" x2="84" y2="118"/>
+            <line class="sym" x1="63" y1="138" x2="77" y2="138" stroke-width="8"/>
+            <text class="lblA" id="pV" x="40" y="135" text-anchor="middle">6 V</text>
+            <!-- switch on top wire -->
+            <circle cx="120" cy="60" r="3" fill="#cfe6f5"/>
+            <circle cx="150" cy="60" r="3" fill="#cfe6f5"/>
+            <line class="sym" id="pLever" x1="120" y1="60" x2="150" y2="60"/>
+            <!-- branch rungs -->
+            <line class="wire" x1="200" y1="60" x2="200" y2="200"/>
+            <line class="wire" x1="300" y1="60" x2="300" y2="200"/>
+            <!-- bulb 1 (branch a) -->
+            <g>
+              <circle id="p1glow" cx="200" cy="130" r="20" fill="#2de2ff" opacity="0"/>
+              <circle cx="200" cy="130" r="14" fill="#0b1426" stroke="#cfe6f5" stroke-width="3"/>
+              <path d="M191 121 L209 139 M209 121 L191 139" stroke="#cfe6f5" stroke-width="2" fill="none"/>
+            </g>
+            <!-- bulb 2 (branch b) -->
+            <g>
+              <circle id="p2glow" cx="300" cy="130" r="20" fill="#2de2ff" opacity="0"/>
+              <circle cx="300" cy="130" r="14" fill="#0b1426" stroke="#cfe6f5" stroke-width="3"/>
+              <path d="M291 121 L309 139 M309 121 L291 139" stroke="#cfe6f5" stroke-width="2" fill="none"/>
+            </g>
+            <text class="lbl" x="250" y="232" text-anchor="middle">Two bulbs in parallel</text>
+          </g>
+        </svg>
+      </div>
+      <div class="controls">
+        <div class="ctrl"><label>Battery voltage <b id="vLab">6.0 V</b></label><input type="range" id="vR" min="1.5" max="12" step="0.5" value="6"></div>
+        <div class="ctrl"><label>Bulb resistance <b id="rLab">3 Ω</b></label><input type="range" id="rR" min="1" max="10" step="1" value="3"></div>
+        <button class="swbtn" id="swBtn" onclick="toggleSwitch()">🔵 Switch: CLOSED</button>
+        <div class="readouts">
+          <div class="ro amp"><div class="k">Total current</div><div class="v" id="roI">1.0 A</div></div>
+          <div class="ro"><div class="k">P.d. per bulb</div><div class="v" id="roVb">3.0 V</div></div>
+          <div class="ro bright"><div class="k">Each bulb</div><div class="v" id="roB">37%</div></div>
+          <div class="ro"><div class="k">Bulbs lit</div><div class="v" id="roN">2</div></div>
+        </div>
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 SERIES VS PARALLEL + SYMBOLS -->
+  <section>
+    <div class="seclabel">Section 03 // Two Ways To Wire</div>
+    <h2>Series vs parallel</h2>
+    <div class="spec">
+      <div class="scard"><h4>➖ Series</h4><p>One single loop. The <b>same current</b> flows through every component, and the battery's voltage is <b>shared</b> between the bulbs — so they're dimmer. Remove one bulb and they <b>all</b> go out.</p></div>
+      <div class="scard"><h4>⫴ Parallel</h4><p>Separate branches. Each bulb gets the <b>full voltage</b>, so they're brighter, and the current <b>splits</b> between branches. Remove one bulb and the others <b>stay lit</b> — like the lights in a house.</p></div>
+    </div>
+    <p class="lead" style="margin-top:18px">Every component has a standard <b>circuit symbol</b>:</p>
+    <div class="symrow">
+      <div class="symcell"><svg width="60" height="30"><line x1="6" y1="15" x2="24" y2="15" stroke="#cfe6f5" stroke-width="3"/><line x1="24" y1="6" x2="24" y2="24" stroke="#cfe6f5" stroke-width="3"/><line x1="30" y1="10" x2="30" y2="20" stroke="#cfe6f5" stroke-width="7"/><line x1="30" y1="15" x2="54" y2="15" stroke="#cfe6f5" stroke-width="3"/></svg><span>Cell</span></div>
+      <div class="symcell"><svg width="60" height="30"><line x1="6" y1="15" x2="22" y2="15" stroke="#cfe6f5" stroke-width="3"/><circle cx="30" cy="15" r="9" fill="none" stroke="#cfe6f5" stroke-width="3"/><path d="M24 9 L36 21 M36 9 L24 21" stroke="#cfe6f5" stroke-width="2"/><line x1="38" y1="15" x2="54" y2="15" stroke="#cfe6f5" stroke-width="3"/></svg><span>Bulb</span></div>
+      <div class="symcell"><svg width="60" height="30"><line x1="6" y1="15" x2="22" y2="15" stroke="#cfe6f5" stroke-width="3"/><line x1="22" y1="15" x2="38" y2="6" stroke="#cfe6f5" stroke-width="3"/><line x1="38" y1="15" x2="54" y2="15" stroke="#cfe6f5" stroke-width="3"/></svg><span>Switch (open)</span></div>
+      <div class="symcell"><svg width="60" height="30"><line x1="6" y1="15" x2="20" y2="15" stroke="#cfe6f5" stroke-width="3"/><rect x="20" y="9" width="20" height="12" fill="none" stroke="#cfe6f5" stroke-width="3"/><line x1="40" y1="15" x2="54" y2="15" stroke="#cfe6f5" stroke-width="3"/></svg><span>Resistor</span></div>
+      <div class="symcell"><svg width="60" height="30"><line x1="6" y1="15" x2="20" y2="15" stroke="#cfe6f5" stroke-width="3"/><circle cx="30" cy="15" r="9" fill="none" stroke="#cfe6f5" stroke-width="3"/><text x="30" y="20" text-anchor="middle" font-size="11" fill="#cfe6f5" font-family="Rajdhani">A</text><line x1="40" y1="15" x2="54" y2="15" stroke="#cfe6f5" stroke-width="3"/></svg><span>Ammeter</span></div>
+      <div class="symcell"><svg width="60" height="30"><line x1="6" y1="15" x2="20" y2="15" stroke="#cfe6f5" stroke-width="3"/><circle cx="30" cy="15" r="9" fill="none" stroke="#cfe6f5" stroke-width="3"/><text x="30" y="20" text-anchor="middle" font-size="11" fill="#cfe6f5" font-family="Rajdhani">V</text><line x1="40" y1="15" x2="54" y2="15" stroke="#cfe6f5" stroke-width="3"/></svg><span>Voltmeter</span></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Ohm's law &amp; the circuit rules</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:#2de2ff"></span><span><strong>Ohm's law:</strong> <code>V = I × R</code>. Rearrange for current (<code>I = V ÷ R</code>) or resistance (<code>R = V ÷ I</code>). This is what the Circuit Lab is calculating.</span></div>
+        <div class="key"><span class="dot" style="background:#ffb13b"></span><span><strong>Series rules:</strong> current is the <em>same</em> everywhere; the voltages across each component <em>add up</em> to the battery voltage; resistances <em>add</em> (R_total = R₁ + R₂).</span></div>
+        <div class="key"><span class="dot" style="background:#46e6a0"></span><span><strong>Parallel rules:</strong> each branch has the <em>full</em> battery voltage; the branch currents <em>add up</em> to the total current; adding branches <em>lowers</em> the total resistance.</span></div>
+        <p style="margin-top:12px"><strong>Worked example:</strong> a 6&nbsp;V battery with a single 3&nbsp;Ω bulb gives <code>I = V ÷ R = 6 ÷ 3 = 2&nbsp;A</code>. Put two 3&nbsp;Ω bulbs in series and R_total = 6&nbsp;Ω, so I = 1&nbsp;A — half as much, so they're dimmer.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 11 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(70,230,160,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* circuit lab */
+let mode='series', closed=true;
+const vR=document.getElementById('vR'), rR=document.getElementById('rR');
+function setMode(m){
+  mode=m;
+  document.getElementById('btnS').classList.toggle('on',m==='series');
+  document.getElementById('btnP').classList.toggle('on',m==='parallel');
+  document.getElementById('gSeries').style.display=(m==='series')?'':'none';
+  document.getElementById('gParallel').style.display=(m==='parallel')?'':'none';
+  compute();
+}
+function toggleSwitch(){
+  closed=!closed;
+  const b=document.getElementById('swBtn');
+  b.classList.toggle('open',!closed);
+  b.textContent=closed?'🔵 Switch: CLOSED':'🔴 Switch: OPEN';
+  // redraw switch levers
+  document.getElementById('sLever').setAttribute('x2',closed?'70':'56');
+  document.getElementById('sLever').setAttribute('y2',closed?'150':'132');
+  document.getElementById('pLever').setAttribute('x2',closed?'150':'138');
+  document.getElementById('pLever').setAttribute('y2',closed?'60':'46');
+  compute();
+}
+function setGlow(id,b){const el=document.getElementById(id);el.setAttribute('opacity',b.toFixed(2));el.setAttribute('r',(14+12*b).toFixed(0));}
+function compute(){
+  const V=parseFloat(vR.value), R=parseInt(rR.value);
+  document.getElementById('vLab').textContent=V.toFixed(1)+' V';
+  document.getElementById('rLab').textContent=R+' Ω';
+  document.getElementById('sV').textContent=V.toFixed(1)+' V';
+  document.getElementById('pV').textContent=V.toFixed(1)+' V';
+  let Itot=0, Ibulb=0, Vbulb=0;
+  if(closed){
+    if(mode==='series'){ Itot=V/(2*R); Ibulb=Itot; Vbulb=Ibulb*R; }
+    else { Ibulb=V/R; Itot=2*Ibulb; Vbulb=V; }
+  }
+  const P=Ibulb*Ibulb*R;
+  const bright=closed?Math.max(0,Math.min(1,P/48)):0;
+  document.getElementById('roI').textContent=Itot.toFixed(2)+' A';
+  document.getElementById('roVb').textContent=Vbulb.toFixed(1)+' V';
+  document.getElementById('roB').textContent=Math.round(bright*100)+'%';
+  document.getElementById('roN').textContent=closed?'2':'0';
+  // glow the visible group
+  if(mode==='series'){setGlow('s1glow',bright);setGlow('s2glow',bright);}
+  else{setGlow('p1glow',bright);setGlow('p2glow',bright);}
+  const msg=document.getElementById('msg');
+  if(!closed){msg.innerHTML='The switch is <b>open</b> — the loop is broken, so no current flows and the bulbs are dark.';}
+  else if(mode==='series'){msg.innerHTML='In <b>series</b> the two bulbs share the '+V.toFixed(1)+' V, so each gets '+Vbulb.toFixed(1)+' V. Same current ('+Itot.toFixed(2)+' A) flows through both.';}
+  else{msg.innerHTML='In <b>parallel</b> each bulb gets the full '+V.toFixed(1)+' V, so they shine brighter. The branch currents add to '+Itot.toFixed(2)+' A total.';}
+}
+[vR,rR].forEach(s=>s.addEventListener('input',compute));
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"What does electric current need in order to flow?",opts:["A complete loop","A single wire","An open switch"],correct:0,why:"Current only flows around a complete (closed) circuit loop."},
+  {q:"Current is measured in...",opts:["Volts","Amps","Ohms"],correct:1,why:"Current is measured in amps (A)."},
+  {q:"Which instrument measures current, and how is it connected?",opts:["Ammeter, in series","Voltmeter, in parallel","Ammeter, in parallel"],correct:0,why:"An ammeter measures current and is connected in series."},
+  {q:"Potential difference (voltage) is measured in...",opts:["Amps","Ohms","Volts"],correct:2,why:"Voltage / potential difference is measured in volts (V)."},
+  {q:"A voltmeter is connected...",opts:["In series","Across a component (in parallel)","Inside the battery"],correct:1,why:"A voltmeter is connected across (in parallel with) the component."},
+  {q:"Resistance is measured in...",opts:["Ohms","Watts","Hertz"],correct:0,why:"Resistance is measured in ohms (Ω)."},
+  {q:"If you increase the resistance, the current will...",opts:["Increase","Decrease","Stay the same"],correct:1,why:"More resistance opposes the flow, so the current decreases."},
+  {q:"In a SERIES circuit, the current through each component is...",opts:["The same everywhere","Different in each part","Zero"],correct:0,why:"In series the same current flows through every component."},
+  {q:"In a series circuit, the battery's voltage is...",opts:["Doubled at each bulb","Shared between the components","Only across the battery"],correct:1,why:"In series the voltage is shared between the components."},
+  {q:"In a PARALLEL circuit, each branch gets...",opts:["The full battery voltage","Half the voltage","No voltage"],correct:0,why:"Each parallel branch gets the full battery voltage."},
+  {q:"Why are two bulbs in parallel brighter than the same two in series?",opts:["They each get the full voltage","They use less current","Parallel has more wires"],correct:0,why:"In parallel each bulb gets the full voltage, so each is brighter."},
+  {q:"In a series circuit, if one bulb is removed, the other bulb...",opts:["Stays lit","Goes out too","Gets brighter"],correct:1,why:"Removing one bulb breaks the single loop, so all bulbs go out."},
+  {q:"House lighting is wired in parallel so that...",opts:["Removing one bulb leaves the others lit","All lights share one bulb","It uses less wire"],correct:0,why:"Parallel means each light is independent — one can fail without the rest going out."},
+  {q:"Ohm's law is written as...",opts:["V = I × R","V = I ÷ R","V = I + R"],correct:0,why:"Ohm's law: voltage = current × resistance (V = I × R)."},
+  {q:"A 6 V battery drives a single 3 Ω bulb. The current is...",opts:["2 A","3 A","18 A"],correct:0,why:"I = V ÷ R = 6 ÷ 3 = 2 A."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+setMode('series'); compute(); nextSet(); buildQuiz();
+</script>
+</body>
+</html>
