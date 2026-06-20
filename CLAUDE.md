@@ -35,18 +35,22 @@ stellar-lab/              ← THE WEBSITE = the Git repo root (this folder)
 - The Reference Library links to the school's **live PDF URLs**, so nothing extra to host.
 
 ## 4. Current state
-**Architecture:** `index.html` (Station Hub) → subject **deck** pages → `lessons/` missions. Subjects: Science (live); English, Maths (locked, decks not built yet).
+**Architecture:** `index.html` (Station Hub) → subject **deck** pages → `lessons/` missions. Subjects: Science (live, complete); Maths (live, in progress); English (locked, deck not built yet).
 
-**Missions built (Year 9 Science):**
+**Missions built (Year 9 Science) — all 3 strands complete:**
 - Chemistry: `endothermic-exothermic.html`, `atomic-structure.html`, `balancing-equations.html`, `periodic-table.html`
-- Biology: `cells.html`, `ecology.html`, `variation.html`, `evolution-inheritance.html` (Biology strand complete)
-- Physics: `waves.html`, `energy-stores.html`, `electric-circuits.html` (Physics strand complete & active on the deck)
+- Biology: `cells.html`, `ecology.html`, `variation.html`, `evolution-inheritance.html`
+- Physics: `waves.html`, `energy-stores.html`, `electric-circuits.html`
 
-All three Science strands are now complete for Year 9.
+**Maths (`maths.html` deck live; strands Number/Algebra/Geometry/Data):**
+- Algebra: `straight-line-graphs.html` (y=mx+c grapher)
+- Geometry: `pythagoras.html` (squares-on-sides explorer)
+- Number & Data strands show "coming soon" placeholders on the deck.
+- Maths strand accents: Number=green `--num`, Algebra=blue `--alg`, Geometry=teal `--geo`, Data=lilac `--data`.
 
 **Backlog (build in this order unless the user picks):**
-1. Build the **English** deck (new `english.html` deck page + unlock card on `index.html`), then Year 9 English missions (DNA, Media, Non-fiction, Creative Writing, THUG).
-2. Build the **Maths** deck (new `maths.html` deck page + unlock card on `index.html`), then Year 9 Maths topics.
+1. More **Maths** missions — Number (percentages, fractions, ratio, standard form), Geometry (transformations, area & volume), Data & Probability. Update the strand "N missions ready" count + activate Number/Data sections when their first mission lands.
+2. Build the **English** deck (new `english.html` deck page + unlock card on `index.html`), then Year 9 English missions (DNA, Media, Non-fiction, Creative Writing, THUG).
 
 Curriculum source of truth: `References/` and https://www.swracademy.org/page/?title=Subject+Curriculum&pid=29 (Science is AQA-aligned; Maths uses White Rose/Edexcel).
 

@@ -40,6 +40,9 @@
   .deck.sci h2{color:var(--sci)} .deck.sci .go{color:var(--lav)}
   .deck.sci:hover{transform:translateY(-5px);border-color:var(--sci);box-shadow:0 16px 40px rgba(45,226,255,.2)}
   .deck.eng h2{color:var(--eng)} .deck.maths h2{color:var(--maths)}
+  .deck.maths{cursor:pointer}
+  .deck.maths .go{color:var(--lav)}
+  .deck.maths:hover{transform:translateY(-5px);border-color:var(--maths);box-shadow:0 16px 40px rgba(70,230,160,.2)}
   .deck.locked{opacity:.5}
   .deck.locked.in{opacity:.5}
   .deck.locked .go{color:var(--muted)}
@@ -98,7 +101,7 @@
     <a class="deck sci" href="science.html">
       <span class="ic">🔬</span>
       <h2>Science</h2>
-      <div class="count">4 missions ready</div>
+      <div class="count">11 missions ready</div>
       <div class="go">Enter deck →</div>
     </a>
     <div class="deck eng locked">
@@ -107,12 +110,12 @@
       <div class="count">Coming soon</div>
       <div class="go">Locked</div>
     </div>
-    <div class="deck maths locked">
+    <a class="deck maths" href="maths.html">
       <span class="ic">📐</span>
       <h2>Maths</h2>
-      <div class="count">Coming soon</div>
-      <div class="go">Locked</div>
-    </div>
+      <div class="count">2 missions ready</div>
+      <div class="go">Enter deck →</div>
+    </a>
   </div>
 
   <footer>Stellar Lab · Built for Lyra</footer>

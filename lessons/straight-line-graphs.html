@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Straight-Line Graphs // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff; --teal:#39d6c8;
+    --acc:#5aa6ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(90,166,255,.5),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--acc);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--acc);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--acc)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+  .eqbig{font-family:var(--disp);font-size:1.5rem;color:#fff;text-align:center;margin:6px 0 2px;letter-spacing:.04em}
+  .eqbig .m{color:var(--acc)} .eqbig .c{color:var(--amber)}
+
+  /* grapher */
+  .grapher{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}
+  @media(max-width:720px){.grapher{grid-template-columns:1fr}}
+  .screen{background:#060a18;border:1px solid var(--line);border-radius:14px;padding:10px}
+  canvas#graph{width:100%;height:auto;display:block;border-radius:8px}
+  .panelside .eqshow{font-family:var(--disp);font-size:1.4rem;color:#fff;text-align:center;border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(90,166,255,.08);margin-bottom:14px}
+  .panelside .eqshow .m{color:var(--acc)} .panelside .eqshow .c{color:var(--amber)}
+  .ctrl{margin-bottom:14px}
+  .ctrl label{font-family:var(--ui);font-size:.86rem;letter-spacing:.03em;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:5px}
+  .ctrl label b{color:var(--ink)}
+  .ctrl label .mC{color:var(--acc)} .ctrl label .cC{color:var(--amber)}
+  input[type=range]{width:100%;cursor:pointer}
+  #mR{accent-color:var(--acc)} #cR{accent-color:var(--amber)}
+  .ro2{display:flex;gap:10px;margin-top:6px}
+  .ro2 .ro{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px;background:rgba(255,255,255,.03);text-align:center}
+  .ro2 .ro .k{font-family:var(--ui);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .ro2 .ro .v{font-family:var(--disp);font-size:1.05rem;margin-top:2px}
+  .ro2 .grad .v{color:var(--acc)} .ro2 .intc .v{color:var(--amber)}
+  .hint{font-family:var(--ui);font-size:.84rem;color:var(--muted);margin-top:12px}
+  .hint b{color:var(--ink)}
+
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard .emoji{font-size:1.7rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .15em;font-size:1.02rem;color:var(--acc)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1500px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../maths.html"><span class="blink"></span> ◄ Maths Deck</a>
+    <span>Alg-01 // Straight-Line Graphs</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Maths Station · Year 9</div>
+    <h1>PLOT THE<br><span class="lav">LINE</span></h1>
+    <p>Every straight-line graph hides in one tidy equation: y = mx + c. Slide the controls and watch the line obey two simple numbers.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 BASICS -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>The equation of a line</h2>
+    <p class="lead">Any straight line can be written as <b>y = mx + c</b>. Just two numbers control it: <b>m</b> sets the slope and <b>c</b> sets where it starts.</p>
+    <div class="eqbig">y = <span class="m">m</span>x + <span class="c">c</span></div>
+    <div class="cards">
+      <div class="fact"><h3><span style="color:var(--acc)">m</span> — the gradient</h3><p>How <b>steep</b> the line is. Bigger m = steeper. <b>Positive</b> m slopes uphill ↗; <b>negative</b> m slopes downhill ↘. Gradient = <b>rise ÷ run</b>.</p></div>
+      <div class="fact"><h3><span style="color:var(--amber)">c</span> — the y-intercept</h3><p>Where the line <b>crosses the y-axis</b> (when x = 0). Change c and the whole line slides straight up or down.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 GRAPHER -->
+  <section>
+    <div class="seclabel">Section 02 // Line Plotter</div>
+    <h2>Drive the line</h2>
+    <p class="lead">Slide <b style="color:var(--acc)">m</b> and <b style="color:var(--amber)">c</b> and watch the line redraw. The little triangle shows the gradient as <b>rise over run</b>; the gold dot marks the y-intercept.</p>
+    <div class="grapher">
+      <div class="screen">
+        <canvas id="graph" width="460" height="460"></canvas>
+      </div>
+      <div class="panelside">
+        <div class="eqshow" id="eqShow">y = x</div>
+        <div class="ctrl"><label>Gradient <span class="mC">m</span> <b class="mC" id="mLab">1</b></label><input type="range" id="mR" min="-3" max="3" step="0.5" value="1"></div>
+        <div class="ctrl"><label>y-intercept <span class="cC">c</span> <b class="cC" id="cLab">0</b></label><input type="range" id="cR" min="-6" max="6" step="1" value="0"></div>
+        <div class="ro2">
+          <div class="ro grad"><div class="k">Gradient (rise/run)</div><div class="v" id="roM">1</div></div>
+          <div class="ro intc"><div class="k">Crosses y-axis at</div><div class="v" id="roC">0</div></div>
+        </div>
+        <div class="hint">Try setting <b>m = 0</b> for a flat line, or two different lines with the <b>same m</b> — they're <b>parallel</b>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 READING LINES -->
+  <section>
+    <div class="seclabel">Section 03 // Read The Slope</div>
+    <h2>What the gradient tells you</h2>
+    <div class="spec">
+      <div class="scard"><div class="emoji">↗</div><h4>Positive gradient</h4><p>m &gt; 0: the line goes <b>up</b> from left to right. The bigger m is, the steeper the climb.</p></div>
+      <div class="scard"><div class="emoji">↘</div><h4>Negative gradient</h4><p>m &lt; 0: the line goes <b>down</b> from left to right, like y = −2x + 1.</p></div>
+      <div class="scard"><div class="emoji">➖</div><h4>Zero gradient</h4><p>m = 0: a <b>flat, horizontal</b> line, y = c. No rise at all.</p></div>
+      <div class="scard"><div class="emoji">∥</div><h4>Parallel lines</h4><p>Lines with the <b>same gradient</b> never meet — they're parallel, just shifted by different c values.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Gradient from points &amp; rearranging</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:#5aa6ff"></span><span><strong>Gradient from two points:</strong> <code>m = (y₂ − y₁) ÷ (x₂ − x₁)</code> — the change in y divided by the change in x.</span></div>
+        <div class="key"><span class="dot" style="background:#ffb13b"></span><span><strong>Finding c:</strong> put a known point's x and y into y = mx + c and solve for c.</span></div>
+        <div class="key"><span class="dot" style="background:#46e6a0"></span><span><strong>Rearranging:</strong> an equation like <code>2y = 4x + 6</code> becomes <code>y = 2x + 3</code> — divide everything by 2 to read off m = 2, c = 3.</span></div>
+        <p style="margin-top:12px"><strong>Special lines:</strong> <code>y = c</code> is a horizontal line; <code>x = a</code> is a vertical line (it has no defined gradient). <strong>Parallel</strong> lines share the same m.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 12 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(90,166,255,','rgba(70,230,160,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* line plotter */
+const gc=document.getElementById('graph'),g=gc.getContext('2d');
+const RANGE=10; // axes from -10..10
+let m=1,c=0;
+function w2s(px,py){ // world(-10..10) to screen
+  const W=gc.width,H=gc.height,pad=8;
+  const sx=pad+(px+RANGE)/(2*RANGE)*(W-2*pad);
+  const sy=pad+(RANGE-py)/(2*RANGE)*(H-2*pad);
+  return [sx,sy];
+}
+function drawGraph(){
+  const W=gc.width,H=gc.height;
+  g.clearRect(0,0,W,H);
+  // grid
+  g.lineWidth=1;g.strokeStyle='rgba(122,140,210,.16)';g.fillStyle='#9fb0d8';g.font='10px Rajdhani';
+  for(let i=-RANGE;i<=RANGE;i++){
+    let a=w2s(i,-RANGE),b=w2s(i,RANGE);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();
+    let cc=w2s(-RANGE,i),d=w2s(RANGE,i);g.beginPath();g.moveTo(cc[0],cc[1]);g.lineTo(d[0],d[1]);g.stroke();
+  }
+  // axes
+  g.lineWidth=2;g.strokeStyle='rgba(170,190,240,.7)';
+  let ax0=w2s(-RANGE,0),ax1=w2s(RANGE,0);g.beginPath();g.moveTo(ax0[0],ax0[1]);g.lineTo(ax1[0],ax1[1]);g.stroke();
+  let ay0=w2s(0,-RANGE),ay1=w2s(0,RANGE);g.beginPath();g.moveTo(ay0[0],ay0[1]);g.lineTo(ay1[0],ay1[1]);g.stroke();
+  // axis numbers (every 2)
+  g.fillStyle='#8fa0c8';g.textAlign='center';
+  for(let i=-RANGE;i<=RANGE;i+=2){if(i===0)continue;let p=w2s(i,0);g.fillText(i,p[0],p[1]+12);let q=w2s(0,i);g.fillText(i,q[0]-12,q[1]+3);}
+  // line y=mx+c across visible x
+  const x1=-RANGE,y1=m*x1+c,x2=RANGE,y2=m*x2+c;
+  const s1=w2s(x1,y1),s2=w2s(x2,y2);
+  g.strokeStyle='#5aa6ff';g.lineWidth=3.5;g.shadowBlur=10;g.shadowColor='rgba(90,166,255,.6)';
+  g.beginPath();g.moveTo(s1[0],s1[1]);g.lineTo(s2[0],s2[1]);g.stroke();g.shadowBlur=0;
+  // rise/run triangle from (0,c) to (1,c) to (1,m+c) when it fits
+  if(Math.abs(c)<=RANGE){
+    const P0=w2s(0,c),P1=w2s(1,c),P2=w2s(1,c+m);
+    g.strokeStyle='rgba(255,177,59,.9)';g.lineWidth=2;g.setLineDash([5,4]);
+    g.beginPath();g.moveTo(P0[0],P0[1]);g.lineTo(P1[0],P1[1]);g.lineTo(P2[0],P2[1]);g.stroke();g.setLineDash([]);
+    g.fillStyle='#ffb13b';g.font='11px Rajdhani';g.textAlign='center';
+    g.fillText('run 1',(P0[0]+P1[0])/2,P0[1]+(m>=0?14:-6));
+    g.fillText('rise '+m,P1[0]+22,(P1[1]+P2[1])/2+3);
+  }
+  // y-intercept dot
+  if(Math.abs(c)<=RANGE){const pc=w2s(0,c);g.fillStyle='#ffb13b';g.beginPath();g.arc(pc[0],pc[1],5,0,7);g.fill();}
+}
+function fmtEq(m,c){
+  let mp;
+  if(m===0)return 'y = '+c;
+  if(m===1)mp='x'; else if(m===-1)mp='-x'; else mp=(m)+'x';
+  let cp='';
+  if(c>0)cp=' + '+c; else if(c<0)cp=' - '+Math.abs(c);
+  return 'y = '+mp+cp;
+}
+function fmtEqHTML(m,c){
+  let mp;
+  if(m===0)return 'y = <span class="c">'+c+'</span>';
+  if(m===1)mp='<span class="m">x</span>'; else if(m===-1)mp='<span class="m">-x</span>'; else mp='<span class="m">'+m+'x</span>';
+  let cp='';
+  if(c>0)cp=' + <span class="c">'+c+'</span>'; else if(c<0)cp=' - <span class="c">'+Math.abs(c)+'</span>';
+  return 'y = '+mp+cp;
+}
+function update(){
+  m=parseFloat(document.getElementById('mR').value);
+  c=parseInt(document.getElementById('cR').value);
+  document.getElementById('mLab').textContent=m;
+  document.getElementById('cLab').textContent=c;
+  document.getElementById('roM').textContent=m;
+  document.getElementById('roC').textContent='(0, '+c+')';
+  document.getElementById('eqShow').innerHTML=fmtEqHTML(m,c);
+  drawGraph();
+}
+['mR','cR'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+update();
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"In y = mx + c, what does m represent?",opts:["The gradient","The y-intercept","The x-value"],correct:0,why:"m is the gradient — how steep the line is."},
+  {q:"In y = mx + c, what does c represent?",opts:["The gradient","The y-intercept","The origin"],correct:1,why:"c is the y-intercept — where the line crosses the y-axis."},
+  {q:"What is the gradient of y = 3x + 2?",opts:["2","3","5"],correct:1,why:"The number in front of x is the gradient, so m = 3."},
+  {q:"Where does y = 2x − 4 cross the y-axis?",opts:["(0, −4)","(0, 2)","(0, 4)"],correct:0,why:"c = −4, so it crosses the y-axis at (0, −4)."},
+  {q:"A line with a negative gradient...",opts:["Slopes up to the right","Slopes down to the right","Is horizontal"],correct:1,why:"A negative gradient means the line goes downhill from left to right."},
+  {q:"Which line is steeper?",opts:["y = 2x + 1","y = 5x + 1","They are equal"],correct:1,why:"A bigger gradient is steeper, and 5 > 2."},
+  {q:"What does a gradient of 0 give you?",opts:["A vertical line","A horizontal line","A diagonal line"],correct:1,why:"Gradient 0 means no rise — a flat, horizontal line."},
+  {q:"Lines y = 2x + 1 and y = 2x − 3 are...",opts:["Parallel","Perpendicular","The same line"],correct:0,why:"Same gradient (2) but different c means the lines are parallel."},
+  {q:"Gradient is calculated as...",opts:["run ÷ rise","rise ÷ run","rise × run"],correct:1,why:"Gradient = rise ÷ run (change in y ÷ change in x)."},
+  {q:"What is the equation of a line with gradient 4 and y-intercept −1?",opts:["y = 4x − 1","y = −x + 4","y = 4x + 1"],correct:0,why:"m = 4 and c = −1 gives y = 4x − 1."},
+  {q:"Rearrange 2y = 6x + 8 into y = mx + c form.",opts:["y = 3x + 4","y = 6x + 8","y = 3x + 8"],correct:0,why:"Divide everything by 2: y = 3x + 4."},
+  {q:"The point (0, 5) lies on which line?",opts:["y = 2x + 5","y = 2x − 5","y = 5x"],correct:0,why:"At x = 0, y = c. Here c = 5, so (0, 5) is on y = 2x + 5."},
+  {q:"A line crosses the y-axis at 3 with gradient −2. Its equation is...",opts:["y = −2x + 3","y = 3x − 2","y = 2x + 3"],correct:0,why:"m = −2, c = 3 gives y = −2x + 3."},
+  {q:"Two points are (1, 2) and (3, 8). The gradient is...",opts:["2","3","6"],correct:1,why:"m = (8 − 2) ÷ (3 − 1) = 6 ÷ 2 = 3."},
+  {q:"The line x = 4 is...",opts:["Horizontal","Vertical","Diagonal"],correct:1,why:"x = 4 is a vertical line through all points where x = 4."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+nextSet(); buildQuiz();
+</script>
+</body>
+</html>
