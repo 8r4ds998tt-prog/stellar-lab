@@ -1,0 +1,8 @@
+# Curriculum reference docs — kept locally for building lessons,
+# NOT published to the live GitHub Pages site.
+References/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini

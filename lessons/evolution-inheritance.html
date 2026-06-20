@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evolution &amp; Inheritance // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--green);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--green);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--green)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+
+  /* natural selection simulator */
+  .toggle{display:inline-flex;background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:999px;padding:5px;gap:6px;margin-bottom:16px}
+  .toggle button{font-family:var(--ui);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.84rem;border:0;background:transparent;color:var(--muted);padding:10px 18px;border-radius:999px;cursor:pointer;transition:.2s}
+  .toggle button.on{background:var(--green);color:#04120c;box-shadow:0 0 20px rgba(70,230,160,.4)}
+  .sim{display:grid;grid-template-columns:1.3fr .82fr;gap:18px;align-items:start}
+  @media(max-width:720px){.sim{grid-template-columns:1fr}}
+  .forest{border-radius:14px;height:240px;position:relative;overflow:hidden;border:1px solid var(--line);transition:background .6s}
+  .forest.clean{background:linear-gradient(180deg,#d8cdb0,#b3a787)}
+  .forest.polluted{background:linear-gradient(180deg,#3a3a42,#202024)}
+  .moth{position:absolute;width:14px;height:14px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;transform:translate(-50%,-50%);transition:opacity .4s}
+  .moth.light{background:#f3eede;border:1px solid #9a9078}
+  .moth.dark{background:#26262b;border:1px solid #4a4a52}
+  .simbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .simbtn{font-family:var(--ui);letter-spacing:.06em;text-transform:uppercase;font-size:.8rem;font-weight:700;background:var(--green);color:#04120c;border:0;padding:10px 16px;border-radius:9px;cursor:pointer}
+  .simbtn.ghost{background:transparent;color:var(--lav);border:1px solid var(--line)}
+  .simbtn:hover{box-shadow:0 0 16px rgba(70,230,160,.4)}
+  .stats{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.03)}
+  .stats .gen{font-family:var(--disp);font-size:1.1rem;color:#fff;margin-bottom:10px}
+  .statbar{margin:9px 0}
+  .statbar .lab{font-family:var(--ui);font-size:.8rem;display:flex;justify-content:space-between;margin-bottom:3px}
+  .track{height:14px;border-radius:8px;background:rgba(0,0,0,.4);overflow:hidden;border:1px solid var(--line)}
+  .track i{display:block;height:100%;transition:width .5s}
+  .track i.light{background:#f3eede}
+  .track i.dark{background:#54545e}
+  .note{font-family:var(--ui);font-size:.82rem;color:var(--muted);margin-top:10px}
+  .note b{color:var(--green)}
+
+  /* punnett */
+  .punwrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:720px){.punwrap{grid-template-columns:1fr}}
+  .parentbox{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.03);text-align:center}
+  .parentbox h4{font-family:var(--ui);margin:0 0 10px;color:var(--lav);letter-spacing:.05em}
+  .alleles{display:flex;gap:10px;justify-content:center}
+  .allbtn{font-family:var(--disp);font-weight:700;font-size:1.3rem;width:54px;height:54px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:#fff;cursor:pointer;transition:.15s}
+  .allbtn.dom{color:var(--amber);border-color:var(--amber)}
+  .allbtn.rec{color:var(--endo);border-color:var(--endo)}
+  .allbtn:hover{box-shadow:0 0 14px rgba(204,136,255,.4)}
+  .genolab{font-family:var(--ui);font-size:.82rem;color:var(--muted);margin-top:8px}
+  .punnett{display:grid;grid-template-columns:34px 1fr 1fr;grid-auto-rows:minmax(34px,auto);gap:6px;max-width:260px;margin:0 auto}
+  .pcell{display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;border-radius:8px;font-size:1.05rem;min-height:42px}
+  .pcell.corner{background:transparent}
+  .pcell.hd{background:rgba(204,136,255,.14);color:var(--lav);font-size:1.15rem}
+  .pcell.off{background:rgba(70,230,160,.12);border:1px solid var(--line);color:#fff}
+  .pcell.off.rec{background:rgba(255,59,92,.12)}
+  .result{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.03);margin-top:14px;text-align:center}
+  .result .big{font-family:var(--disp);font-size:1.25rem;color:#fff;margin:4px 0}
+  .result .ratio{font-family:var(--ui);font-size:.92rem;color:var(--amber)}
+  .legend{font-family:var(--ui);font-size:.82rem;color:var(--muted);text-align:center;margin-top:12px}
+  .legend b{color:var(--ink)}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1500px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}.track i,.forest{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../science.html"><span class="blink"></span> ◄ Science Deck</a>
+    <span>Bio-04 // Inheritance</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Science Station · Year 9</div>
+    <h1>EVOLVE OR<br><span class="lav">VANISH</span></h1>
+    <p>Genes pass from parents to offspring — and the variation they carry decides who survives. Run your own evolution and breed your own offspring.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 BASICS -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>Genes, survival &amp; time</h2>
+    <p class="lead">Living things pass on <b>genes</b> — instructions written in DNA — to their offspring. Because individuals vary, some survive better than others, and their genes spread. Over many generations a whole species can change. That change is <b>evolution</b>.</p>
+    <div class="cards">
+      <div class="fact"><h3>Inheritance</h3><p>Offspring resemble their parents because they inherit copies of their <b>genes</b>. Genes sit on <b>chromosomes</b>, which are made of <b>DNA</b>.</p></div>
+      <div class="fact"><h3>Alleles</h3><p>Different versions of a gene are called <b>alleles</b>. A <b>dominant</b> allele shows even if only one copy is present; a <b>recessive</b> one needs two copies to show.</p></div>
+      <div class="fact"><h3>Natural selection</h3><p>Variation + a struggle to survive = the best-suited individuals live, reproduce, and pass on their helpful genes. Darwin called this <b>survival of the fittest</b>.</p></div>
+      <div class="fact"><h3>Evolution</h3><p>Repeat natural selection over thousands of generations and a species gradually changes — sometimes into an entirely new species.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 NATURAL SELECTION SIM -->
+  <section>
+    <div class="seclabel">Section 02 // Natural Selection Simulator</div>
+    <h2>Survival of the fittest</h2>
+    <p class="lead">These peppered moths come in <b>light</b> and <b>dark</b>. Birds eat the ones that stand out. Pick a forest, then run generations and watch which colour takes over — that's natural selection in action.</p>
+    <div class="toggle">
+      <button id="btnClean" class="on" onclick="setEnv('clean')">🌳 Clean forest</button>
+      <button id="btnPoll" onclick="setEnv('polluted')">🏭 Polluted forest</button>
+    </div>
+    <div class="sim">
+      <div>
+        <div class="forest clean" id="forest"></div>
+        <div class="simbtns">
+          <button class="simbtn" onclick="runGen(1)">▶ Run 1 generation</button>
+          <button class="simbtn" onclick="runGen(10)">⏩ Run 10</button>
+          <button class="simbtn ghost" onclick="resetSim()">↻ Reset</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="gen" id="genLabel">Generation 0</div>
+        <div class="statbar">
+          <div class="lab"><span style="color:#f3eede">⚪ Light moths</span><span id="lightPct">50%</span></div>
+          <div class="track"><i class="light" id="lightBar" style="width:50%"></i></div>
+        </div>
+        <div class="statbar">
+          <div class="lab"><span style="color:#bdbdc8">⚫ Dark moths</span><span id="darkPct">50%</span></div>
+          <div class="track"><i class="dark" id="darkBar" style="width:50%"></i></div>
+        </div>
+        <div class="note" id="simNote">In a clean forest the pale bark hides <b>light</b> moths. Run a few generations and watch.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 PUNNETT -->
+  <section>
+    <div class="seclabel">Section 03 // Inheritance Lab</div>
+    <h2>Breed the offspring</h2>
+    <p class="lead">Tap a parent's alleles to change them, and the <b>Punnett square</b> works out every possible child. Trait: tongue rolling — <b>R</b> (can roll) is dominant, <b>r</b> (cannot) is recessive.</p>
+    <div class="punwrap">
+      <div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+          <div class="parentbox">
+            <h4>Parent 1</h4>
+            <div class="alleles">
+              <button class="allbtn" id="p1a" onclick="flip('p1',0)">R</button>
+              <button class="allbtn" id="p1b" onclick="flip('p1',1)">r</button>
+            </div>
+            <div class="genolab" id="p1geno">Genotype: Rr</div>
+          </div>
+          <div class="parentbox">
+            <h4>Parent 2</h4>
+            <div class="alleles">
+              <button class="allbtn" id="p2a" onclick="flip('p2',0)">R</button>
+              <button class="allbtn" id="p2b" onclick="flip('p2',1)">r</button>
+            </div>
+            <div class="genolab" id="p2geno">Genotype: Rr</div>
+          </div>
+        </div>
+        <div class="legend">Tap any letter to switch it between <b>R</b> and <b>r</b>.</div>
+      </div>
+      <div>
+        <div class="punnett" id="punnett"></div>
+        <div class="result" id="punResult"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 DNA, genotype &amp; the evidence</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:#46e6a0"></span><span><strong>DNA</strong> is a twisted ladder — a <em>double helix</em>. A short section that codes for one feature is a <strong>gene</strong>.</span></div>
+        <div class="key"><span class="dot" style="background:#cc88ff"></span><span><strong>Genotype</strong> = the alleles you carry (e.g. Rr). <strong>Phenotype</strong> = the feature you actually show (can roll). <code>Homozygous</code> = two of the same (RR or rr); <code>heterozygous</code> = two different (Rr).</span></div>
+        <div class="key"><span class="dot" style="background:#ffb13b"></span><span><strong>Selective breeding:</strong> humans choosing which animals or plants reproduce — like natural selection, but <em>we</em> pick the survivors (e.g. dogs, crops).</span></div>
+        <div class="key"><span class="dot" style="background:#2de2ff"></span><span><strong>Evidence for evolution:</strong> <em>fossils</em> show how life changed over millions of years; <em>antibiotic-resistant bacteria</em> show natural selection happening fast, right now.</span></div>
+        <p style="margin-top:12px"><strong>Extinction</strong> happens when a species cannot adapt fast enough to a change — no individuals survive to reproduce.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 08 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(70,230,160,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* natural selection simulator */
+const POP=60;
+let env='clean', gen=0, moths=[];
+function seed(){moths=[];for(let i=0;i<POP;i++)moths.push({dark:i%2===0,x:Math.random()*92+4,y:Math.random()*82+9});gen=0;}
+function setEnv(e){
+  env=e;
+  document.getElementById('btnClean').classList.toggle('on',e==='clean');
+  document.getElementById('btnPoll').classList.toggle('on',e==='polluted');
+  document.getElementById('forest').className='forest '+e;
+  resetSim();
+}
+function resetSim(){seed();render();document.getElementById('simNote').innerHTML=env==='clean'?'In a clean forest the pale bark hides <b>light</b> moths. Run a few generations and watch.':'Soot has blackened the bark — now <b>dark</b> moths are camouflaged. Run a few generations and watch.';}
+function step(){
+  let survivors=moths.filter(m=>{
+    const matched=(env==='clean'&&!m.dark)||(env==='polluted'&&m.dark);
+    return Math.random()<(matched?0.85:0.30);
+  });
+  if(survivors.length<2)survivors=moths.slice(0,2);
+  const next=[];
+  for(let i=0;i<POP;i++){
+    const p=survivors[Math.floor(Math.random()*survivors.length)];
+    let dark=p.dark;
+    if(Math.random()<0.02)dark=!dark; // rare mutation
+    next.push({dark,x:Math.random()*92+4,y:Math.random()*82+9});
+  }
+  moths=next;gen++;
+}
+function runGen(n){for(let i=0;i<n;i++)step();render();}
+function render(){
+  const f=document.getElementById('forest');f.className='forest '+env;f.innerHTML='';
+  moths.forEach(m=>{const d=document.createElement('div');d.className='moth '+(m.dark?'dark':'light');d.style.left=m.x+'%';d.style.top=m.y+'%';f.appendChild(d);});
+  const darkN=moths.filter(m=>m.dark).length;const lightN=POP-darkN;
+  const dp=Math.round(darkN/POP*100), lp=100-dp;
+  document.getElementById('genLabel').textContent='Generation '+gen;
+  document.getElementById('lightPct').textContent=lp+'%';
+  document.getElementById('darkPct').textContent=dp+'%';
+  document.getElementById('lightBar').style.width=lp+'%';
+  document.getElementById('darkBar').style.width=dp+'%';
+  if(gen>0){
+    const winner=dp>lp?'dark':(lp>dp?'light':'neither');
+    if(winner!=='neither'){
+      const camo=(env==='clean'&&winner==='light')||(env==='polluted'&&winner==='dark');
+      document.getElementById('simNote').innerHTML='Generation '+gen+': <b>'+winner+'</b> moths are winning — '+(camo?'they’re camouflaged here, so birds eat fewer of them.':'a run of luck; keep going.');
+    }
+  }
+}
+
+/* punnett square */
+let P={p1:['R','r'],p2:['R','r']};
+function flip(p,i){P[p][i]=P[p][i]==='R'?'r':'R';renderPunnett();}
+function sortPair(a,b){if(a==='R'&&b==='R')return'RR';if(a==='r'&&b==='r')return'rr';return'Rr';}
+function styleAllele(id,letter){const el=document.getElementById(id);el.textContent=letter;el.classList.toggle('dom',letter==='R');el.classList.toggle('rec',letter==='r');}
+function renderPunnett(){
+  styleAllele('p1a',P.p1[0]);styleAllele('p1b',P.p1[1]);
+  styleAllele('p2a',P.p2[0]);styleAllele('p2b',P.p2[1]);
+  document.getElementById('p1geno').textContent='Genotype: '+sortPair(P.p1[0],P.p1[1]);
+  document.getElementById('p2geno').textContent='Genotype: '+sortPair(P.p2[0],P.p2[1]);
+  const grid=document.getElementById('punnett');grid.innerHTML='';
+  const cells=[];
+  // corner + two column headers (parent2 alleles)
+  cells.push('<div class="pcell corner"></div>');
+  cells.push('<div class="pcell hd">'+P.p2[0]+'</div>');
+  cells.push('<div class="pcell hd">'+P.p2[1]+'</div>');
+  const offspring=[];
+  for(let i=0;i<2;i++){
+    cells.push('<div class="pcell hd">'+P.p1[i]+'</div>');
+    for(let j=0;j<2;j++){
+      const g=sortPair(P.p1[i],P.p2[j]);offspring.push(g);
+      const rec=(g==='rr');
+      cells.push('<div class="pcell off'+(rec?' rec':'')+'">'+g+'</div>');
+    }
+  }
+  grid.innerHTML=cells.join('');
+  // tally
+  const gc={RR:0,Rr:0,rr:0};offspring.forEach(g=>gc[g]++);
+  const dom=gc.RR+gc.Rr, recc=gc.rr;
+  const genoParts=[];if(gc.RR)genoParts.push(gc.RR+' RR');if(gc.Rr)genoParts.push(gc.Rr+' Rr');if(gc.rr)genoParts.push(gc.rr+' rr');
+  document.getElementById('punResult').innerHTML=
+    '<div style="font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)">Each child has a</div>'+
+    '<div class="big">'+(dom/4*100)+'% can roll · '+(recc/4*100)+'% cannot</div>'+
+    '<div class="ratio">Genotypes: '+genoParts.join(' : ')+'</div>'+
+    '<div class="ratio" style="color:var(--green)">Phenotypes — can roll : cannot = '+dom+' : '+recc+'</div>';
+}
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"What carries the instructions passed from parents to offspring?",opts:["Genes","Mitochondria","Ribosomes"],correct:0,why:"Genes are the units of inheritance, passed from parents to offspring."},
+  {q:"Genes are made of...",opts:["Protein","DNA","Fat"],correct:1,why:"Genes are sections of DNA, found on chromosomes."},
+  {q:"A different version of a gene is called a(n)...",opts:["Allele","Atom","Cell"],correct:0,why:"Alleles are the different versions of a gene."},
+  {q:"A dominant allele...",opts:["Needs two copies to show","Shows even with one copy","Never shows"],correct:1,why:"A dominant allele shows in the phenotype even if only one copy is present."},
+  {q:"A recessive trait only appears when an individual has...",opts:["One recessive allele","Two recessive alleles","No alleles"],correct:1,why:"A recessive trait needs two recessive alleles (e.g. rr) to show."},
+  {q:"Natural selection means...",opts:["The best-suited individuals survive and reproduce","All animals live forever","Humans choose which survive"],correct:0,why:"Those best suited to the environment survive and pass on their genes."},
+  {q:"Who is famous for the theory of evolution by natural selection?",opts:["Isaac Newton","Charles Darwin","Marie Curie"],correct:1,why:"Charles Darwin proposed evolution by natural selection."},
+  {q:"In a soot-blackened forest, which peppered moth survives best?",opts:["Light moth","Dark moth","Neither"],correct:1,why:"Dark moths are camouflaged on the dark bark, so birds eat fewer of them."},
+  {q:"Evolution is best described as...",opts:["A change in a species over many generations","A single animal growing up","A food chain"],correct:0,why:"Evolution is the gradual change of a species across many generations."},
+  {q:"When humans choose which plants or animals breed, it is called...",opts:["Natural selection","Selective breeding","Photosynthesis"],correct:1,why:"Selective breeding is humans choosing which organisms reproduce."},
+  {q:"Which provides evidence for evolution?",opts:["Fossils","Rainbows","Tides"],correct:0,why:"Fossils show how organisms have changed over millions of years."},
+  {q:"Cross Rr × Rr. What fraction of offspring show the recessive trait (rr)?",opts:["1 in 4","1 in 2","All of them"],correct:0,why:"Rr × Rr gives 1 RR : 2 Rr : 1 rr, so 1 in 4 are rr."},
+  {q:"What does 'extinction' mean?",opts:["A species changing colour","A species dying out completely","A new species forming"],correct:1,why:"Extinction is when no members of a species remain."},
+  {q:"Antibiotic-resistant bacteria are an example of...",opts:["Natural selection happening today","Selective breeding","A fossil"],correct:0,why:"Resistant bacteria survive and multiply — natural selection in action right now."},
+  {q:"An organism with two identical alleles (e.g. RR) is described as...",opts:["Heterozygous","Homozygous","Recessive"],correct:1,why:"Two of the same allele = homozygous; two different = heterozygous."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+setEnv('clean'); renderPunnett(); nextSet(); buildQuiz();
+</script>
+</body>
+</html>

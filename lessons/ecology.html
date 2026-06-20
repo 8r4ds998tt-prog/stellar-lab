@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecology // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--green);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--green);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--green)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+
+  /* energy pyramid explorer */
+  .toggle{display:inline-flex;background:rgba(0,0,0,.4);border:1px solid var(--line);border-radius:999px;padding:5px;gap:6px;margin-bottom:16px}
+  .toggle button{font-family:var(--ui);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.84rem;border:0;background:transparent;color:var(--muted);padding:10px 20px;border-radius:999px;cursor:pointer;transition:.2s}
+  .toggle button.on{background:var(--green);color:#04120c;box-shadow:0 0 20px rgba(70,230,160,.4)}
+  .explorer{display:grid;grid-template-columns:1.2fr .9fr;gap:18px;align-items:start}
+  @media(max-width:720px){.explorer{grid-template-columns:1fr}}
+  .screen{background:radial-gradient(120% 120% at 50% 0,rgba(120,140,220,.06),transparent),#060a18;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .pyr{display:flex;flex-direction:column;align-items:center;gap:9px}
+  .tier{position:relative;border-radius:12px;padding:12px 16px;cursor:pointer;border:1px solid var(--line);background:rgba(255,255,255,.03);transition:.18s;display:flex;align-items:center;gap:10px;justify-content:center;min-height:56px;width:100%}
+  .tier:hover{border-color:var(--green)}
+  .tier.sel{border-color:var(--green);box-shadow:0 0 16px rgba(70,230,160,.35)}
+  .tier .te{font-size:1.7rem;line-height:1}
+  .tier .tn{font-family:var(--ui);font-weight:700;font-size:1.02rem}
+  .tier .tkj{font-family:var(--ui);font-size:.8rem;color:var(--amber)}
+  .tier.flow{animation:flow .7s}
+  @keyframes flow{0%,100%{box-shadow:0 0 0 transparent}50%{box-shadow:0 0 22px var(--green)}}
+  .arrowup{color:var(--muted);font-size:.7rem;font-family:var(--ui);letter-spacing:.1em;margin:-2px 0}
+  .arrowup b{color:var(--exo2)}
+  .infopanel{border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(255,255,255,.03);min-height:160px}
+  .infopanel .pk{font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;color:var(--amber)}
+  .infopanel h3{font-family:var(--disp);font-size:1.15rem;margin:.2em 0 .3em;color:#fff}
+  .infopanel p{margin:0 0 8px;color:var(--muted);font-size:.94rem}
+  .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:700;font-family:var(--ui)}
+  .pill.prod{background:rgba(70,230,160,.16);color:var(--green)} .pill.cons{background:rgba(45,226,255,.16);color:var(--endo)}
+  .energybtn{font-family:var(--ui);letter-spacing:.08em;text-transform:uppercase;margin-top:14px;background:var(--green);color:#04120c;border:0;padding:11px 22px;border-radius:10px;cursor:pointer;font-weight:700}
+  .energybtn:hover{box-shadow:0 0 20px rgba(70,230,160,.45)}
+  .lossrow{margin-top:12px;display:flex;flex-wrap:wrap;gap:7px;min-height:1.6em}
+  .losschip{font-family:var(--ui);font-size:.72rem;padding:4px 10px;border-radius:999px;background:rgba(255,122,61,.14);color:var(--exo2);opacity:0;transform:translateY(6px);transition:.4s}
+  .losschip.show{opacity:1;transform:none}
+  .compare{font-family:var(--ui);font-size:.86rem;color:var(--muted);margin-top:14px}
+  .compare b{color:var(--ink)}
+
+  /* small cards */
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard .emoji{font-size:1.8rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .15em;font-size:1.02rem;color:var(--green)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1400px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../science.html"><span class="blink"></span> ◄ Science Deck</a>
+    <span>Bio-02 // Ecology</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Science Station · Year 9</div>
+    <h1>WEB OF<br><span class="lav">LIFE</span></h1>
+    <p>Every living thing depends on others. Follow the energy as it flows from the Sun, through plants, and up the food chain — losing most of itself at every step.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 BASICS -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>Everything is connected</h2>
+    <p class="lead">An <b>ecosystem</b> is all the living things in an area plus their non-living surroundings. Inside it, organisms feed on one another and rely on each other to survive — this is <b>interdependence</b>.</p>
+    <div class="cards">
+      <div class="fact"><h3>The key words</h3><p><b>Habitat</b> = where something lives. <b>Population</b> = all of one species there. <b>Community</b> = all the populations together. <b>Ecosystem</b> = the community plus its physical environment.</p></div>
+      <div class="fact"><h3>Producers &amp; consumers</h3><p><b>Producers</b> (plants, algae) make their own food using sunlight. <b>Consumers</b> eat other living things. A food chain always starts with a producer.</p></div>
+      <div class="fact"><h3>Biotic vs abiotic</h3><p><b>Biotic</b> factors are living (predators, food, disease). <b>Abiotic</b> factors are non-living (light, temperature, water, minerals). Both decide what survives where.</p></div>
+      <div class="fact"><h3>Where the energy starts</h3><p>Nearly all energy in an ecosystem comes from the <b>Sun</b>. Plants trap a tiny bit of it by photosynthesis — and that energy then passes along every food chain.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 ENERGY PYRAMID -->
+  <section>
+    <div class="seclabel">Section 02 // Energy Pyramid</div>
+    <h2>Follow the energy</h2>
+    <p class="lead">Pick an ecosystem, then tap each level to see its role. Hit <b>Transfer energy</b> to watch how only about <b>10%</b> moves up to the next level — the other 90% is lost.</p>
+    <div class="toggle">
+      <button id="btnM" class="on" onclick="showEco('meadow')">🌿 Meadow</button>
+      <button id="btnO" onclick="showEco('ocean')">🌊 Ocean</button>
+    </div>
+    <div class="explorer">
+      <div class="screen">
+        <div class="pyr" id="pyr"></div>
+      </div>
+      <div>
+        <div class="infopanel" id="info">
+          <div class="pk">Trophic level</div>
+          <h3>Tap a level →</h3>
+          <p>Select any organism in the pyramid to see its job and how much energy it holds.</p>
+        </div>
+        <button class="energybtn" onclick="transferEnergy()">⚡ Transfer energy</button>
+        <div class="lossrow" id="lossrow"></div>
+      </div>
+    </div>
+    <div class="compare"><b>The 10% rule:</b> only ~10% of the energy at one level is passed on. That is why food chains are short — there is rarely enough energy left for a fifth link.</div>
+  </section>
+
+  <!-- 3 EXAMPLES -->
+  <section>
+    <div class="seclabel">Section 03 // In The Wild</div>
+    <h2>Balancing act</h2>
+    <p class="lead">Because everything is linked, a change to one species ripples through the whole web.</p>
+    <div class="spec">
+      <div class="scard"><div class="emoji">🦊🐇</div><h4>Predator &amp; prey</h4><p>More rabbits → more food for foxes → fox numbers rise → more rabbits eaten → rabbit numbers fall. The two cycle up and down together.</p></div>
+      <div class="scard"><div class="emoji">🕸️</div><h4>Food webs</h4><p>Real ecosystems are food <em>webs</em> — many chains linked. Remove one species and everything that ate it, or that it ate, is affected.</p></div>
+      <div class="scard"><div class="emoji">🍄</div><h4>Decomposers</h4><p>Fungi and bacteria break down dead plants and animals, returning nutrients to the soil so producers can grow again.</p></div>
+      <div class="scard"><div class="emoji">🌡️</div><h4>Adapt or move</h4><p>Organisms are suited to their habitat — a polar bear's fat and fur, a cactus's water store. Change the abiotic factors and some species can no longer survive.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Trophic levels, efficiency &amp; sampling</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:#46e6a0"></span><span><strong>Trophic levels</strong> are numbered: producers are level 1, herbivores (primary consumers) level 2, then 3, 4… Apex predators sit at the top with no predators of their own.</span></div>
+        <div class="key"><span class="dot" style="background:#ff7a3d"></span><span><strong>Why energy is lost:</strong> most is used in <em>respiration</em> (movement and keeping warm) and escapes as heat; more is lost in waste (faeces, urine) and in uneaten parts (bones, roots).</span></div>
+        <div class="key"><span class="dot" style="background:#2de2ff"></span><span><strong>Efficiency of transfer</strong> = <code>(energy passed on ÷ energy available) × 100</code> — usually only about 10%.</span></div>
+        <p style="margin-top:12px"><strong>Pyramids of biomass</strong> show the mass of living material at each level. They are always pyramid-shaped (wide producers, narrow top) because so much energy is lost going up.</p>
+        <p><strong>Sampling:</strong> ecologists estimate populations using a <code>quadrat</code> (a square frame placed at random) to count plants, or a <code>transect</code> line to see how a community changes across an area.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 06 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(70,230,160,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* energy pyramid explorer — data is bottom→top (producer first) */
+const ECO={
+  meadow:[
+    {emoji:'🌿',name:'Grass',role:'Producer',energy:10000,d:'Traps sunlight and makes its own food by photosynthesis. The start of every food chain.',where:'Stores about 1% of the sunlight that hits it — the rest reflects or passes through.'},
+    {emoji:'🦗',name:'Grasshopper',role:'Primary consumer',energy:1000,d:'A herbivore that eats the grass. Only about 10% of the grass’s energy ends up stored in its body.',where:'Most energy is lost moving, growing and as waste (droppings).'},
+    {emoji:'🐭',name:'Shrew',role:'Secondary consumer',energy:100,d:'A small predator that eats grasshoppers. Energy drops by ~90% again at this step.',where:'Keeping warm (respiration) burns most of the energy it takes in.'},
+    {emoji:'🦉',name:'Owl',role:'Tertiary consumer',energy:10,d:'The top (apex) predator here. So little energy is left that the chain stops near this level.',where:'Nothing hunts the owl — but barely any energy remains to support a fifth link.'}
+  ],
+  ocean:[
+    {emoji:'🦠',name:'Phytoplankton',role:'Producer',energy:10000,d:'Microscopic algae that photosynthesise near the sunlit surface. They begin nearly every ocean food chain.',where:'Trap sunlight just like land plants — the base of the marine web.'},
+    {emoji:'🦐',name:'Zooplankton',role:'Primary consumer',energy:1000,d:'Tiny drifting animals (like krill) that graze on phytoplankton.',where:'Around 90% of the energy is lost before it reaches them.'},
+    {emoji:'🐟',name:'Mackerel',role:'Secondary consumer',energy:100,d:'A fast-swimming fish that eats zooplankton in huge shoals.',where:'Constant swimming uses a lot of energy in respiration.'},
+    {emoji:'🦈',name:'Shark',role:'Tertiary consumer',energy:10,d:'An apex predator at the top of the chain, feeding on fish like mackerel.',where:'Top of the web — yet it survives on a tiny fraction of the Sun’s original energy.'}
+  ]
+};
+const WIDTHS=['100%','72%','48%','28%']; // index 0 = producer (bottom), wide
+let eco='meadow', selIndex=null;
+function showEco(name){
+  eco=name; selIndex=null;
+  document.getElementById('btnM').classList.toggle('on',name==='meadow');
+  document.getElementById('btnO').classList.toggle('on',name==='ocean');
+  renderPyr();
+  document.getElementById('lossrow').innerHTML='';
+  document.getElementById('info').innerHTML='<div class="pk">Trophic level</div><h3>Tap a level →</h3><p>Select any organism in the pyramid to see its job and how much energy it holds.</p>';
+}
+function renderPyr(){
+  const pyr=document.getElementById('pyr');pyr.innerHTML='';
+  const data=ECO[eco];
+  // display top→bottom: apex first
+  for(let d=data.length-1; d>=0; d--){
+    const o=data[d];
+    const tier=document.createElement('div');
+    tier.className='tier'+(selIndex===d?' sel':'');
+    tier.style.width=WIDTHS[d];
+    tier.dataset.i=d;
+    tier.innerHTML='<span class="te">'+o.emoji+'</span><span class="tn">'+o.name+'</span><span class="tkj">'+o.energy.toLocaleString()+' kJ</span>';
+    tier.onclick=()=>pickTier(d);
+    pyr.appendChild(tier);
+    if(d>0){const a=document.createElement('div');a.className='arrowup';a.innerHTML='▲ only <b>10%</b> passes up';pyr.appendChild(a);}
+  }
+}
+function pickTier(i){
+  selIndex=i;renderPyr();
+  const o=ECO[eco][i];
+  const isProd=o.role==='Producer';
+  const pill=isProd?'<span class="pill prod">Producer</span>':'<span class="pill cons">'+o.role+'</span>';
+  document.getElementById('info').innerHTML='<div class="pk">'+o.role+' · '+o.energy.toLocaleString()+' kJ</div><h3>'+o.emoji+' '+o.name+'</h3><p>'+o.d+'</p><p style="color:#9fb0d8;font-size:.85rem"><b style="color:#ffb13b">Energy note:</b> '+o.where+'</p><div>'+pill+'</div>';
+}
+function transferEnergy(){
+  const tiers=[...document.querySelectorAll('.tier')];
+  tiers.forEach((t,k)=>{setTimeout(()=>{t.classList.add('flow');setTimeout(()=>t.classList.remove('flow'),700);},k*260);});
+  const losses=['🌡️ Heat from respiration','🏃 Movement','💩 Waste (faeces &amp; urine)','🦴 Uneaten parts'];
+  const row=document.getElementById('lossrow');row.innerHTML='';
+  losses.forEach((l,k)=>{const c=document.createElement('span');c.className='losschip';c.innerHTML=l;row.appendChild(c);setTimeout(()=>c.classList.add('show'),250+k*260);});
+}
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"What does every food chain begin with?",opts:["A producer","A predator","A decomposer"],correct:0,why:"Food chains always start with a producer (a plant or alga) that makes its own food."},
+  {q:"Roughly how much energy is passed to the next level of a food chain?",opts:["About 90%","About 50%","About 10%"],correct:2,why:"Only about 10% is passed on; the other 90% is lost, mostly as heat from respiration."},
+  {q:"A rabbit eating grass is acting as a...",opts:["Producer","Primary consumer","Secondary consumer"],correct:1,why:"The first animal in the chain, eating the producer, is the primary consumer (a herbivore)."},
+  {q:"Which is an ABIOTIC factor?",opts:["Temperature","Predators","Disease"],correct:0,why:"Abiotic means non-living — temperature, light and water. Predators and disease are biotic."},
+  {q:"What word describes how living things rely on each other?",opts:["Photosynthesis","Interdependence","Adaptation"],correct:1,why:"Interdependence is the way organisms in an ecosystem depend on one another."},
+  {q:"Where does almost all the energy in an ecosystem originally come from?",opts:["The soil","The Sun","Decomposers"],correct:1,why:"Producers capture energy from sunlight, and it flows through the whole ecosystem from there."},
+  {q:"Why are most food chains only 4 or 5 links long?",opts:["Animals get bored","Too little energy is left at the top","There are no predators"],correct:1,why:"So much energy is lost at each step that there isn't enough to support more levels."},
+  {q:"What is the role of decomposers like fungi and bacteria?",opts:["Make food from light","Break down dead matter and recycle nutrients","Hunt prey"],correct:1,why:"Decomposers return nutrients to the soil by breaking down dead plants and animals."},
+  {q:"All the populations living together in one area form a...",opts:["Habitat","Community","Biome"],correct:1,why:"A community is all the populations of different species in an area."},
+  {q:"If the number of rabbits rises, what is likely to happen to the foxes that eat them?",opts:["Fox numbers rise","Fox numbers fall to zero","Foxes become producers"],correct:0,why:"More prey means more food, so the predator population tends to rise (then prey falls again)."},
+  {q:"Most energy lost between levels escapes as...",opts:["Light","Heat from respiration","Sound"],correct:1,why:"Respiration (for movement and keeping warm) releases energy as heat to the surroundings."},
+  {q:"A top predator with nothing hunting it is called a(n)...",opts:["Apex predator","Producer","Primary consumer"],correct:0,why:"An apex predator sits at the top of the food chain."},
+  {q:"A real ecosystem with many linked food chains is a...",opts:["Food web","Food line","Food pyramid"],correct:0,why:"Linked food chains form a food web."},
+  {q:"What does a pyramid of biomass show?",opts:["The mass of living material at each level","The number of habitats","The amount of sunlight"],correct:0,why:"A pyramid of biomass shows the mass of living material at each trophic level — wide at the bottom, narrow at the top."},
+  {q:"Which tool do ecologists use to estimate plant populations?",opts:["A quadrat","A microscope","A thermometer"],correct:0,why:"A quadrat is a square frame placed at random to sample and count organisms."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+showEco('meadow'); nextSet(); buildQuiz();
+</script>
+</body>
+</html>

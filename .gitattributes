@@ -1,0 +1,11 @@
+# Keep the whole site on LF line endings on every machine.
+# This stops OneDrive / Windows checkouts from showing every file as "modified".
+* text=auto eol=lf
+
+# Treat these as binary (never touch line endings / never diff as text)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.ico binary

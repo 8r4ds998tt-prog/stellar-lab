@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Variation // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--green);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--green);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--green)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+
+  /* variation scanner */
+  .traitgrid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .traitbtn{font-family:var(--ui);font-weight:700;letter-spacing:.03em;font-size:.86rem;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);padding:9px 15px;border-radius:999px;cursor:pointer;transition:.18s}
+  .traitbtn:hover{border-color:var(--green)}
+  .traitbtn.on{background:var(--green);color:#04120c;box-shadow:0 0 18px rgba(70,230,160,.4)}
+  .explorer{display:grid;grid-template-columns:1.25fr .85fr;gap:18px;align-items:start}
+  @media(max-width:720px){.explorer{grid-template-columns:1fr}}
+  .screen{background:radial-gradient(120% 120% at 50% 0,rgba(120,140,220,.06),transparent),#060a18;border:1px solid var(--line);border-radius:14px;padding:16px 14px 12px}
+  .charttitle{font-family:var(--ui);font-size:.8rem;letter-spacing:.06em;color:var(--amber);text-transform:uppercase;margin-bottom:10px;text-align:center}
+  .chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding:0 4px}
+  .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+  .bar .cnt{font-family:var(--ui);font-size:.74rem;color:var(--ink);margin-bottom:4px}
+  .bar .col{width:100%;background:linear-gradient(180deg,var(--green),rgba(70,230,160,.3));border-radius:6px 6px 0 0;transition:height .55s cubic-bezier(.3,1.2,.4,1);min-height:2px}
+  .bar.cont .col{background:linear-gradient(180deg,var(--blue),rgba(90,166,255,.3))}
+  .xlabels{display:flex;gap:8px;padding:8px 4px 0;border-top:1px solid var(--line);margin-top:2px}
+  .xlabels span{flex:1;text-align:center;font-family:var(--ui);font-size:.72rem;color:var(--muted);line-height:1.15}
+  .infopanel{border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(255,255,255,.03);min-height:160px}
+  .infopanel .pk{font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;color:var(--amber)}
+  .infopanel h3{font-family:var(--disp);font-size:1.12rem;margin:.2em 0 .5em;color:#fff}
+  .infopanel p{margin:0 0 8px;color:var(--muted);font-size:.92rem}
+  .pillrow{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 10px}
+  .pill{display:inline-block;padding:4px 11px;border-radius:999px;font-size:.72rem;font-weight:700;font-family:var(--ui)}
+  .pill.cont{background:rgba(90,166,255,.16);color:var(--blue)} .pill.disc{background:rgba(70,230,160,.16);color:var(--green)}
+  .pill.gen{background:rgba(204,136,255,.16);color:var(--lav)} .pill.env{background:rgba(255,177,59,.16);color:var(--amber)} .pill.both{background:rgba(45,226,255,.16);color:var(--endo)}
+  .scanbtn{font-family:var(--ui);letter-spacing:.08em;text-transform:uppercase;margin-top:14px;background:var(--green);color:#04120c;border:0;padding:11px 22px;border-radius:10px;cursor:pointer;font-weight:700}
+  .scanbtn:hover{box-shadow:0 0 20px rgba(70,230,160,.45)}
+  .compare{font-family:var(--ui);font-size:.86rem;color:var(--muted);margin-top:14px}
+  .compare b{color:var(--ink)}
+
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard .emoji{font-size:1.8rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .15em;font-size:1.02rem;color:var(--green)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1400px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}.bar .col{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../science.html"><span class="blink"></span> ◄ Science Deck</a>
+    <span>Bio-03 // Variation</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Science Station · Year 9</div>
+    <h1>NO TWO<br><span class="lav">ALIKE</span></h1>
+    <p>No two living things are exactly the same — not even identical twins. Scan a population to see the two kinds of variation, and find out where the differences come from.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 BASICS -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>The same... but different</h2>
+    <p class="lead">Members of the same species share the big features but differ in the details. These differences are called <b>variation</b>, and they come in two patterns from two main sources.</p>
+    <div class="cards">
+      <div class="fact"><h3>Continuous variation</h3><p>A smooth range with every value in between — like <b>height</b> or <b>hand span</b>. Plotted, it makes a <b>bell-shaped curve</b>.</p></div>
+      <div class="fact"><h3>Discontinuous variation</h3><p>A few distinct categories with no in-betweens — like <b>blood group</b> or <b>tongue rolling</b>. Plotted, it makes a few separate bars.</p></div>
+      <div class="fact"><h3>Genetic causes</h3><p>Differences you <b>inherit</b> in your genes — eye colour, blood group, natural hair colour. You're born with them.</p></div>
+      <div class="fact"><h3>Environmental causes</h3><p>Differences caused by your <b>surroundings and life</b> — a scar, a language you speak, a suntan. Many traits (like height) are caused by <b>both</b>.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 SCANNER -->
+  <section>
+    <div class="seclabel">Section 02 // Variation Scanner</div>
+    <h2>Scan a population</h2>
+    <p class="lead">Pick a trait to plot 100 people. Watch the <b>shape</b>: a smooth bell means continuous; a few separate bars mean discontinuous. Hit <b>Re-scan</b> to sample a fresh 100.</p>
+    <div class="traitgrid" id="traitgrid"></div>
+    <div class="explorer">
+      <div class="screen">
+        <div class="charttitle" id="charttitle">—</div>
+        <div class="chart" id="chart"></div>
+        <div class="xlabels" id="xlabels"></div>
+      </div>
+      <div>
+        <div class="infopanel" id="info">
+          <div class="pk">Trait analysis</div>
+          <h3>Select a trait →</h3>
+          <p>Choose any trait above to scan a population and classify its variation.</p>
+        </div>
+        <button class="scanbtn" onclick="rescan()">🔄 Re-scan (n=100)</button>
+      </div>
+    </div>
+    <div class="compare"><b>Blue bars</b> = continuous (a measured range). <b>Green bars</b> = discontinuous (set categories).</div>
+  </section>
+
+  <!-- 3 WHY -->
+  <section>
+    <div class="seclabel">Section 03 // Where It Comes From</div>
+    <h2>Why we're all different</h2>
+    <p class="lead">Most variation begins at the moment a new life is made — when genes from two parents are shuffled together.</p>
+    <div class="spec">
+      <div class="scard"><div class="emoji">🧬</div><h4>Two parents, one mix</h4><p>In sexual reproduction a <b>sperm cell</b> and an <b>egg cell</b> (the gametes) join at fertilisation. The offspring gets half its genes from each parent — a brand-new combination.</p></div>
+      <div class="scard"><div class="emoji">👯</div><h4>Identical twins</h4><p>They share the <em>same</em> genes, yet still differ in scars, fitness or tastes. That extra difference must come from the <b>environment</b>.</p></div>
+      <div class="scard"><div class="emoji">🌍</div><h4>Variation = survival</h4><p>Because individuals vary, some are better suited to their surroundings. That variation is the raw material that lets a species <b>adapt and evolve</b>.</p></div>
+      <div class="scard"><div class="emoji">⚡</div><h4>Mutations</h4><p>Random changes to genes (mutations) create brand-new variation that never existed in the parents — most do nothing, a few are harmful, a rare one is useful.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Chromosomes, gametes &amp; sex cells</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:#cc88ff"></span><span><strong>Chromosomes:</strong> your genes are carried on 23 <em>pairs</em> of chromosomes — <code>46 in total</code> — inside the nucleus of nearly every cell.</span></div>
+        <div class="key"><span class="dot" style="background:#46e6a0"></span><span><strong>Gametes</strong> (sperm and egg) are made by a special division called <code>meiosis</code> and carry only <code>23</code> chromosomes each — half the normal number.</span></div>
+        <div class="key"><span class="dot" style="background:#2de2ff"></span><span><strong>Fertilisation</strong> joins the two gametes, restoring 46 chromosomes and combining genes from both parents — the source of genetic variation.</span></div>
+        <p style="margin-top:12px"><strong>Sex chromosomes:</strong> one pair decides biological sex — <code>XX</code> (female) or <code>XY</code> (male).</p>
+        <p><strong>Continuous traits</strong> are usually controlled by <em>many genes</em> together <em>plus</em> the environment, which is why they blend into a smooth range. <strong>Discontinuous traits</strong> are often controlled by just one or two genes.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 07 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(204,136,255,','rgba(45,226,255,','rgba(70,230,160,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* variation scanner */
+const TRAITS={
+  height:{label:'Height',type:'continuous',cause:'both',bins:['<155','155–164','165–174','175–184','185+'],dist:[0.09,0.25,0.34,0.24,0.08],note:'Height varies along a smooth range and forms a bell curve. Your genes set the range; diet, sleep and health decide where you land.'},
+  handspan:{label:'Hand span',type:'continuous',cause:'both',bins:['Small','','Medium','','Large'],dist:[0.10,0.22,0.36,0.22,0.10],note:'Like height, hand span is measured and blends smoothly — a continuous trait shaped by genes and growth.'},
+  eye:{label:'Eye colour',type:'discontinuous',cause:'genetic',bins:['Brown','Blue','Green','Hazel'],dist:[0.55,0.24,0.09,0.12],note:'A few set categories with no in-betweens. Eye colour is inherited — purely genetic.'},
+  blood:{label:'Blood group',type:'discontinuous',cause:'genetic',bins:['O','A','B','AB'],dist:[0.44,0.42,0.10,0.04],note:'Only four distinct groups, decided entirely by the alleles you inherit — discontinuous and genetic.'},
+  tongue:{label:'Tongue rolling',type:'discontinuous',cause:'genetic',bins:['Can roll','Cannot'],dist:[0.65,0.35],note:'Either you can or you can’t — two categories, no middle. A classic inherited, discontinuous trait.'},
+  languages:{label:'Languages spoken',type:'discontinuous',cause:'environmental',bins:['1','2','3','4+'],dist:[0.6,0.27,0.09,0.04],note:'Distinct categories, but this one is set by your upbringing and learning — environmental variation, not genes.'}
+};
+let current='height';
+function sample(dist,n){const c=dist.map(()=>0);for(let i=0;i<n;i++){let r=Math.random(),a=0,placed=false;for(let j=0;j<dist.length;j++){a+=dist[j];if(r<=a){c[j]++;placed=true;break;}}if(!placed)c[c.length-1]++;}return c;}
+function buildTraitBtns(){
+  const g=document.getElementById('traitgrid');g.innerHTML='';
+  Object.keys(TRAITS).forEach(k=>{
+    const b=document.createElement('button');b.className='traitbtn'+(k===current?' on':'');b.textContent=TRAITS[k].label;b.onclick=()=>selectTrait(k);g.appendChild(b);
+  });
+}
+function selectTrait(k){current=k;document.querySelectorAll('.traitbtn').forEach((b,i)=>b.classList.toggle('on',Object.keys(TRAITS)[i]===k));rescan();}
+function rescan(){
+  const t=TRAITS[current];const counts=sample(t.dist,100);const max=Math.max(...counts,1);
+  document.getElementById('charttitle').textContent=t.label+' — 100 people scanned';
+  const chart=document.getElementById('chart');chart.innerHTML='';
+  const xl=document.getElementById('xlabels');xl.innerHTML='';
+  counts.forEach((c,i)=>{
+    const bar=document.createElement('div');bar.className='bar'+(t.type==='continuous'?' cont':'');
+    bar.innerHTML='<div class="cnt">'+c+'</div><div class="col" style="height:'+(c/max*100)+'%"></div>';
+    chart.appendChild(bar);
+    const s=document.createElement('span');s.textContent=t.bins[i];xl.appendChild(s);
+  });
+  const typePill=t.type==='continuous'?'<span class="pill cont">Continuous</span>':'<span class="pill disc">Discontinuous</span>';
+  const causeMap={genetic:'<span class="pill gen">Genetic</span>',environmental:'<span class="pill env">Environmental</span>',both:'<span class="pill both">Genetic + environment</span>'};
+  document.getElementById('info').innerHTML='<div class="pk">Trait analysis</div><h3>'+t.label+'</h3><div class="pillrow">'+typePill+causeMap[t.cause]+'</div><p>'+t.note+'</p>';
+}
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"What is variation?",opts:["Differences between members of a species","A type of cell","A food chain"],correct:0,why:"Variation is the differences between individuals of the same species."},
+  {q:"Height in humans is an example of which type of variation?",opts:["Discontinuous","Continuous","No variation"],correct:1,why:"Height varies smoothly through every in-between value — continuous variation."},
+  {q:"Which trait shows DISCONTINUOUS variation?",opts:["Body mass","Hand span","Blood group"],correct:2,why:"Blood group has a few set categories with no in-betweens — discontinuous."},
+  {q:"A smooth bell-shaped graph is a sign of...",opts:["Continuous variation","Discontinuous variation","An error"],correct:0,why:"Continuous data forms a bell-shaped curve."},
+  {q:"Eye colour is caused by...",opts:["The environment only","Genes (inherited)","Diet"],correct:1,why:"Eye colour is inherited — a genetic cause of variation."},
+  {q:"Which of these is an ENVIRONMENTAL cause of variation?",opts:["Natural eye colour","A scar from an accident","Blood group"],correct:1,why:"A scar is caused by your surroundings/life, not your genes — environmental."},
+  {q:"Human height is caused by...",opts:["Genes only","Environment only","Both genes and environment"],correct:2,why:"Height is shaped by inherited genes AND by diet, health and lifestyle."},
+  {q:"Identical twins have the same genes but still differ slightly. Why?",opts:["Different environments","Different blood","Different species"],correct:0,why:"Any difference between identical twins must come from the environment, since their genes match."},
+  {q:"During sexual reproduction, the offspring's genes are...",opts:["All from the mother","Half from each parent","Copied exactly from one parent"],correct:1,why:"A new individual gets half its genes from each parent — creating variation."},
+  {q:"The sex cells that join at fertilisation are called...",opts:["Gametes","Chromosomes","Tissues"],correct:0,why:"Gametes are the sex cells — sperm and egg — that fuse at fertilisation."},
+  {q:"A random change to a gene that creates new variation is a...",opts:["Mutation","Mitochondrion","Membrane"],correct:0,why:"A mutation is a random change to a gene and a source of brand-new variation."},
+  {q:"Why is variation important for a species?",opts:["It lets them adapt and evolve","It uses less energy","It makes food chains shorter"],correct:0,why:"Variation means some individuals are better suited to survive — the basis of evolution."},
+  {q:"How many chromosomes are in a normal human body cell?",opts:["23","46","100"],correct:1,why:"Body cells contain 23 pairs — 46 chromosomes in total."},
+  {q:"A human gamete (sperm or egg) carries how many chromosomes?",opts:["46","23","2"],correct:1,why:"Gametes carry 23 — half the usual number — so fertilisation restores 46."},
+  {q:"Which pattern would 'tongue rolling: can or cannot' produce on a graph?",opts:["A smooth curve","A few separate bars","A straight line"],correct:1,why:"Two distinct categories give separate bars — discontinuous variation."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+buildTraitBtns(); rescan(); nextSet(); buildQuiz();
+</script>
+</body>
+</html>
