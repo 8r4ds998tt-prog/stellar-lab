@@ -251,11 +251,15 @@ document.querySelectorAll('section').forEach(s=>io.observe(s));
 /* spinner */
 const sc=document.getElementById('spin'),sg=sc.getContext('2d');
 const SCOLS=['#cc88ff','#46e6a0','#5aa6ff','#ffb13b','#ff3b5c','#39d6c8','#eaf2ff','#ff1f3d'];
-let nSec=4,targSec=0,spinTotal=0,spinHits=0,spinning=false,spinAngle=0;
+let nSec=4,targSec=0,spinTotal=0,spinHits=0,spinning=false;
+// centre sector 0 at the needle (top = -PI/2) so no boundary sits at 12 o'clock on load
+function homeAngle(){return -Math.PI/2 - Math.PI/nSec;}
+let spinAngle=homeAngle();
 function buildSpinner(){
   nSec=parseInt(document.getElementById('secR').value);
   document.getElementById('secLab').textContent=nSec;
   const tr=document.getElementById('targR');tr.max=nSec;if(parseInt(tr.value)>nSec)tr.value=1;
+  spinAngle=homeAngle();spinTotal=0;spinHits=0;updateStats();
   updateTarg();
 }
 function updateTarg(){
@@ -321,7 +325,7 @@ function updateStats(){
   if(spinTotal>0)document.getElementById('sDiff').textContent=Math.abs(spinHits/spinTotal-1/nSec).toFixed(3);
   else document.getElementById('sDiff').textContent='—';
 }
-function resetSpin(){spinTotal=0;spinHits=0;spinAngle=0;updateStats();drawSpinner(0);}
+function resetSpin(){spinTotal=0;spinHits=0;spinAngle=homeAngle();updateStats();drawSpinner(spinAngle);}
 buildSpinner();
 
 /* tree diagram */
