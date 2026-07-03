@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Area & Volume // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff; --teal:#39d6c8;
+    --acc:#39d6c8;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(57,214,200,.5),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--acc);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--acc);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--acc)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+
+  /* shape explorer */
+  .shapebox{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+  @media(max-width:720px){.shapebox{grid-template-columns:1fr}}
+  .shscreen{background:#060a18;border:1px solid var(--line);border-radius:14px;padding:10px}
+  canvas#shape{width:100%;height:auto;display:block;border-radius:8px}
+  .shape-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .stab{font-family:var(--ui);font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+  .stab.active{background:rgba(57,214,200,.15);border-color:var(--acc);color:var(--acc)}
+  .ctrl{margin-bottom:12px}
+  .ctrl label{font-family:var(--ui);font-size:.84rem;letter-spacing:.03em;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px}
+  .ctrl label b{color:var(--ink)}
+  input[type=range]{width:100%;cursor:pointer;accent-color:var(--acc)}
+  .formula-box{border:1px solid var(--acc);border-radius:13px;padding:14px;background:rgba(57,214,200,.07);margin-top:10px;text-align:center}
+  .formula-box .fl{font-family:var(--ui);font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+  .formula-box .fv{font-family:var(--disp);font-size:1.3rem;color:var(--acc);margin-top:4px}
+  .formula-box .fw{font-family:var(--ui);font-size:.86rem;color:var(--muted);margin-top:4px}
+  .formula-box .fn{font-family:var(--ui);font-size:.88rem;color:var(--lav);margin-top:6px;font-weight:700}
+
+  .spec{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr 1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:14px}
+  .scard .emoji{font-size:1.5rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .1em;font-size:.96rem;color:var(--acc)}
+  .scard p{margin:0;color:var(--muted);font-size:.84rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1500px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../maths.html"><span class="blink"></span> ◄ Maths Deck</a>
+    <span>Geo-02 // Area &amp; Volume</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Maths Station · Year 9</div>
+    <h1>AREA &amp;<br><span class="lav">VOLUME</span></h1>
+    <p>Every shape has a formula that captures how much space it fills. Pick a shape, change the dimensions, and watch the calculation update in real time.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 CORE -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>2D and 3D space</h2>
+    <p class="lead"><b>Area</b> measures the surface inside a 2D shape (cm², m²). <b>Volume</b> measures how much 3D space a solid fills (cm³, m³). Get the formula right, check your units, and substitute.</p>
+    <div class="cards">
+      <div class="fact"><h3>Area formulae (2D)</h3><p>Rectangle: <b>l × w</b> · Triangle: <b>½ × b × h</b> · Circle: <b>πr²</b> · Trapezium: <b>½(a+b)h</b> · Parallelogram: <b>b × h</b></p></div>
+      <div class="fact"><h3>Volume formulae (3D)</h3><p>Cuboid: <b>l × w × h</b> · Cylinder: <b>πr²h</b> · Cone: <b>⅓πr²h</b> · Sphere: <b>⁴⁄₃πr³</b> · Prism: <b>cross-section area × length</b></p></div>
+      <div class="fact"><h3>Surface area</h3><p>The total area of all faces. For a cuboid: <b>2(lw + lh + wh)</b>. For a cylinder: <b>2πr² + 2πrh</b> (two circles + curved surface).</p></div>
+      <div class="fact"><h3>Units matter</h3><p>Length in cm → area in cm², volume in cm³. If you mix units, convert first. 1 m² = 10,000 cm². 1 m³ = 1,000,000 cm³.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 SHAPE EXPLORER -->
+  <section>
+    <div class="seclabel">Section 02 // Shape Explorer</div>
+    <h2>Build any shape</h2>
+    <p class="lead">Pick a shape and slide the dimensions — the formula, working, and answer update live.</p>
+    <div class="shape-tabs">
+      <button class="stab active" onclick="setShape('rect')">Rectangle</button>
+      <button class="stab" onclick="setShape('tri')">Triangle</button>
+      <button class="stab" onclick="setShape('circle')">Circle</button>
+      <button class="stab" onclick="setShape('trap')">Trapezium</button>
+      <button class="stab" onclick="setShape('cuboid')">Cuboid</button>
+      <button class="stab" onclick="setShape('cyl')">Cylinder</button>
+    </div>
+    <div class="shapebox">
+      <div class="shscreen"><canvas id="shape" width="400" height="300"></canvas></div>
+      <div>
+        <div id="dimCtrls"></div>
+        <div class="formula-box">
+          <div class="fl" id="fLabel">Area</div>
+          <div class="fv" id="fFormula">—</div>
+          <div class="fw" id="fWorking">—</div>
+          <div class="fn" id="fAnswer">—</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 FORMULAE REFERENCE -->
+  <section>
+    <div class="seclabel">Section 03 // Formula Card</div>
+    <h2>Quick reference</h2>
+    <div class="spec">
+      <div class="scard"><div class="emoji">▭</div><h4>Rectangle</h4><p>A = lw · P = 2(l+w)</p></div>
+      <div class="scard"><div class="emoji">△</div><h4>Triangle</h4><p>A = ½bh</p></div>
+      <div class="scard"><div class="emoji">⬠</div><h4>Trapezium</h4><p>A = ½(a+b)h</p></div>
+      <div class="scard"><div class="emoji">⬤</div><h4>Circle</h4><p>A = πr² · C = 2πr</p></div>
+      <div class="scard"><div class="emoji">📦</div><h4>Cuboid</h4><p>V = lwh · SA = 2(lw+lh+wh)</p></div>
+      <div class="scard"><div class="emoji">🥫</div><h4>Cylinder</h4><p>V = πr²h · SA = 2πr²+2πrh</p></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Sphere, cone &amp; composite shapes</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:var(--acc)"></span><span><strong>Sphere:</strong> Volume = <code>⁴⁄₃πr³</code>; Surface area = <code>4πr²</code>. These won't be given in the exam — memorise them.</span></div>
+        <div class="key"><span class="dot" style="background:var(--amber)"></span><span><strong>Cone:</strong> Volume = <code>⅓πr²h</code>; Curved surface area = <code>πrl</code> where l is the <em>slant height</em> (use Pythagoras: l² = r² + h²).</span></div>
+        <div class="key"><span class="dot" style="background:var(--blue)"></span><span><strong>Composite shapes:</strong> split into simpler parts, find each area/volume, add (or subtract). e.g. L-shape = large rectangle − small rectangle.</span></div>
+        <p style="margin-top:12px"><strong>Reverse problems:</strong> rearrange the formula. Cylinder volume 200 cm³, radius 4 cm → <code>h = 200 ÷ (π×4²) ≈ 3.98 cm</code>.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 20 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(57,214,200,','rgba(90,166,255,','rgba(70,230,160,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* shape explorer */
+const sc=document.getElementById('shape'),sg=sc.getContext('2d');
+const W=sc.width,H=sc.height;
+let curShape='rect';
+let dims={l:8,w:5,h:6,b:7,a:4,r:5};
+
+function fmt(n){return Number.isInteger(n)?n:n.toFixed(2);}
+
+const SHAPES={
+  rect:{
+    label:'Area',
+    formula:'A = l × w',
+    controls:[{key:'l',label:'Length',min:1,max:14,def:8},{key:'w',label:'Width',min:1,max:12,def:5}],
+    calc:d=>d.l*d.w,
+    working:d=>'A = '+d.l+' × '+d.w+' = '+fmt(d.l*d.w)+' cm²',
+    draw:(d,g)=>{
+      const maxW=300,maxH=200,scale=Math.min(maxW/d.l,maxH/d.w,20);
+      const rw=d.l*scale,rh=d.w*scale,ox=(W-rw)/2,oy=(H-rh)/2;
+      g.fillStyle='rgba(57,214,200,.2)';g.fillRect(ox,oy,rw,rh);
+      g.strokeStyle='rgba(57,214,200,.9)';g.lineWidth=2.5;g.strokeRect(ox,oy,rw,rh);
+      g.fillStyle='#39d6c8';g.font='13px Rajdhani';g.textAlign='center';
+      g.fillText(d.l+' cm',ox+rw/2,oy-8);
+      g.save();g.translate(ox-8,oy+rh/2);g.rotate(-Math.PI/2);g.fillText(d.w+' cm',0,0);g.restore();
+    }
+  },
+  tri:{
+    label:'Area',
+    formula:'A = ½ × b × h',
+    controls:[{key:'b',label:'Base',min:2,max:14,def:8},{key:'h',label:'Height',min:1,max:12,def:6}],
+    calc:d=>0.5*d.b*d.h,
+    working:d=>'A = ½ × '+d.b+' × '+d.h+' = '+fmt(0.5*d.b*d.h)+' cm²',
+    draw:(d,g)=>{
+      const scale=Math.min(300/d.b,200/d.h,22);
+      const bw=d.b*scale,bh=d.h*scale,ox=(W-bw)/2,oy=(H-bh)/2;
+      g.fillStyle='rgba(57,214,200,.2)';g.beginPath();g.moveTo(ox,oy+bh);g.lineTo(ox+bw/2,oy);g.lineTo(ox+bw,oy+bh);g.closePath();g.fill();
+      g.strokeStyle='rgba(57,214,200,.9)';g.lineWidth=2.5;g.stroke();
+      // height dashed line
+      g.strokeStyle='rgba(255,177,59,.5)';g.lineWidth=1.5;g.setLineDash([5,4]);
+      g.beginPath();g.moveTo(ox+bw/2,oy);g.lineTo(ox+bw/2,oy+bh);g.stroke();g.setLineDash([]);
+      g.fillStyle='#39d6c8';g.font='13px Rajdhani';g.textAlign='center';
+      g.fillText(d.b+' cm',ox+bw/2,oy+bh+16);
+      g.fillStyle='#ffb13b';g.textAlign='left';g.fillText(d.h+' cm',ox+bw/2+6,(oy+oy+bh)/2);
+    }
+  },
+  circle:{
+    label:'Area & Circumference',
+    formula:'A = πr²  ·  C = 2πr',
+    controls:[{key:'r',label:'Radius',min:1,max:10,def:5}],
+    calc:d=>Math.PI*d.r*d.r,
+    working:d=>'A = π × '+d.r+'² = '+fmt(Math.PI*d.r*d.r)+' cm² · C = 2π×'+d.r+' = '+fmt(2*Math.PI*d.r)+' cm',
+    draw:(d,g)=>{
+      const scale=Math.min(120/d.r,1);const r=d.r*scale*10;
+      g.fillStyle='rgba(57,214,200,.2)';g.beginPath();g.arc(W/2,H/2,r,0,7);g.fill();
+      g.strokeStyle='rgba(57,214,200,.9)';g.lineWidth=2.5;g.stroke();
+      g.strokeStyle='rgba(255,177,59,.7)';g.lineWidth=1.5;g.beginPath();g.moveTo(W/2,H/2);g.lineTo(W/2+r,H/2);g.stroke();
+      g.fillStyle='#ffb13b';g.font='13px Rajdhani';g.textAlign='left';g.fillText('r='+d.r,W/2+r/2,H/2-8);
+    }
+  },
+  trap:{
+    label:'Area',
+    formula:'A = ½(a + b) × h',
+    controls:[{key:'a',label:'Top (a)',min:2,max:12,def:4},{key:'b',label:'Bottom (b)',min:2,max:14,def:8},{key:'h',label:'Height',min:1,max:10,def:6}],
+    calc:d=>0.5*(d.a+d.b)*d.h,
+    working:d=>'A = ½ × ('+d.a+' + '+d.b+') × '+d.h+' = '+fmt(0.5*(d.a+d.b)*d.h)+' cm²',
+    draw:(d,g)=>{
+      const scale=Math.min(280/d.b,180/d.h,22);
+      const bw=d.b*scale,aw=d.a*scale,bh=d.h*scale;
+      const ox=(W-bw)/2,oy=(H-bh)/2,offset=(bw-aw)/2;
+      g.fillStyle='rgba(57,214,200,.2)';g.beginPath();g.moveTo(ox,oy+bh);g.lineTo(ox+bw,oy+bh);g.lineTo(ox+offset+aw,oy);g.lineTo(ox+offset,oy);g.closePath();g.fill();
+      g.strokeStyle='rgba(57,214,200,.9)';g.lineWidth=2.5;g.stroke();
+      g.fillStyle='#39d6c8';g.font='13px Rajdhani';g.textAlign='center';
+      g.fillText(d.a+' cm',ox+offset+aw/2,oy-8);g.fillText(d.b+' cm',ox+bw/2,oy+bh+16);
+      g.strokeStyle='rgba(255,177,59,.5)';g.lineWidth=1.5;g.setLineDash([5,4]);g.beginPath();g.moveTo(ox+offset,oy);g.lineTo(ox+offset,oy+bh);g.stroke();g.setLineDash([]);
+      g.fillStyle='#ffb13b';g.textAlign='left';g.fillText(d.h+' cm',ox+offset+4,(oy+oy+bh)/2);
+    }
+  },
+  cuboid:{
+    label:'Volume & Surface Area',
+    formula:'V = l×w×h  ·  SA = 2(lw+lh+wh)',
+    controls:[{key:'l',label:'Length',min:1,max:12,def:6},{key:'w',label:'Width',min:1,max:10,def:4},{key:'h',label:'Height',min:1,max:10,def:5}],
+    calc:d=>d.l*d.w*d.h,
+    working:d=>'V = '+d.l+'×'+d.w+'×'+d.h+' = '+fmt(d.l*d.w*d.h)+' cm³ · SA = 2('+d.l*d.w+'+'+d.l*d.h+'+'+d.w*d.h+') = '+fmt(2*(d.l*d.w+d.l*d.h+d.w*d.h))+' cm²',
+    draw:(d,g)=>{
+      const sc2=Math.min(200/d.l,150/d.h,18);const lw=d.l*sc2,lh=d.h*sc2,dep=d.w*sc2*0.5;
+      const ox=W/2-lw/2-dep/2,oy=H/2-lh/2+dep/2;
+      // back face
+      g.fillStyle='rgba(57,214,200,.07)';g.beginPath();g.moveTo(ox+dep,oy-dep);g.lineTo(ox+dep+lw,oy-dep);g.lineTo(ox+dep+lw,oy-dep+lh);g.lineTo(ox+dep,oy-dep+lh);g.closePath();g.fill();g.strokeStyle='rgba(57,214,200,.4)';g.lineWidth=1;g.stroke();
+      // front face
+      g.fillStyle='rgba(57,214,200,.22)';g.beginPath();g.moveTo(ox,oy);g.lineTo(ox+lw,oy);g.lineTo(ox+lw,oy+lh);g.lineTo(ox,oy+lh);g.closePath();g.fill();g.strokeStyle='rgba(57,214,200,.8)';g.lineWidth=2;g.stroke();
+      // top face
+      g.fillStyle='rgba(57,214,200,.14)';g.beginPath();g.moveTo(ox,oy);g.lineTo(ox+dep,oy-dep);g.lineTo(ox+dep+lw,oy-dep);g.lineTo(ox+lw,oy);g.closePath();g.fill();g.stroke();
+      // right face
+      g.fillStyle='rgba(57,214,200,.1)';g.beginPath();g.moveTo(ox+lw,oy);g.lineTo(ox+dep+lw,oy-dep);g.lineTo(ox+dep+lw,oy-dep+lh);g.lineTo(ox+lw,oy+lh);g.closePath();g.fill();g.stroke();
+      // labels
+      g.fillStyle='#39d6c8';g.font='12px Rajdhani';g.textAlign='center';g.fillText(d.l+' cm',ox+lw/2,oy+lh+14);
+      g.fillStyle='#ffb13b';g.textAlign='right';g.fillText(d.h+' cm',ox-4,oy+lh/2+4);
+      g.fillStyle='#8be6c0';g.textAlign='left';g.fillText(d.w+' cm',ox+lw+dep/2+6,oy-dep/2+4);
+    }
+  },
+  cyl:{
+    label:'Volume & Surface Area',
+    formula:'V = πr²h  ·  SA = 2πr²+2πrh',
+    controls:[{key:'r',label:'Radius',min:1,max:8,def:4},{key:'h',label:'Height',min:1,max:14,def:8}],
+    calc:d=>Math.PI*d.r*d.r*d.h,
+    working:d=>'V = π×'+d.r+'²×'+d.h+' = '+fmt(Math.PI*d.r*d.r*d.h)+' cm³ · SA = '+fmt(2*Math.PI*d.r*d.r+2*Math.PI*d.r*d.h)+' cm²',
+    draw:(d,g)=>{
+      const sc2=Math.min(120/d.r,180/d.h,12);const r=d.r*sc2,ht=d.h*sc2;
+      const cx=W/2,oy=(H-ht)/2;
+      // body
+      g.fillStyle='rgba(57,214,200,.18)';g.fillRect(cx-r,oy,2*r,ht);
+      g.strokeStyle='rgba(57,214,200,.8)';g.lineWidth=2;g.strokeRect(cx-r,oy,2*r,ht);
+      // top ellipse
+      g.beginPath();g.ellipse(cx,oy,r,r*0.3,0,0,7);g.fillStyle='rgba(57,214,200,.3)';g.fill();g.strokeStyle='rgba(57,214,200,.8)';g.stroke();
+      // bottom ellipse
+      g.beginPath();g.ellipse(cx,oy+ht,r,r*0.3,0,0,7);g.fillStyle='rgba(57,214,200,.15)';g.fill();g.stroke();
+      // labels
+      g.fillStyle='#ffb13b';g.font='12px Rajdhani';g.textAlign='left';g.fillText('r='+d.r,cx+4,oy-4);
+      g.fillStyle='#39d6c8';g.textAlign='right';g.fillText(d.h+' cm',cx-r-4,oy+ht/2+4);
+    }
+  }
+};
+
+function buildControls(shape){
+  const box=document.getElementById('dimCtrls');box.innerHTML='';
+  SHAPES[shape].controls.forEach(ctrl=>{
+    if(dims[ctrl.key]===undefined)dims[ctrl.key]=ctrl.def;
+    const d=document.createElement('div');d.className='ctrl';
+    d.innerHTML='<label>'+ctrl.label+' <b id="lbl_'+ctrl.key+'">'+dims[ctrl.key]+'</b> cm</label><input type="range" id="sl_'+ctrl.key+'" min="'+ctrl.min+'" max="'+ctrl.max+'" step="1" value="'+dims[ctrl.key]+'">';
+    box.appendChild(d);
+    d.querySelector('input').addEventListener('input',function(){dims[ctrl.key]=parseInt(this.value);document.getElementById('lbl_'+ctrl.key).textContent=this.value;drawShape();});
+  });
+}
+function drawShape(){
+  sg.clearRect(0,0,W,H);
+  const sh=SHAPES[curShape];
+  sh.draw(dims,sg);
+  document.getElementById('fLabel').textContent=sh.label;
+  document.getElementById('fFormula').textContent=sh.formula;
+  document.getElementById('fWorking').textContent=sh.working(dims);
+  const v=sh.calc(dims);
+  document.getElementById('fAnswer').textContent='= '+fmt(v)+(curShape==='circle'?'':'')+' '+(['cuboid','cyl'].includes(curShape)?'cm³':'cm²');
+}
+function setShape(s){
+  curShape=s;
+  document.querySelectorAll('.stab').forEach((b,i)=>b.classList.toggle('active',['rect','tri','circle','trap','cuboid','cyl'][i]===s));
+  buildControls(s);drawShape();
+}
+setShape('rect');
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"Area of a rectangle 9 cm × 4 cm.",opts:["36 cm²","26 cm²","13 cm²"],correct:0,why:"A = l × w = 9 × 4 = 36 cm²."},
+  {q:"Area of a triangle with base 10 cm and height 6 cm.",opts:["60 cm²","30 cm²","16 cm²"],correct:1,why:"A = ½ × 10 × 6 = 30 cm²."},
+  {q:"Area of a circle with radius 5 cm. (Use π ≈ 3.14)",opts:["31.4 cm²","78.5 cm²","15.7 cm²"],correct:1,why:"A = π × 5² = 3.14 × 25 = 78.5 cm²."},
+  {q:"Volume of a cuboid 5 cm × 3 cm × 4 cm.",opts:["60 cm³","24 cm³","47 cm³"],correct:0,why:"V = 5 × 3 × 4 = 60 cm³."},
+  {q:"Circumference of a circle with radius 7 cm. (Use π ≈ 3.14)",opts:["21.98 cm","43.96 cm","153.94 cm"],correct:1,why:"C = 2 × π × 7 = 2 × 3.14 × 7 = 43.96 cm."},
+  {q:"Area of a trapezium: parallel sides 6 cm and 10 cm, height 4 cm.",opts:["64 cm²","32 cm²","24 cm²"],correct:1,why:"A = ½ × (6+10) × 4 = ½ × 16 × 4 = 32 cm²."},
+  {q:"Volume of a cylinder with radius 3 cm, height 10 cm. (π ≈ 3.14)",opts:["282.6 cm³","94.2 cm³","188.4 cm³"],correct:0,why:"V = π × 3² × 10 = 3.14 × 9 × 10 = 282.6 cm³."},
+  {q:"Surface area of a cube with side 4 cm.",opts:["64 cm²","96 cm²","24 cm²"],correct:1,why:"Cube: 6 faces, each 4×4=16 cm². Total = 6×16 = 96 cm²."},
+  {q:"Area of a parallelogram with base 8 cm and perpendicular height 5 cm.",opts:["40 cm²","20 cm²","26 cm²"],correct:0,why:"A = base × height = 8 × 5 = 40 cm²."},
+  {q:"A rectangle has area 48 cm² and length 8 cm. Its width is...",opts:["6 cm","4 cm","40 cm"],correct:0,why:"Width = Area ÷ Length = 48 ÷ 8 = 6 cm."},
+  {q:"Volume of a cone with radius 4 cm and height 9 cm. (π ≈ 3.14)",opts:["150.7 cm³","452.2 cm³","50.2 cm³"],correct:0,why:"V = ⅓ × π × 4² × 9 = ⅓ × 3.14 × 16 × 9 ≈ 150.7 cm³."},
+  {q:"Units for volume are...",opts:["cm","cm²","cm³"],correct:2,why:"Volume is 3-dimensional, so its units are cubed: cm³, m³ etc."},
+  {q:"A circle has area 50.24 cm². Its radius is (π ≈ 3.14)...",opts:["4 cm","8 cm","16 cm"],correct:0,why:"r² = A ÷ π = 50.24 ÷ 3.14 = 16; r = √16 = 4 cm."},
+  {q:"Surface area of a cuboid 3 cm × 4 cm × 5 cm.",opts:["94 cm²","60 cm³","47 cm²"],correct:0,why:"SA = 2(3×4 + 3×5 + 4×5) = 2(12+15+20) = 2×47 = 94 cm²."},
+  {q:"A triangle has area 24 cm² and base 8 cm. Its height is...",opts:["6 cm","3 cm","16 cm"],correct:0,why:"h = (2 × Area) ÷ base = 48 ÷ 8 = 6 cm."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+nextSet();buildQuiz();
+</script>
+</body>
+</html>

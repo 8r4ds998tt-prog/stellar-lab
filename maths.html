@@ -68,12 +68,18 @@
   .lesson.locked{opacity:.55;cursor:default;border-left-color:var(--line)}
   .lesson.locked.in{opacity:.55}
   .lesson.locked:hover{transform:none;border-color:var(--line);box-shadow:none}
+  .chip.num{background:rgba(70,230,160,.16);color:var(--num)}
+  a.lesson.num{border-left-color:var(--num)}
+  a.lesson.num:hover{transform:translateY(-4px);border-color:var(--num);box-shadow:0 14px 36px rgba(70,230,160,.2)}
   .chip.alg{background:rgba(90,166,255,.16);color:var(--alg)}
   a.lesson.alg{border-left-color:var(--alg)}
   a.lesson.alg:hover{transform:translateY(-4px);border-color:var(--alg);box-shadow:0 14px 36px rgba(90,166,255,.2)}
   .chip.geo{background:rgba(57,214,200,.16);color:var(--geo)}
   a.lesson.geo{border-left-color:var(--geo)}
   a.lesson.geo:hover{transform:translateY(-4px);border-color:var(--geo);box-shadow:0 14px 36px rgba(57,214,200,.2)}
+  .chip.data{background:rgba(204,136,255,.16);color:var(--data)}
+  a.lesson.data{border-left-color:var(--data)}
+  a.lesson.data:hover{transform:translateY(-4px);border-color:var(--data);box-shadow:0 14px 36px rgba(204,136,255,.2)}
   .placeholder{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;color:var(--muted);font-family:var(--ui);letter-spacing:.03em}
   /* reference library */
   .reflib{background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:18px;opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
@@ -118,12 +124,34 @@
   </header>
 
   <div class="strands">
-    <div class="strand num" data-sci="num" role="button" tabindex="0" onclick="sliceStrand('num')"><div class="ic">🔢</div><h2>Number</h2><div class="count">Coming soon</div></div>
-    <div class="strand alg" data-sci="alg" role="button" tabindex="0" onclick="sliceStrand('alg')"><div class="ic">📈</div><h2>Algebra</h2><div class="count">1 mission ready</div></div>
-    <div class="strand geo" data-sci="geo" role="button" tabindex="0" onclick="sliceStrand('geo')"><div class="ic">📐</div><h2>Geometry</h2><div class="count">1 mission ready</div></div>
-    <div class="strand data" data-sci="data" role="button" tabindex="0" onclick="sliceStrand('data')"><div class="ic">🎲</div><h2>Data &amp; Probability</h2><div class="count">Coming soon</div></div>
+    <div class="strand num" data-sci="num" role="button" tabindex="0" onclick="sliceStrand('num')"><div class="ic">🔢</div><h2>Number</h2><div class="count">3 missions ready</div></div>
+    <div class="strand alg" data-sci="alg" role="button" tabindex="0" onclick="sliceStrand('alg')"><div class="ic">📈</div><h2>Algebra</h2><div class="count">4 missions ready</div></div>
+    <div class="strand geo" data-sci="geo" role="button" tabindex="0" onclick="sliceStrand('geo')"><div class="ic">📐</div><h2>Geometry</h2><div class="count">3 missions ready</div></div>
+    <div class="strand data" data-sci="data" role="button" tabindex="0" onclick="sliceStrand('data')"><div class="ic">🎲</div><h2>Data &amp; Probability</h2><div class="count">1 mission ready</div></div>
   </div>
   <div class="slicehint" id="sliceHint"><span class="lab"></span><button onclick="showAllStrands()">✕ Show all</button></div>
+
+  <div class="section-title mg" data-sci="num"><span class="bar" style="background:var(--num);box-shadow:0 0 12px var(--num)"></span> Number · Missions</div>
+  <div class="lessons mg" data-sci="num">
+    <a class="lesson num" href="lessons/percentages.html">
+      <div class="tagrow"><span class="chip num">Percentages</span><span class="chip ready">● Ready</span></div>
+      <h3>Percentage Lab</h3>
+      <p>Find a %, increase, decrease, reverse percentage and compound interest — all with animated bar readouts and live working.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson num" href="lessons/standard-form.html">
+      <div class="tagrow"><span class="chip num">Standard Form</span><span class="chip ready">● Ready</span></div>
+      <h3>Powers of Ten</h3>
+      <p>Slide the coefficient and power to write any number in A × 10ⁿ — from nanometres to light-years on one scale.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson num" href="lessons/ratio-proportion.html">
+      <div class="tagrow"><span class="chip num">Ratio &amp; Proportion</span><span class="chip ready">● Ready</span></div>
+      <h3>Share the Spoils</h3>
+      <p>Animated ratio-splitting bar and direct/inverse proportion graphs — adjust parts and scale factor live.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+  </div>
 
   <div class="section-title mg" data-sci="alg"><span class="bar" style="background:var(--alg);box-shadow:0 0 12px var(--alg)"></span> Algebra · Missions</div>
   <div class="lessons mg" data-sci="alg">
@@ -131,6 +159,24 @@
       <div class="tagrow"><span class="chip alg">Straight-line graphs</span><span class="chip ready">● Ready</span></div>
       <h3>Plot the Line</h3>
       <p>y = mx + c brought to life — drag the gradient and intercept sliders and watch the line redraw on a live grid.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson alg" href="lessons/equations-inequalities.html">
+      <div class="tagrow"><span class="chip alg">Equations &amp; Inequalities</span><span class="chip ready">● Ready</span></div>
+      <h3>Balance the Scale</h3>
+      <p>Step through equation solving on an animated balance scale, then draw inequalities on an interactive number line.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson alg" href="lessons/algebraic-manipulation.html">
+      <div class="tagrow"><span class="chip alg">Algebraic Manipulation</span><span class="chip ready">● Ready</span></div>
+      <h3>Expand &amp; Factorise</h3>
+      <p>FOIL area-grid canvas for double brackets and a proportional split visualiser for single brackets — see algebra in rectangles.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson alg" href="lessons/non-linear-graphs.html">
+      <div class="tagrow"><span class="chip alg">Non-linear Graphs</span><span class="chip ready">● Ready</span></div>
+      <h3>Curve Control</h3>
+      <p>Plot quadratic, reciprocal and cubic curves live — sliders shift a, b, c and the graph redraws with vertex and intercepts marked.</p>
       <div class="go">Launch mission →</div>
     </a>
   </div>
@@ -143,13 +189,29 @@
       <p>a² + b² = c² you can see — adjust the two short sides and watch the squares on the sides always balance.</p>
       <div class="go">Launch mission →</div>
     </a>
+    <a class="lesson geo" href="lessons/area-volume.html">
+      <div class="tagrow"><span class="chip geo">Area &amp; Volume</span><span class="chip ready">● Ready</span></div>
+      <h3>Shape Explorer</h3>
+      <p>Six-shape lab — rectangle, triangle, circle, trapezium, cuboid, cylinder. Sliders update the formula, working and answer live.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+    <a class="lesson geo" href="lessons/transformations.html">
+      <div class="tagrow"><span class="chip geo">Transformations</span><span class="chip ready">● Ready</span></div>
+      <h3>Transformer</h3>
+      <p>Translate, rotate, reflect or enlarge an L-shape on a coordinate grid — sliders and mirror-line buttons update the image instantly.</p>
+      <div class="go">Launch mission →</div>
+    </a>
   </div>
 
-  <div class="section-title mg" data-sci="num"><span class="bar" style="background:var(--num);box-shadow:0 0 12px var(--num)"></span> Number · Missions</div>
-  <div class="placeholder mg" data-sci="num">🔢 Number missions are coming soon — percentages, fractions, ratio and standard form are next on the build list.</div>
-
   <div class="section-title mg" data-sci="data"><span class="bar" style="background:var(--data);box-shadow:0 0 12px var(--data)"></span> Data &amp; Probability · Missions</div>
-  <div class="placeholder mg" data-sci="data">🎲 Data &amp; Probability missions are coming soon — probability, averages and statistical diagrams are on the way.</div>
+  <div class="lessons mg" data-sci="data">
+    <a class="lesson data" href="lessons/probability.html">
+      <div class="tagrow"><span class="chip data">Probability</span><span class="chip ready">● Ready</span></div>
+      <h3>Chance Engine</h3>
+      <p>Spin a configurable spinner, track experimental frequency vs theory, and build tree diagrams for combined events.</p>
+      <div class="go">Launch mission →</div>
+    </a>
+  </div>
 
   <div class="section-title"><span class="bar"></span> Reference Library</div>
   <div class="reflib">

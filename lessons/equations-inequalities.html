@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equations & Inequalities // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff; --teal:#39d6c8;
+    --acc:#5aa6ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(90,166,255,.5),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--acc);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--acc);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--acc)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+
+  /* balance scale */
+  .scalearea{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+  @media(max-width:720px){.scalearea{grid-template-columns:1fr}}
+  .balscreen{background:#060a18;border:1px solid var(--line);border-radius:14px;padding:16px}
+  canvas#scale{width:100%;height:auto;display:block;border-radius:8px}
+  .eq-step{font-family:var(--disp);font-size:1.25rem;color:#fff;text-align:center;margin-bottom:8px;letter-spacing:.02em;line-height:1.4}
+  .eq-step .lhs{color:var(--acc)} .eq-step .rhs{color:var(--amber)}
+  .steps{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .step{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:11px;padding:11px 15px;cursor:pointer;font-family:var(--ui);font-size:.92rem;transition:.2s;display:flex;align-items:center;gap:10px}
+  .step:hover{border-color:var(--acc);background:rgba(90,166,255,.08)}
+  .step.done{border-color:var(--green);background:rgba(70,230,160,.08);color:var(--green)}
+  .step.active{border-color:var(--acc);background:rgba(90,166,255,.14)}
+  .step .snum{font-family:var(--disp);font-size:.82rem;color:var(--muted);width:22px;text-align:center;flex:0 0 auto}
+  .step .stxt{flex:1}
+  .step .sarr{color:var(--acc);font-size:1.1rem}
+  .result-eq{font-family:var(--disp);font-size:1.5rem;color:var(--acc);text-align:center;margin-top:12px;min-height:2rem}
+  .newbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;width:100%;margin-top:10px;background:rgba(90,166,255,.15);border:1px solid var(--acc);color:var(--acc);padding:10px;border-radius:10px;cursor:pointer;font-size:.82rem}
+  .newbtn:hover{background:rgba(90,166,255,.3)}
+
+  /* inequalities number line */
+  .numline-wrap{background:#060a18;border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px}
+  canvas#numline{width:100%;height:auto;display:block}
+  .ineq-display{font-family:var(--disp);font-size:1.3rem;color:#fff;text-align:center;margin-bottom:10px}
+  .ineq-display .x{color:var(--acc)} .ineq-display .n{color:var(--amber)}
+  .ineq-ctrl{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+  .ineq-ctrl label{font-family:var(--ui);font-size:.84rem;color:var(--muted);flex:1;min-width:120px}
+  .ineq-ctrl label b{color:var(--ink)}
+  .ineq-ctrl input[type=range]{width:100%;accent-color:var(--acc)}
+  .sym-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .sym-btn{font-family:var(--ui);font-size:1rem;padding:8px 16px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+  .sym-btn.active{background:rgba(90,166,255,.18);border-color:var(--acc);color:var(--acc);font-weight:700}
+
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard .emoji{font-size:1.7rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .15em;font-size:1.02rem;color:var(--acc)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1500px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../maths.html"><span class="blink"></span> ◄ Maths Deck</a>
+    <span>Alg-02 // Equations &amp; Inequalities</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Maths Station · Year 9</div>
+    <h1>BALANCE<br><span class="lav">THE SCALE</span></h1>
+    <p>An equation is a balance. Whatever you do to one side, do it to the other — and the equals sign stays true. Step through the solution and see the scale stay level.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 CORE -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>One rule: keep it balanced</h2>
+    <p class="lead">Solving an equation means isolating x. Every step must be applied to <b>both sides</b> equally — like a balance scale that must stay level.</p>
+    <div class="cards">
+      <div class="fact"><h3>Inverse operations</h3><p>Undo whatever is <b>around x</b>. Addition undone by −, multiplication undone by ÷. Work from the outside in.</p></div>
+      <div class="fact"><h3>Two-step equations</h3><p>e.g. 3x + 5 = 20 → subtract 5 → 3x = 15 → divide by 3 → <b>x = 5</b>. Undo addition first, then multiplication.</p></div>
+      <div class="fact"><h3>Inequalities</h3><p>Instead of = use &lt;, &gt;, ≤, ≥. Solve the same way — but <b>flip the sign</b> if you multiply or divide by a negative.</p></div>
+      <div class="fact"><h3>Number line notation</h3><p>x &gt; 3 → open circle at 3, arrow right. x ≤ 3 → filled circle at 3, arrow left. ● = included, ○ = excluded.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 BALANCE SCALE -->
+  <section>
+    <div class="seclabel">Section 02 // Equation Solver</div>
+    <h2>Step through the balance</h2>
+    <p class="lead">Click each step to apply it — the scale shows both sides staying equal. "New equation" gives you a fresh problem.</p>
+    <div class="scalearea">
+      <div class="balscreen">
+        <canvas id="scale" width="460" height="200"></canvas>
+        <div class="eq-step" id="eqDisp"></div>
+      </div>
+      <div>
+        <div class="steps" id="stepsBox"></div>
+        <div class="result-eq" id="resultEq"></div>
+        <button class="newbtn" onclick="newEq()">↻ New equation</button>
+      </div>
+    </div>
+
+    <!-- INEQUALITIES -->
+    <div style="margin-top:28px">
+      <div class="seclabel" style="margin-bottom:8px">Inequalities — Number Line</div>
+      <div class="sym-row" id="symRow">
+        <button class="sym-btn active" onclick="setSym('<')">&lt;</button>
+        <button class="sym-btn" onclick="setSym('>')">&gt;</button>
+        <button class="sym-btn" onclick="setSym('<=')">≤</button>
+        <button class="sym-btn" onclick="setSym('>=')">≥</button>
+      </div>
+      <div class="ineq-display" id="ineqDisp"><span class="x">x</span> &lt; <span class="n">3</span></div>
+      <div class="numline-wrap">
+        <canvas id="numline" width="600" height="80"></canvas>
+      </div>
+      <div class="ineq-ctrl">
+        <label>Boundary value <b id="boundLab">3</b><br><input type="range" id="boundR" min="-8" max="8" step="1" value="3" oninput="ineqUpdate()"></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 TYPES -->
+  <section>
+    <div class="seclabel">Section 03 // Equation Types</div>
+    <h2>More equation shapes</h2>
+    <div class="spec">
+      <div class="scard"><div class="emoji">⚙️</div><h4>Variables both sides</h4><p>5x − 3 = 2x + 9 → collect x: subtract 2x → 3x − 3 = 9 → add 3 → 3x = 12 → <b>x = 4</b>.</p></div>
+      <div class="scard"><div class="emoji">📦</div><h4>With brackets</h4><p>3(x + 2) = 21 → expand: 3x + 6 = 21 → subtract 6 → 3x = 15 → <b>x = 5</b>. Or divide first: x + 2 = 7.</p></div>
+      <div class="scard"><div class="emoji">🔢</div><h4>Unknowns in denominator</h4><p>12/x = 4 → multiply both sides by x → 12 = 4x → <b>x = 3</b>.</p></div>
+      <div class="scard"><div class="emoji">📏</div><h4>Integer inequalities</h4><p>Solve 2x − 1 &lt; 9 → 2x &lt; 10 → x &lt; 5. Integer solutions: <b>{..., 2, 3, 4}</b>.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Forming equations &amp; double inequalities</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:var(--acc)"></span><span><strong>Forming equations:</strong> read the problem, let x = the unknown, write an equation from the words, solve. e.g. "Five more than twice a number is 19" → <code>2x + 5 = 19</code> → x = 7.</span></div>
+        <div class="key"><span class="dot" style="background:var(--amber)"></span><span><strong>Double inequality:</strong> <code>3 ≤ 2x + 1 &lt; 11</code> — subtract 1 from all parts: <code>2 ≤ 2x &lt; 10</code> — divide all by 2: <code>1 ≤ x &lt; 5</code>.</span></div>
+        <div class="key"><span class="dot" style="background:var(--blue)"></span><span><strong>Flip the sign:</strong> if you multiply or divide an inequality by a <em>negative</em> number, the inequality sign reverses. <code>−2x &gt; 6 → x &lt; −3</code>.</span></div>
+        <p style="margin-top:12px"><strong>Simultaneous equations preview:</strong> two equations, two unknowns — solve by elimination or substitution. You'll meet this fully in GCSE Year 10.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 17 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(90,166,255,','rgba(70,230,160,','rgba(204,136,255,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* balance scale */
+const sc=document.getElementById('scale'),sg=sc.getContext('2d');
+const EQUATIONS=[
+  {a:3,b:7,c:22,desc:'3x + 7 = 22',steps:['Subtract 7 from both sides → 3x = 15','Divide both sides by 3 → x = 5'],sol:'x = 5',lhsFn:(x)=>3*x+7,x:5},
+  {a:5,b:2,c:27,desc:'5x + 2 = 27',steps:['Subtract 2 from both sides → 5x = 25','Divide both sides by 5 → x = 5'],sol:'x = 5',lhsFn:(x)=>5*x+2,x:5},
+  {a:4,b:-3,c:13,desc:'4x − 3 = 13',steps:['Add 3 to both sides → 4x = 16','Divide both sides by 4 → x = 4'],sol:'x = 4',lhsFn:(x)=>4*x-3,x:4},
+  {a:2,b:9,c:19,desc:'2x + 9 = 19',steps:['Subtract 9 from both sides → 2x = 10','Divide both sides by 2 → x = 5'],sol:'x = 5',lhsFn:(x)=>2*x+9,x:5},
+  {a:6,b:3,c:33,desc:'6x + 3 = 33',steps:['Subtract 3 from both sides → 6x = 30','Divide both sides by 6 → x = 5'],sol:'x = 5',lhsFn:(x)=>6*x+3,x:5},
+  {a:3,b:-4,c:17,desc:'3x − 4 = 17',steps:['Add 4 to both sides → 3x = 21','Divide both sides by 3 → x = 7'],sol:'x = 7',lhsFn:(x)=>3*x-4,x:7},
+];
+let eqIdx=0,curStep=0,eqList=EQUATIONS.slice();
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+shuffle(eqList);
+
+function drawScale(tilt){
+  const W=sc.width,H=sc.height;sg.clearRect(0,0,W,H);
+  const cx=W/2,py=60,armLen=160;
+  const ang=tilt*(Math.PI/20);
+  // pivot
+  sg.fillStyle='rgba(122,140,210,.5)';sg.beginPath();sg.arc(cx,py,8,0,7);sg.fill();
+  // arm
+  sg.strokeStyle='rgba(170,190,240,.7)';sg.lineWidth=3;sg.beginPath();
+  const lx=cx-armLen*Math.cos(ang),ly=py+armLen*Math.sin(ang);
+  const rx=cx+armLen*Math.cos(ang),ry=py-armLen*Math.sin(ang);
+  sg.moveTo(lx,ly);sg.lineTo(rx,ry);sg.stroke();
+  // chains
+  const chainH=50;sg.lineWidth=1.5;sg.strokeStyle='rgba(122,140,210,.5)';
+  sg.beginPath();sg.moveTo(lx,ly);sg.lineTo(lx,ly+chainH);sg.stroke();
+  sg.beginPath();sg.moveTo(rx,ry);sg.lineTo(rx,ry+chainH);sg.stroke();
+  // pans
+  const panW=80,panH=20;
+  sg.fillStyle='rgba(90,166,255,.25)';sg.strokeStyle='rgba(90,166,255,.7)';sg.lineWidth=2;
+  sg.beginPath();sg.roundRect(lx-panW/2,ly+chainH,panW,panH,6);sg.fill();sg.stroke();
+  sg.fillStyle='rgba(255,177,59,.25)';sg.strokeStyle='rgba(255,177,59,.7)';
+  sg.beginPath();sg.roundRect(rx-panW/2,ry+chainH,panW,panH,6);sg.fill();sg.stroke();
+  // LHS label
+  sg.fillStyle='#9cc4ff';sg.font='bold 13px Rajdhani';sg.textAlign='center';
+  sg.fillText('LHS',lx,ly+chainH+14);
+  sg.fillStyle='#ffce7a';sg.fillText('RHS',rx,ry+chainH+14);
+  // balance indicator
+  const balanced=Math.abs(tilt)<0.05;
+  if(balanced){sg.fillStyle='rgba(70,230,160,.8)';sg.font='bold 13px Rajdhani';sg.textAlign='center';sg.fillText('✓ BALANCED',cx,H-8);}
+}
+function loadEq(){
+  const eq=eqList[eqIdx%eqList.length];curStep=0;
+  document.getElementById('eqDisp').innerHTML='<span class="lhs">'+eq.desc.split('=')[0].trim()+'</span> = <span class="rhs">'+eq.desc.split('=')[1].trim()+'</span>';
+  document.getElementById('resultEq').textContent='';
+  const box=document.getElementById('stepsBox');box.innerHTML='';
+  eq.steps.forEach((s,i)=>{
+    const d=document.createElement('div');d.className='step';d.innerHTML='<span class="snum">'+(i+1)+'</span><span class="stxt">'+s+'</span><span class="sarr">→</span>';
+    d.onclick=()=>applyStep(i,eq,d);box.appendChild(d);
+  });
+  drawScale(1);
+}
+function applyStep(i,eq,el){
+  if(i>curStep)return;
+  el.classList.add('done');curStep=i+1;
+  const allSteps=document.getElementById('stepsBox').querySelectorAll('.step');
+  allSteps.forEach((s,j)=>{if(j===curStep)s.classList.add('active');else s.classList.remove('active');});
+  const tilt=1-curStep/(eq.steps.length);
+  drawScale(tilt*0.8*(curStep===0?1:-1));
+  if(curStep>=eq.steps.length){drawScale(0);document.getElementById('resultEq').textContent=eq.sol;}
+}
+function newEq(){eqIdx++;loadEq();}
+loadEq();
+
+/* inequalities number line */
+const nlc=document.getElementById('numline'),nlg=nlc.getContext('2d');
+let ineqSym='<';
+function setSym(s){ineqSym=s;document.querySelectorAll('.sym-btn').forEach((b,i)=>{b.classList.toggle('active',['<','>','<=','>='][i]===s);});ineqUpdate();}
+function ineqUpdate(){
+  const bv=parseInt(document.getElementById('boundR').value);
+  document.getElementById('boundLab').textContent=bv;
+  const symTxt={'<':'<','>':'>','<=':'≤','>=':'≥'}[ineqSym];
+  document.getElementById('ineqDisp').innerHTML='<span class="x">x</span> '+symTxt+' <span class="n">'+bv+'</span>';
+  // draw
+  const W=nlc.width,H=nlc.height,py=H/2;
+  const MIN=-10,MAX=10,pad=30;
+  const s=(W-2*pad)/(MAX-MIN);
+  const xOf=v=>pad+(v-MIN)*s;
+  nlg.clearRect(0,0,W,H);
+  nlg.strokeStyle='rgba(170,190,240,.5)';nlg.lineWidth=2;nlg.beginPath();nlg.moveTo(pad,py);nlg.lineTo(W-pad,py);nlg.stroke();
+  // ticks
+  nlg.fillStyle='#8fa0c8';nlg.font='11px Rajdhani';nlg.textAlign='center';
+  for(let v=MIN;v<=MAX;v+=2){
+    const x=xOf(v);
+    nlg.beginPath();nlg.moveTo(x,py-5);nlg.lineTo(x,py+5);nlg.strokeStyle='rgba(170,190,240,.4)';nlg.lineWidth=1;nlg.stroke();
+    nlg.fillText(v,x,py+18);
+  }
+  const bx=xOf(bv);
+  const right=ineqSym==='>'||ineqSym==='>=';
+  const included=ineqSym==='<='||ineqSym==='>=';
+  // shaded region
+  nlg.fillStyle='rgba(90,166,255,.25)';
+  if(right){nlg.fillRect(bx,py-10,W-pad-bx,20);}
+  else{nlg.fillRect(pad,py-10,bx-pad,20);}
+  // arrow
+  nlg.strokeStyle='rgba(90,166,255,.8)';nlg.lineWidth=3;nlg.beginPath();
+  if(right){nlg.moveTo(bx,py);nlg.lineTo(W-pad,py);nlg.stroke();nlg.beginPath();nlg.moveTo(W-pad,py);nlg.lineTo(W-pad-10,py-6);nlg.moveTo(W-pad,py);nlg.lineTo(W-pad-10,py+6);nlg.stroke();}
+  else{nlg.moveTo(bx,py);nlg.lineTo(pad,py);nlg.stroke();nlg.beginPath();nlg.moveTo(pad,py);nlg.lineTo(pad+10,py-6);nlg.moveTo(pad,py);nlg.lineTo(pad+10,py+6);nlg.stroke();}
+  // circle at boundary
+  nlg.beginPath();nlg.arc(bx,py,7,0,7);
+  if(included){nlg.fillStyle='#5aa6ff';nlg.fill();}
+  else{nlg.fillStyle='#04060f';nlg.fill();nlg.strokeStyle='#5aa6ff';nlg.lineWidth=2.5;nlg.stroke();}
+}
+ineqUpdate();
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"Solve 3x + 4 = 19.",opts:["x = 5","x = 4","x = 7"],correct:0,why:"Subtract 4: 3x = 15. Divide by 3: x = 5."},
+  {q:"Solve 2x − 6 = 10.",opts:["x = 8","x = 2","x = 7"],correct:0,why:"Add 6: 2x = 16. Divide by 2: x = 8."},
+  {q:"Solve 5x = 35.",opts:["x = 7","x = 6","x = 30"],correct:0,why:"Divide both sides by 5: x = 7."},
+  {q:"Solve x/4 = 6.",opts:["x = 24","x = 1.5","x = 10"],correct:0,why:"Multiply both sides by 4: x = 24."},
+  {q:"Solve 4x + 3 = 2x + 11.",opts:["x = 4","x = 8","x = 2"],correct:0,why:"Subtract 2x: 2x + 3 = 11. Subtract 3: 2x = 8. Divide: x = 4."},
+  {q:"Solve 3(x − 2) = 15.",opts:["x = 7","x = 5","x = 11"],correct:0,why:"Expand: 3x − 6 = 15. Add 6: 3x = 21. Divide: x = 7."},
+  {q:"Which inequality describes: open circle at 4, arrow pointing right?",opts:["x > 4","x ≥ 4","x < 4"],correct:0,why:"Open circle = not included. Arrow right = greater than. So x > 4."},
+  {q:"Solve 2x + 5 > 13.",opts:["x > 4","x > 9","x < 4"],correct:0,why:"Subtract 5: 2x > 8. Divide by 2: x > 4."},
+  {q:"Which is the correct first step to solve 5x − 8 = 22?",opts:["Divide by 5","Add 8 to both sides","Subtract 22"],correct:1,why:"Undo the subtraction first: add 8 to both sides → 5x = 30."},
+  {q:"Solve 7x = 56.",opts:["x = 8","x = 7","x = 63"],correct:0,why:"Divide both sides by 7: x = 8."},
+  {q:"If 3x − 5 = 10, what is x?",opts:["x = 5","x = 15","x = 3"],correct:0,why:"Add 5: 3x = 15. Divide by 3: x = 5."},
+  {q:"Solve x/3 + 2 = 7.",opts:["x = 15","x = 5","x = 27"],correct:0,why:"Subtract 2: x/3 = 5. Multiply by 3: x = 15."},
+  {q:"A filled circle on a number line means...",opts:["The value is excluded","The value is included","The value is unknown"],correct:1,why:"Filled (closed) circle = the boundary value IS included (≤ or ≥)."},
+  {q:"Solve 4(2x + 1) = 28.",opts:["x = 3","x = 7","x = 3.5"],correct:0,why:"Divide by 4: 2x + 1 = 7. Subtract 1: 2x = 6. Divide: x = 3."},
+  {q:"Solve 6 − 2x = 14.",opts:["x = −4","x = 4","x = 10"],correct:0,why:"Subtract 6: −2x = 8. Divide by −2 (flip sign): x = −4."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffleQ(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffleQ(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+nextSet();buildQuiz();
+</script>
+</body>
+</html>

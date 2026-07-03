@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ratio & Proportion // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff; --teal:#39d6c8;
+    --acc:#46e6a0;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(70,230,160,.5),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--acc);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--acc);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--acc)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+
+  /* ratio mixer */
+  .ratiobox{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+  @media(max-width:720px){.ratiobox{grid-template-columns:1fr}}
+  .ratioscreen{background:#060a18;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .ratio-display{font-family:var(--disp);font-size:2rem;color:#fff;text-align:center;margin-bottom:12px;letter-spacing:.04em}
+  .ratio-display .ra{color:var(--acc)} .ratio-display .rb{color:var(--amber)} .ratio-display .rc{color:var(--blue)}
+  .bar-container{margin-bottom:14px}
+  .bar-label{font-family:var(--ui);font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px}
+  .ratio-bar{display:flex;height:38px;border-radius:10px;overflow:hidden;gap:2px}
+  .rb-a{background:linear-gradient(90deg,var(--acc),rgba(70,230,160,.7));display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:.82rem;color:#041208;font-weight:700;transition:flex .35s ease;min-width:0}
+  .rb-b{background:linear-gradient(90deg,var(--amber),rgba(255,177,59,.7));display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:.82rem;color:#130a00;font-weight:700;transition:flex .35s ease;min-width:0}
+  .rb-c{background:linear-gradient(90deg,var(--blue),rgba(90,166,255,.7));display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:.82rem;color:#001428;font-weight:700;transition:flex .35s ease;min-width:0}
+  .shares{display:flex;gap:10px;margin-top:10px}
+  .share-card{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px;text-align:center;background:rgba(255,255,255,.03)}
+  .share-card .sk{font-family:var(--ui);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .share-card .sv{font-family:var(--disp);font-size:1.1rem;margin-top:2px}
+  .ctrl{margin-bottom:14px}
+  .ctrl label{font-family:var(--ui);font-size:.86rem;letter-spacing:.03em;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:5px}
+  .ctrl label b{color:var(--ink)}
+  input[type=range]{width:100%;cursor:pointer;accent-color:var(--acc)}
+  .tab-row{display:flex;gap:8px;margin-bottom:14px}
+  .rtab{font-family:var(--ui);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;padding:7px 14px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s}
+  .rtab.active{background:rgba(70,230,160,.15);border-color:var(--acc);color:var(--acc)}
+  .prop-box{background:#060a18;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}
+  .prop-table{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .prop-cell{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+  .prop-cell .pk{font-family:var(--ui);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .prop-cell .pv{font-family:var(--disp);font-size:1.05rem;margin-top:2px;color:var(--acc)}
+  .prop-note{font-family:var(--ui);font-size:.86rem;color:var(--muted);margin-top:10px}
+
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard .emoji{font-size:1.7rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .15em;font-size:1.02rem;color:var(--acc)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1500px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}.rb-a,.rb-b,.rb-c{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../maths.html"><span class="blink"></span> ◄ Maths Deck</a>
+    <span>Num-03 // Ratio &amp; Proportion</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Maths Station · Year 9</div>
+    <h1>RATIO &amp;<br><span class="lav">PROPORTION</span></h1>
+    <p>Ratios compare parts. Proportion links two quantities that grow together. Set a ratio, pour in a total, and watch the shares split perfectly every time.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 CORE -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>Sharing and scaling</h2>
+    <p class="lead">A ratio like <b>3 : 2</b> means for every 3 parts of one thing, there are 2 parts of another. The total is <b>3 + 2 = 5 parts</b>, and you divide the whole into those parts.</p>
+    <div class="cards">
+      <div class="fact"><h3>Simplifying ratios</h3><p>Divide both sides by their HCF. <br>12 : 8 → divide by 4 → <b>3 : 2</b>. Always reduce to lowest terms.</p></div>
+      <div class="fact"><h3>Sharing in a ratio</h3><p>Add the parts, find one part, multiply. <br>£60 in ratio 2:3: total parts = 5, one part = £12. Shares: <b>£24 and £36</b>.</p></div>
+      <div class="fact"><h3>Direct proportion</h3><p>As one quantity increases, the other <b>increases</b> by the same factor. Double x → double y. <b>y = kx</b> (k is constant).</p></div>
+      <div class="fact"><h3>Inverse proportion</h3><p>As one increases, the other <b>decreases</b>. Double x → halve y. <b>y = k/x</b>. More workers → less time.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 RATIO MIXER -->
+  <section>
+    <div class="seclabel">Section 02 // Ratio Mixer</div>
+    <h2>Split a total any way you like</h2>
+    <p class="lead">Set the ratio parts and the total amount — see the bar split and each share calculated live. Switch to Proportion to see y = kx in action.</p>
+    <div class="tab-row">
+      <button class="rtab active" onclick="setMode('ratio')">Ratio sharing</button>
+      <button class="rtab" onclick="setMode('prop')">Proportion</button>
+    </div>
+
+    <div id="ratioPanel">
+      <div class="ratiobox">
+        <div class="ratioscreen">
+          <div class="ratio-display"><span class="ra" id="rA">3</span> : <span class="rb" id="rB">2</span></div>
+          <div class="bar-container">
+            <div class="bar-label">Total split</div>
+            <div class="ratio-bar">
+              <div class="rb-a" id="barA">A</div>
+              <div class="rb-b" id="barB">B</div>
+            </div>
+          </div>
+          <div class="shares">
+            <div class="share-card"><div class="sk">Part A</div><div class="sv" id="shareA" style="color:var(--acc)">—</div></div>
+            <div class="share-card"><div class="sk">Part B</div><div class="sv" id="shareB" style="color:var(--amber)">—</div></div>
+            <div class="share-card"><div class="sk">Total parts</div><div class="sv" id="totalParts" style="color:#fff">—</div></div>
+          </div>
+          <div style="font-family:var(--ui);font-size:.84rem;color:var(--muted);margin-top:10px;text-align:center" id="ratioWork"></div>
+        </div>
+        <div>
+          <div class="ctrl"><label>Part A <b style="color:var(--acc)" id="aLab">3</b></label><input type="range" id="aR" min="1" max="9" step="1" value="3" oninput="ratioUpdate()"></div>
+          <div class="ctrl"><label>Part B <b style="color:var(--amber)" id="bLab">2</b></label><input type="range" id="bR" min="1" max="9" step="1" value="2" oninput="ratioUpdate()"></div>
+          <div class="ctrl"><label>Total amount <b id="totLab">60</b></label><input type="range" id="totR" min="10" max="500" step="10" value="60" oninput="ratioUpdate()"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="propPanel" style="display:none">
+      <div class="prop-box">
+        <p class="lead" style="margin-bottom:12px">Set x — y adjusts by the constant <b style="color:var(--acc)">k</b> (the multiplier for direct proportion).</p>
+        <div class="prop-table">
+          <div class="prop-cell"><div class="pk">x</div><div class="pv" id="px">4</div></div>
+          <div class="prop-cell"><div class="pk">k (rate)</div><div class="pv" id="pk">2.5</div></div>
+          <div class="prop-cell"><div class="pk">y = kx</div><div class="pv" id="py">10</div></div>
+          <div class="prop-cell"><div class="pk">y = k/x (inverse)</div><div class="pv" id="pyi">0.63</div></div>
+        </div>
+        <div class="prop-note" id="propNote"></div>
+        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+          <div class="ctrl" style="flex:1;min-width:140px;margin:0"><label>x value <b id="xLab">4</b></label><input type="range" id="xR" min="1" max="20" step="1" value="4" oninput="propUpdate()"></div>
+          <div class="ctrl" style="flex:1;min-width:140px;margin:0"><label>k (rate) <b id="kLab">2.5</b></label><input type="range" id="kR" min="5" max="50" step="5" value="25" oninput="propUpdate()"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 EXAMPLES -->
+  <section>
+    <div class="seclabel">Section 03 // Real Life</div>
+    <h2>Ratios in the wild</h2>
+    <div class="spec">
+      <div class="scard"><div class="emoji">🍕</div><h4>Sharing food</h4><p>Split 24 slices 3:1 between two people → 4 parts total, one part = 6 slices → <b>18 and 6</b>.</p></div>
+      <div class="scard"><div class="emoji">🗺️</div><h4>Map scale</h4><p>Scale 1:50,000 means 1 cm on the map = 50,000 cm = <b>500 m</b> in real life. Direct proportion.</p></div>
+      <div class="scard"><div class="emoji">🏗️</div><h4>Workers &amp; time</h4><p>3 workers take 8 hours → 6 workers take <b>4 hours</b>. Double workers → halve time: inverse proportion.</p></div>
+      <div class="scard"><div class="emoji">🧪</div><h4>Mixing solutions</h4><p>Squash at ratio 1:4 (concentrate : water). For 500 ml total: <b>100 ml + 400 ml</b>.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 3-part ratios, best value &amp; inverse proportion</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:var(--acc)"></span><span><strong>3-part ratios:</strong> e.g. share £120 in ratio 2:3:5 → total parts = 10, one part = £12 → shares are <code>£24, £36, £60</code>.</span></div>
+        <div class="key"><span class="dot" style="background:var(--amber)"></span><span><strong>Best value / unit rate:</strong> divide total cost by quantity for each option. The <em>lower cost per unit</em> is better value. e.g. 400 g for £1.20 vs 650 g for £1.82 → <code>£3.00/kg vs £2.80/kg</code> → 650 g wins.</span></div>
+        <div class="key"><span class="dot" style="background:var(--blue)"></span><span><strong>Inverse proportion equation:</strong> if y is inversely proportional to x then <code>y = k/x</code>. Find k from a given pair (x, y), then use it to find any other value.</span></div>
+        <p style="margin-top:12px"><strong>Graphical clue:</strong> direct proportion gives a <em>straight line through the origin</em>. Inverse proportion gives a <em>curved hyperbola</em>.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 16 · For Lyra</footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(70,230,160,','rgba(90,166,255,','rgba(204,136,255,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* ratio mixer */
+function fmt(n){return Number.isInteger(n)?n:n.toFixed(2);}
+function ratioUpdate(){
+  const a=parseInt(document.getElementById('aR').value);
+  const b=parseInt(document.getElementById('bR').value);
+  const tot=parseInt(document.getElementById('totR').value);
+  document.getElementById('aLab').textContent=a;
+  document.getElementById('bLab').textContent=b;
+  document.getElementById('totLab').textContent=tot;
+  document.getElementById('rA').textContent=a;
+  document.getElementById('rB').textContent=b;
+  const total=a+b;
+  const shareA=tot*a/total;
+  const shareB=tot*b/total;
+  document.getElementById('barA').style.flex=a;document.getElementById('barA').textContent=a;
+  document.getElementById('barB').style.flex=b;document.getElementById('barB').textContent=b;
+  document.getElementById('shareA').textContent=fmt(shareA);
+  document.getElementById('shareB').textContent=fmt(shareB);
+  document.getElementById('totalParts').textContent=total+' parts';
+  document.getElementById('ratioWork').textContent='One part = '+tot+' ÷ '+total+' = '+fmt(tot/total)+' · A: '+fmt(tot/total)+' × '+a+' = '+fmt(shareA)+' · B: '+fmt(tot/total)+' × '+b+' = '+fmt(shareB);
+}
+function propUpdate(){
+  const xv=parseInt(document.getElementById('xR').value);
+  const kraw=parseInt(document.getElementById('kR').value);
+  const k=kraw/10;
+  document.getElementById('xLab').textContent=xv;
+  document.getElementById('kLab').textContent=k.toFixed(1);
+  const y=k*xv;
+  const yi=k/xv;
+  document.getElementById('px').textContent=xv;
+  document.getElementById('pk').textContent=k.toFixed(1);
+  document.getElementById('py').textContent=fmt(y);
+  document.getElementById('pyi').textContent=fmt(yi);
+  document.getElementById('propNote').textContent='y = '+k.toFixed(1)+' × '+xv+' = '+fmt(y)+' (direct). y = '+k.toFixed(1)+' ÷ '+xv+' = '+fmt(yi)+' (inverse).';
+}
+function setMode(m){
+  document.querySelectorAll('.rtab').forEach((t,i)=>t.classList.toggle('active',['ratio','prop'][i]===m));
+  document.getElementById('ratioPanel').style.display=m==='ratio'?'':'none';
+  document.getElementById('propPanel').style.display=m==='prop'?'':'none';
+}
+ratioUpdate();propUpdate();
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"Simplify the ratio 12 : 8.",opts:["6:4","3:2","4:3"],correct:1,why:"HCF of 12 and 8 is 4; 12÷4 = 3, 8÷4 = 2. Simplified: 3:2."},
+  {q:"Share £60 in the ratio 2:3.",opts:["£24 and £36","£30 and £30","£20 and £40"],correct:0,why:"Total parts = 5; one part = £12. Shares: 2×12=£24 and 3×12=£36."},
+  {q:"In direct proportion, if x doubles then y...",opts:["Halves","Doubles","Stays the same"],correct:1,why:"Direct proportion means y = kx, so doubling x doubles y."},
+  {q:"In inverse proportion, if x trebles then y...",opts:["Trebles","Divides by 3","Doubles"],correct:1,why:"y = k/x — trebling x divides y by 3."},
+  {q:"A recipe uses flour and sugar in ratio 5:2. For 350 g total, how much flour?",opts:["250 g","100 g","200 g"],correct:0,why:"Total parts = 7; one part = 50 g. Flour = 5 × 50 = 250 g."},
+  {q:"Simplify 15 : 25 : 10.",opts:["3:5:2","5:8:3","1:2:3"],correct:0,why:"HCF = 5; 15÷5=3, 25÷5=5, 10÷5=2. Ratio: 3:5:2."},
+  {q:"y is directly proportional to x. When x = 4, y = 20. Find y when x = 7.",opts:["28","35","56"],correct:1,why:"k = y/x = 20/4 = 5. y = 5 × 7 = 35."},
+  {q:"If 5 workers build a wall in 12 days, how long for 6 workers? (inverse proportion)",opts:["10 days","14.4 days","2.4 days"],correct:0,why:"k = 5 × 12 = 60. Time = 60 ÷ 6 = 10 days."},
+  {q:"Write 120 : 80 as a simplified ratio.",opts:["12:8","3:2","60:40"],correct:1,why:"HCF = 40; 120÷40 = 3, 80÷40 = 2."},
+  {q:"A map has scale 1:25,000. A distance of 4 cm on the map equals...",opts:["1 km","4 km","100 m"],correct:0,why:"4 × 25,000 = 100,000 cm = 1,000 m = 1 km."},
+  {q:"Share £200 in ratio 3:5.",opts:["£60 and £140","£75 and £125","£80 and £120"],correct:1,why:"Total parts = 8; one part = £25. Shares: 3×25=£75, 5×25=£125."},
+  {q:"In direct proportion y = kx. If (x=3, y=15), what is k?",opts:["5","45","0.2"],correct:0,why:"k = y ÷ x = 15 ÷ 3 = 5."},
+  {q:"Best value: 300 g for 90p or 500 g for £1.60?",opts:["300 g","500 g","They are equal"],correct:0,why:"300 g: 90÷300=0.30p/g; 500 g: 160÷500=0.32p/g. 300 g is cheaper per gram."},
+  {q:"A paint mix is 1 part white to 4 parts blue. For 750 ml of mix, how much blue?",opts:["150 ml","600 ml","187.5 ml"],correct:1,why:"Total parts = 5; one part = 150 ml. Blue = 4 × 150 = 600 ml."},
+  {q:"y is inversely proportional to x. When x = 6, y = 8. Find y when x = 12.",opts:["16","4","24"],correct:1,why:"k = 6 × 8 = 48. y = 48 ÷ 12 = 4."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+nextSet();buildQuiz();
+</script>
+</body>
+</html>
