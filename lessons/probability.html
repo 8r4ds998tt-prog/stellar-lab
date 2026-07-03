@@ -288,19 +288,24 @@ function drawSpinner(ang){
 }
 function spin(times){
   if(spinning)return;
+  let lastResult=0;
   for(let i=0;i<times;i++){
-    const result=Math.floor(Math.random()*nSec);
-    spinTotal++;if(result===targSec)spinHits++;
+    lastResult=Math.floor(Math.random()*nSec);
+    spinTotal++;if(lastResult===targSec)spinHits++;
   }
-  // animate final spin
+  // animate: place lastResult sector centred at the needle (top = -PI/2)
   spinning=true;
-  const finalSector=Math.floor(Math.random()*nSec);
-  const targetAngle=2*Math.PI*3+(2*Math.PI/nSec)*finalSector;
+  const slice=2*Math.PI/nSec;
+  const needle=-Math.PI/2;
+  const base=needle - lastResult*slice - slice/2;
+  const n=Math.ceil((spinAngle + 6*Math.PI - base)/(2*Math.PI));
+  const newAngle=base + 2*Math.PI*n;
+  const delta=newAngle - spinAngle;
   const duration=800;const startAngle=spinAngle;const start=performance.now();
   function anim(now){
     const t=Math.min((now-start)/duration,1);
     const ease=1-Math.pow(1-t,3);
-    spinAngle=startAngle+targetAngle*ease;
+    spinAngle=startAngle+delta*ease;
     drawSpinner(spinAngle);
     if(t<1){requestAnimationFrame(anim);}else{spinning=false;updateStats();}
   }
