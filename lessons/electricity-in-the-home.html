@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electricity in the Home // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff;
+    --acc:#2de2ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(45,226,255,.5),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--acc);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--acc);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--acc)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+  .gcse-tag{display:inline-block;font-family:var(--ui);font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);background:rgba(255,177,59,.14);border:1px solid rgba(255,177,59,.4);border-radius:999px;padding:3px 10px;margin-bottom:12px}
+
+  /* plug bench */
+  .lab{display:grid;grid-template-columns:1fr .95fr;gap:18px;align-items:start}
+  @media(max-width:720px){.lab{grid-template-columns:1fr}}
+  .screen{background:radial-gradient(120% 120% at 50% 0,rgba(45,226,255,.06),transparent),#060a18;border:1px solid var(--line);border-radius:14px;padding:10px}
+  svg{width:100%;height:auto;display:block}
+  .controls{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.03)}
+  .wrow{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .wrow label{font-family:var(--ui);font-size:.86rem;color:var(--muted);width:96px;flex:0 0 auto}
+  .wrow select{flex:1;font-family:var(--ui);font-size:.88rem;background:#0b1020;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+  .checkbtn{font-family:var(--ui);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.82rem;width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;cursor:pointer;background:rgba(45,226,255,.14);color:var(--acc);margin-top:4px}
+  .wmsg{font-family:var(--ui);font-size:.86rem;color:var(--muted);margin-top:12px;min-height:2.4em}
+  .wmsg b{color:var(--acc)}
+  .term.ok{filter:drop-shadow(0 0 8px #46e6a0)}
+  .term.bad{filter:drop-shadow(0 0 8px #ff3b5c)}
+
+  /* fuse bench */
+  .fbench{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.03);margin-top:16px}
+  .frow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .frow label{font-family:var(--ui);font-size:.86rem;color:var(--muted)}
+  select#applSel{font-family:var(--ui);font-size:.88rem;background:#0b1020;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 10px;flex:1;min-width:160px}
+  .fopts{display:flex;gap:8px;margin-top:12px}
+  .fopts button{flex:1;font-family:var(--ui);font-weight:700;border:1px solid var(--line);border-radius:10px;padding:12px;background:rgba(255,255,255,.03);color:var(--ink);cursor:pointer;transition:.15s}
+  .fopts button:hover{border-color:var(--lilac)}
+  .fopts button.correct{background:rgba(70,230,160,.16);border-color:var(--green)}
+  .fopts button.wrong{background:rgba(255,59,92,.14);border-color:var(--exo)}
+  .fmsg{font-family:var(--ui);font-size:.86rem;color:var(--muted);margin-top:12px;min-height:2.6em}
+  .fmsg b{color:var(--acc)}
+
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard .emoji{font-size:1.6rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .15em;font-size:1.02rem;color:var(--acc)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:1500px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../science.html"><span class="blink"></span> ◄ Science Deck</a>
+    <span>Phys-04 // Electricity in the Home</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Science Station · Year 10 GCSE</div>
+    <h1>WIRED FOR<br><span class="lav">SAFETY</span></h1>
+    <p>UK mains electricity is powerful enough to kill. Every plug, fuse and earth wire in your house exists to stop that — wire one correctly and see why each part matters.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 BASICS -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>AC, DC and the UK mains</h2>
+    <p class="lead">Not all electricity behaves the same way — and mains electricity is far more dangerous than a battery.</p>
+    <div class="cards">
+      <div class="fact"><h3>Direct current (DC)</h3><p>Flows in <b>one direction</b> only. Batteries and cells supply DC.</p></div>
+      <div class="fact"><h3>Alternating current (AC)</h3><p><b>Reverses direction</b> repeatedly. UK mains electricity is AC, alternating at <b>50 Hz</b> (50 times a second).</p></div>
+      <div class="fact"><h3>UK mains supply</h3><p>UK mains electricity is about <b>230 V</b> — more than 20× a typical AA battery, which is why it's so dangerous.</p></div>
+      <div class="fact"><h3>Three-core cable</h3><p>Most home appliances connect with three wires: <b>live</b>, <b>neutral</b> and <b>earth</b> — each with its own job.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 PLUG & FUSE BENCH -->
+  <section>
+    <div class="seclabel">Section 02 // Home Wiring &amp; Fuse Bench</div>
+    <h2>Wire the plug</h2>
+    <p class="lead">Assign each wire colour to the correct terminal, then check your wiring.</p>
+    <div class="lab">
+      <div class="screen">
+        <svg viewBox="0 0 300 300" role="img" aria-label="UK three-pin plug diagram">
+          <rect x="30" y="30" width="240" height="240" rx="26" fill="#0b1020" stroke="#20304f" stroke-width="3"/>
+          <g id="pinE" class="term">
+            <rect x="135" y="55" width="30" height="70" rx="6" fill="#cfe6f5"/>
+            <text class="lbl" x="150" y="140" text-anchor="middle" fill="#8fa0c8" font-family="Rajdhani">EARTH (E)</text>
+          </g>
+          <g id="pinL" class="term">
+            <rect x="70" y="170" width="30" height="70" rx="6" fill="#cfe6f5"/>
+            <text class="lbl" x="85" y="258" text-anchor="middle" fill="#8fa0c8" font-family="Rajdhani">LIVE (L)</text>
+          </g>
+          <g id="pinN" class="term">
+            <rect x="200" y="170" width="30" height="70" rx="6" fill="#cfe6f5"/>
+            <text class="lbl" x="215" y="258" text-anchor="middle" fill="#8fa0c8" font-family="Rajdhani">NEUTRAL (N)</text>
+          </g>
+          <circle cx="150" cy="30" r="0" fill="none"/>
+        </svg>
+      </div>
+      <div class="controls">
+        <div class="wrow"><label>Earth (E)</label>
+          <select id="selE"><option value="">— choose colour —</option><option value="brown">Brown</option><option value="blue">Blue</option><option value="ge">Green &amp; yellow</option></select>
+        </div>
+        <div class="wrow"><label>Live (L)</label>
+          <select id="selL"><option value="">— choose colour —</option><option value="brown">Brown</option><option value="blue">Blue</option><option value="ge">Green &amp; yellow</option></select>
+        </div>
+        <div class="wrow"><label>Neutral (N)</label>
+          <select id="selN"><option value="">— choose colour —</option><option value="brown">Brown</option><option value="blue">Blue</option><option value="ge">Green &amp; yellow</option></select>
+        </div>
+        <button class="checkbtn" onclick="checkPlug()">⚡ Check wiring</button>
+        <div class="wmsg" id="wMsg">Assign brown, blue and green-&amp;-yellow to the three terminals.</div>
+      </div>
+    </div>
+
+    <div class="fbench">
+      <h3 style="font-family:var(--ui);margin:.1em 0 10px;font-size:1rem;color:var(--acc)">🔌 Fuse Selector</h3>
+      <p class="lead" style="margin-bottom:10px">Pick an appliance, calculate the current it draws from a 230 V supply (<code>I = P ÷ V</code>), then choose the smallest fuse rating that won't blow in normal use.</p>
+      <div class="frow">
+        <label>Appliance:</label>
+        <select id="applSel" onchange="updateAppliance()">
+          <option value="60">Lamp — 60 W</option>
+          <option value="900">Toaster — 900 W</option>
+          <option value="1800">Hairdryer — 1800 W</option>
+          <option value="3000">Kettle — 3000 W</option>
+        </select>
+      </div>
+      <div class="wmsg" id="applCalc" style="margin-top:10px"></div>
+      <div class="fopts" id="fuseOpts">
+        <button onclick="pickFuse(3,this)">3 A</button>
+        <button onclick="pickFuse(5,this)">5 A</button>
+        <button onclick="pickFuse(13,this)">13 A</button>
+      </div>
+      <div class="fmsg" id="fMsg"></div>
+    </div>
+  </section>
+
+  <!-- 3 SAFETY -->
+  <section>
+    <div class="seclabel">Section 03 // Staying Safe</div>
+    <h2>Why every wire matters</h2>
+    <div class="spec">
+      <div class="scard"><div class="emoji">🟤</div><h4>Live wire (brown)</h4><p>Carries the alternating potential difference from the supply — around 230 V relative to earth. It's the most dangerous wire to touch.</p></div>
+      <div class="scard"><div class="emoji">🔵</div><h4>Neutral wire (blue)</h4><p>Completes the circuit, carrying current back to the supply at close to 0 V.</p></div>
+      <div class="scard"><div class="emoji">🟢🟡</div><h4>Earth wire (green &amp; yellow)</h4><p>A safety wire connected to the case of an appliance. If the live wire touches the case, current flows to earth instead of through you.</p></div>
+      <div class="scard"><div class="emoji">🧯</div><h4>Fuse</h4><p>A thin wire that melts and breaks the circuit if the current gets too high — cutting off the live wire before a fire or shock can happen.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 04 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="gcse-tag">GCSE · Higher tier extension</div>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Power, energy costs &amp; the National Grid</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:#2de2ff"></span><span><strong>Power equations:</strong> <code>P = V × I</code> and <code>P = I² × R</code>. Rearranging the first gives <code>I = P ÷ V</code> — exactly what the Fuse Selector calculates.</span></div>
+        <div class="key"><span class="dot" style="background:#ffb13b"></span><span><strong>Energy transferred:</strong> <code>E = P × t</code> (in joules, with t in seconds). Energy companies bill in <strong>kilowatt-hours (kWh)</strong>: 1 kWh is 1 kW of power used for 1 hour.</span></div>
+        <div class="key"><span class="dot" style="background:#46e6a0"></span><span><strong>Double insulation:</strong> some appliances (like a hairdryer with a plastic case) have no earth wire at all — the plastic casing itself can never become live, shown by a "double square" symbol.</span></div>
+        <div class="key"><span class="dot" style="background:#cc88ff"></span><span><strong>The National Grid</strong> transmits electricity at very <em>high voltage</em> and correspondingly <em>low current</em>. Since power loss in the cables is <code>P = I² × R</code>, a lower current dramatically cuts wasted energy. Step-up transformers raise the voltage for transmission; step-down transformers lower it again before it reaches homes.</span></div>
+        <p style="margin-top:12px"><strong>Worked example:</strong> a 3000 W kettle on a 230 V supply draws <code>I = P ÷ V = 3000 ÷ 230 ≈ 13 A</code> — right at the limit of a standard UK socket, which is why kettles need the 13 A fuse.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 5 QUIZ -->
+  <section>
+    <div class="seclabel">Section 05 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15 — tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 14 · For Lyra<br><span style="font-size:.65rem;opacity:.5;letter-spacing:.1em">Last updated: 13 Sep 2026</span></footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(45,226,255,','rgba(204,136,255,','rgba(255,177,59,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* plug bench */
+const COLNAME={brown:'Brown',blue:'Blue',ge:'Green &amp; yellow'};
+function checkPlug(){
+  const e=document.getElementById('selE').value, l=document.getElementById('selL').value, n=document.getElementById('selN').value;
+  const msg=document.getElementById('wMsg');
+  if(!e||!l||!n){ msg.innerHTML='Choose a colour for all three terminals first.'; return; }
+  const used=[e,l,n];
+  const eOk=e==='ge', lOk=l==='brown', nOk=n==='blue';
+  document.getElementById('pinE').classList.toggle('ok',eOk); document.getElementById('pinE').classList.toggle('bad',!eOk);
+  document.getElementById('pinL').classList.toggle('ok',lOk); document.getElementById('pinL').classList.toggle('bad',!lOk);
+  document.getElementById('pinN').classList.toggle('ok',nOk); document.getElementById('pinN').classList.toggle('bad',!nOk);
+  if(eOk&&lOk&&nOk){
+    msg.innerHTML='✓ <b>Correctly wired!</b> Live = brown, Neutral = blue, Earth = green &amp; yellow. This plug is safe to use.';
+  } else {
+    let bits=[];
+    if(!lOk) bits.push('Live should be <b>brown</b>');
+    if(!nOk) bits.push('Neutral should be <b>blue</b>');
+    if(!eOk) bits.push('Earth should be <b>green &amp; yellow</b>');
+    msg.innerHTML='✗ Not quite — '+bits.join('; ')+'.';
+  }
+}
+
+/* fuse bench */
+let currentA=0, chosenAppliance=60;
+function updateAppliance(){
+  chosenAppliance=parseFloat(document.getElementById('applSel').value);
+  currentA=chosenAppliance/230;
+  document.getElementById('applCalc').innerHTML='I = P ÷ V = '+chosenAppliance+' ÷ 230 = <b>'+currentA.toFixed(2)+' A</b>';
+  document.getElementById('fMsg').textContent='';
+  document.querySelectorAll('#fuseOpts button').forEach(b=>b.classList.remove('correct','wrong'));
+}
+function correctFuse(){
+  const ratings=[3,5,13];
+  for(const r of ratings){ if(r>=currentA) return r; }
+  return 13;
+}
+function pickFuse(rating,btn){
+  const correct=correctFuse();
+  document.querySelectorAll('#fuseOpts button').forEach(b=>b.classList.remove('correct','wrong'));
+  const msg=document.getElementById('fMsg');
+  if(rating===correct){
+    btn.classList.add('correct');
+    msg.innerHTML='✓ Correct — the '+rating+' A fuse is the smallest rating above '+currentA.toFixed(2)+' A, so it carries normal current but blows quickly if a fault causes a surge.';
+  } else {
+    btn.classList.add('wrong');
+    if(rating<currentA) msg.innerHTML='✗ Too low — a '+rating+' A fuse would blow immediately, since the appliance draws '+currentA.toFixed(2)+' A even when working normally.';
+    else msg.innerHTML='✗ Too high — a '+rating+' A fuse would let a much bigger fault current flow before breaking the circuit. The '+correct+' A fuse is the better fit.';
+  }
+}
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"UK mains electricity is...",opts:["Direct current (DC) at 230 V","Alternating current (AC) at 230 V","Alternating current (AC) at 12 V"],correct:1,why:"UK mains supplies AC at around 230 V, alternating at 50 Hz."},
+  {q:"A battery supplies...",opts:["Alternating current (AC)","No current at all","Direct current (DC)"],correct:2,why:"Batteries and cells supply direct current, flowing one way only."},
+  {q:"UK mains frequency is...",opts:["50 Hz","100 Hz","12 Hz"],correct:0,why:"UK mains alternates direction 50 times per second (50 Hz)."},
+  {q:"The live wire in a UK plug is coloured...",opts:["Blue","Brown","Green and yellow"],correct:1,why:"The live wire is brown."},
+  {q:"The neutral wire in a UK plug is coloured...",opts:["Brown","Green and yellow","Blue"],correct:2,why:"The neutral wire is blue."},
+  {q:"The earth wire in a UK plug is coloured...",opts:["Green and yellow","Brown","Blue"],correct:0,why:"The earth wire is striped green and yellow."},
+  {q:"What is the main job of the earth wire?",opts:["To carry the normal operating current","To provide a safe path if the live wire touches the casing","To make the appliance brighter"],correct:1,why:"The earth wire gives fault current a safe route to earth instead of through a person touching the casing."},
+  {q:"A fuse works by...",opts:["Storing extra electricity","Converting AC to DC","Melting and breaking the circuit if current is too high"],correct:2,why:"A fuse contains a thin wire that melts if too much current flows, breaking the live connection."},
+  {q:"Why is the live wire the most dangerous to touch?",opts:["It's at a high potential difference relative to earth","It never carries any current","It's always coloured blue"],correct:0,why:"The live wire alternates at around 230 V relative to earth — enough to drive a dangerous current through a person."},
+  {q:"An appliance with a plastic case and no earth pin uses...",opts:["Double insulation","No safety features","A bigger fuse instead"],correct:0,why:"Double-insulated appliances have cases that can never become live, so they don't need an earth wire."},
+  {q:"Electrical power can be calculated using...",opts:["P = V + I","P = V ÷ 2","P = V × I"],correct:2,why:"Power = potential difference × current (P = V × I)."},
+  {q:"A 3000 W kettle on a 230 V supply draws a current of about...",opts:["3 A","13 A","30 A"],correct:1,why:"I = P ÷ V = 3000 ÷ 230 ≈ 13 A."},
+  {q:"You should choose a fuse rating that is...",opts:["As low as possible, even below normal current","Always 13 A regardless of the appliance","The smallest rating just above the normal operating current"],correct:2,why:"The fuse should be rated just above normal current, so it doesn't blow in normal use but does blow if a fault occurs."},
+  {q:"Energy transferred by an appliance is calculated using...",opts:["E = P × t","E = P ÷ t","E = P − t"],correct:0,why:"Energy transferred = power × time (E = P × t)."},
+  {q:"The National Grid transmits electricity at high voltage mainly to...",opts:["Make it glow in the dark","Reduce the current, cutting power loss in the cables","Make transformers unnecessary"],correct:1,why:"Since power loss is P = I² × R, a lower current at high voltage greatly reduces wasted energy in transmission cables."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+updateAppliance(); nextSet(); buildQuiz();
+</script>
+</body>
+</html>

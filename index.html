@@ -11,7 +11,7 @@
   :root{
     --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
     --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
-    --sci:#2de2ff; --eng:#ff7ad9; --maths:#46e6a0;
+    --sci:#2de2ff; --eng:#ff7ad9; --maths:#46e6a0; --comp:#5aa6ff;
     --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
     --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
   }
@@ -28,8 +28,8 @@
   @keyframes flicker{0%,18%,20%,22%,80%,100%{opacity:1}19%,21%{opacity:.7}}
   .sub{color:var(--muted);max-width:540px;margin:18px auto 0;font-size:1.08rem}
   .prompt{font-family:var(--ui);text-transform:uppercase;letter-spacing:.3em;font-size:.78rem;color:var(--muted);text-align:center;margin:40px 0 16px}
-  .decks{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  @media(max-width:720px){.decks{grid-template-columns:1fr}}
+  .decks{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px}
+  @media(max-width:480px){.decks{grid-template-columns:1fr}}
   .deck{position:relative;display:block;text-decoration:none;color:inherit;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:18px;padding:30px 22px;text-align:center;transition:.22s;opacity:0;transform:translateY(24px)}
   .deck.in{opacity:1;transform:none}
   .deck .ic{font-size:3rem;display:block;margin-bottom:6px}
@@ -43,30 +43,13 @@
   .deck.maths{cursor:pointer}
   .deck.maths .go{color:var(--lav)}
   .deck.maths:hover{transform:translateY(-5px);border-color:var(--maths);box-shadow:0 16px 40px rgba(70,230,160,.2)}
+  .deck.comp{cursor:pointer}
+  .deck.comp h2{color:var(--comp)} .deck.comp .go{color:var(--lav)}
+  .deck.comp:hover{transform:translateY(-5px);border-color:var(--comp);box-shadow:0 16px 40px rgba(90,166,255,.2)}
   .deck.locked{opacity:.5}
   .deck.locked.in{opacity:.5}
   .deck.locked .go{color:var(--muted)}
   footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:54px}
-  /* floating test banner */
-  .testbanner{position:relative;display:block;text-decoration:none;color:inherit;margin:34px 0 6px;border:1px solid rgba(255,177,59,.42);border-radius:18px;padding:18px 22px;background:linear-gradient(120deg,rgba(255,31,61,.12),rgba(204,136,255,.10) 55%,rgba(45,226,255,.10));overflow:hidden;animation:floaty 6s ease-in-out infinite}
-  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-  .testbanner::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 38px,rgba(255,255,255,.025) 39px,transparent 40px);pointer-events:none}
-  .testbanner:hover{border-color:var(--amber);box-shadow:0 14px 40px rgba(255,177,59,.18)}
-  .tb-grid{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;position:relative;z-index:1}
-  @media(max-width:640px){.tb-grid{grid-template-columns:1fr;text-align:center;gap:12px}}
-  .tb-ic{font-size:2.2rem}
-  .tb-mid .k{font-family:var(--ui);text-transform:uppercase;letter-spacing:.24em;font-size:.66rem;color:var(--amber)}
-  .tb-mid h3{font-family:var(--disp);font-size:1.12rem;margin:.1em 0 .2em;color:#fff}
-  .tb-mid .meta{font-family:var(--ui);font-size:.86rem;color:var(--muted);letter-spacing:.02em}
-  .tb-mid .meta b{color:var(--lav)}
-  .tb-prog{min-width:160px}
-  @media(max-width:640px){.tb-prog{margin:0 auto}}
-  .tb-prog .top{display:flex;justify-content:space-between;gap:14px;font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.66rem;color:var(--muted);margin-bottom:5px}
-  .tb-prog .top b{font-family:var(--disp);color:var(--amber);font-size:.9rem}
-  .tb-meter{height:10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--line);overflow:hidden}
-  .tb-meter .fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--maths),var(--amber));transition:width .6s ease}
-  .tb-cta{font-family:var(--ui);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;color:var(--lav);margin-top:7px;text-align:right}
-  @media(max-width:640px){.tb-cta{text-align:center}}
   @media (prefers-reduced-motion: reduce){*{animation:none!important}.deck{opacity:1!important;transform:none!important}.cursor{display:none}}
 </style>
 </head>
@@ -75,33 +58,23 @@
 <div class="cursor" id="cursor"></div>
 <div class="wrap">
   <header>
-    <div class="kicker">Year 9 · Science Station Online</div>
+    <div class="kicker">Year 10 · GCSE Online</div>
     <h1>STELLAR<br><span class="lav">LAB</span></h1>
     <p class="sub">Lyra's learning hub. Interactive missions matched to your curriculum.</p>
   </header>
-
-  <a class="testbanner" id="testBanner" href="lessons/eoy-test-2026.html">
-    <div class="tb-grid">
-      <div class="tb-ic">📡</div>
-      <div class="tb-mid">
-        <div class="k">Incoming Transmission · Year 9 Science</div>
-        <h3>End-of-Year Test</h3>
-        <div class="meta" id="tbMeta"><b id="tbDays">–</b> days to go · 6 July 2026</div>
-      </div>
-      <div class="tb-prog">
-        <div class="top"><span>Revision readiness</span><span><b id="tbNum">0</b> / 10</span></div>
-        <div class="tb-meter"><div class="fill" id="tbFill"></div></div>
-        <div class="tb-cta">Open revision station →</div>
-      </div>
-    </div>
-  </a>
 
   <div class="prompt">▾ Select a deck ▾</div>
   <div class="decks">
     <a class="deck sci" href="science.html">
       <span class="ic">🔬</span>
       <h2>Science</h2>
-      <div class="count">11 missions ready</div>
+      <div class="count">3 Y10 · 12 archived</div>
+      <div class="go">Enter deck →</div>
+    </a>
+    <a class="deck comp" href="computing.html">
+      <span class="ic">💻</span>
+      <h2>Computing</h2>
+      <div class="count">1 mission ready</div>
       <div class="go">Enter deck →</div>
     </a>
     <div class="deck eng locked">
@@ -116,9 +89,21 @@
       <div class="count">11 missions ready</div>
       <div class="go">Enter deck →</div>
     </a>
+    <div class="deck locked">
+      <span class="ic">🛠️</span>
+      <h2>DT</h2>
+      <div class="count">Coming soon</div>
+      <div class="go">Locked</div>
+    </div>
+    <div class="deck locked">
+      <span class="ic">📜</span>
+      <h2>History</h2>
+      <div class="count">Coming soon</div>
+      <div class="go">Locked</div>
+    </div>
   </div>
 
-  <footer>Stellar Lab · Built for Lyra<br><span style="font-size:.65rem;opacity:.5;letter-spacing:.1em">Last updated: 03 Jul 2026 · 20:19 BST</span></footer>
+  <footer>Stellar Lab · Built for Lyra<br><span style="font-size:.65rem;opacity:.5;letter-spacing:.1em">Last updated: 13 Sep 2026</span></footer>
 </div>
 <script>
 const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -136,20 +121,6 @@ const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
 document.querySelectorAll('.deck').forEach(s=>io.observe(s));
-/* test banner: live countdown + readiness from saved progress */
-(function(){
-  const b=document.getElementById('testBanner');if(!b)return;
-  const test=new Date(2026,6,6),now=new Date();
-  const days=Math.ceil((test-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
-  if(days>0)document.getElementById('tbDays').textContent=days;
-  else if(days===0)document.getElementById('tbMeta').innerHTML='<b>Test day</b> — good luck! · 6 July 2026';
-  else{b.style.display='none';return;}
-  let prog={};try{prog=JSON.parse(localStorage.getItem('stellar_eoy_2026')||'{}')||{};}catch(e){}
-  const ids=['b1','b2','b4','c1','c2','c7','p1','p2','p3','p6'];
-  const n=ids.filter(id=>prog[id]).length;
-  document.getElementById('tbNum').textContent=n;
-  document.getElementById('tbFill').style.width=(n/10*100)+'%';
-})();
 </script>
 </body>
 </html>
