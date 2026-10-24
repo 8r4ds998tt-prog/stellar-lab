@@ -11,7 +11,7 @@
   :root{
     --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
     --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
-    --sci:#2de2ff; --eng:#ff7ad9; --maths:#46e6a0; --comp:#5aa6ff;
+    --sci:#2de2ff; --eng:#ff7ad9; --maths:#46e6a0; --comp:#5aa6ff; --dt:#ff8a3d; --hist:#f5d06f;
     --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
     --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
   }
@@ -46,6 +46,11 @@
   .deck.comp{cursor:pointer}
   .deck.comp h2{color:var(--comp)} .deck.comp .go{color:var(--lav)}
   .deck.comp:hover{transform:translateY(-5px);border-color:var(--comp);box-shadow:0 16px 40px rgba(90,166,255,.2)}
+  .deck.dt,.deck.hist{cursor:pointer}
+  .deck.dt h2{color:var(--dt)} .deck.dt .go{color:var(--lav)}
+  .deck.dt:hover{transform:translateY(-5px);border-color:var(--dt);box-shadow:0 16px 40px rgba(255,138,61,.2)}
+  .deck.hist h2{color:var(--hist)} .deck.hist .go{color:var(--lav)}
+  .deck.hist:hover{transform:translateY(-5px);border-color:var(--hist);box-shadow:0 16px 40px rgba(245,208,111,.2)}
   .deck.locked{opacity:.5}
   .deck.locked.in{opacity:.5}
   .deck.locked .go{color:var(--muted)}
@@ -89,18 +94,18 @@
       <div class="count">11 missions ready</div>
       <div class="go">Enter deck →</div>
     </a>
-    <div class="deck locked">
+    <a class="deck dt" href="dt.html">
       <span class="ic">🛠️</span>
       <h2>DT</h2>
-      <div class="count">Coming soon</div>
-      <div class="go">Locked</div>
-    </div>
-    <div class="deck locked">
+      <div class="count">📡 Pick your route</div>
+      <div class="go">Enter deck →</div>
+    </a>
+    <a class="deck hist" href="history.html">
       <span class="ic">📜</span>
       <h2>History</h2>
-      <div class="count">Coming soon</div>
-      <div class="go">Locked</div>
-    </div>
+      <div class="count">4 units · missions soon</div>
+      <div class="go">Enter deck →</div>
+    </a>
   </div>
 
   <footer>Stellar Lab · Built for Lyra<br><span style="font-size:.65rem;opacity:.5;letter-spacing:.1em">Last updated: 24 Oct 2026</span></footer>

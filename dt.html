@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DT Deck // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
+    --pd:#ff8a3d; --gfx:#ff7ad9; --hc:#7ee07a;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden;min-height:100vh}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:24px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:26px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  header.hero{text-align:center;margin-bottom:6px}
+  .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.4em;font-size:.8rem;color:var(--amber);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.4rem,8vw,4.6rem);line-height:.95;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 46px rgba(255,31,61,.45);animation:flicker 7s infinite}
+  h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 46px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,18%,20%,22%,80%,100%{opacity:1}19%,21%{opacity:.7}}
+  .sub{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .section-title{display:flex;align-items:center;gap:12px;margin:42px 0 16px;font-family:var(--ui);text-transform:uppercase;letter-spacing:.2em;font-size:1rem;color:var(--amber)}
+  .section-title .bar{width:6px;height:22px;border-radius:3px;background:var(--amber);box-shadow:0 0 12px var(--amber)}
+  .panelbox{background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
+  .panelbox.in{opacity:1;transform:none}
+
+  /* route picker */
+  .ask{border:1px dashed var(--lilac);background:linear-gradient(180deg,rgba(204,136,255,.08),transparent)}
+  .ask .q{font-family:var(--disp);font-size:1.15rem;margin:0 0 4px}
+  .ask .hint{color:var(--muted);margin:0 0 16px;font-size:.95rem}
+  .routes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:760px){.routes{grid-template-columns:1fr}}
+  .route{position:relative;text-align:center;font-family:var(--body);color:var(--ink);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:20px 16px;cursor:pointer;transition:.2s}
+  .route .ic{font-size:2.4rem;display:block}
+  .route .rt{display:block;font-family:var(--disp);font-weight:700;font-size:1rem;margin:.4em 0 .2em;letter-spacing:.03em}
+  .route .rp{display:block;margin:0;color:var(--muted);font-size:.86rem}
+  .route .split{display:inline-block;margin-top:10px;font-family:var(--ui);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:rgba(255,177,59,.14);color:var(--amber)}
+  .route.pd .rt{color:var(--pd)} .route.gfx .rt{color:var(--gfx)} .route.hc .rt{color:var(--hc)}
+  .route.pd:hover,.route.pd.on{border-color:var(--pd);box-shadow:0 0 26px rgba(255,138,61,.3)}
+  .route.gfx:hover,.route.gfx.on{border-color:var(--gfx);box-shadow:0 0 26px rgba(255,122,217,.3)}
+  .route.hc:hover,.route.hc.on{border-color:var(--hc);box-shadow:0 0 26px rgba(126,224,122,.3)}
+  .route.on::after{content:"✓ MY ROUTE";position:absolute;top:10px;right:12px;font-family:var(--ui);font-size:.66rem;font-weight:700;letter-spacing:.1em;color:var(--ink);background:rgba(255,255,255,.1);border-radius:999px;padding:2px 8px}
+  .route:focus-visible{outline:2px solid var(--lav);outline-offset:3px}
+  .picked{display:none;margin-top:18px;border-left:3px solid var(--lav);padding:10px 14px;background:rgba(204,136,255,.07);border-radius:0 12px 12px 0;font-family:var(--ui);font-size:1rem}
+  .picked.show{display:block}
+  .picked b{color:var(--ink)}
+  .picked button{font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 11px;margin-left:8px;cursor:pointer}
+  .picked button:hover{border-color:var(--lilac);color:var(--lav)}
+
+  /* route previews */
+  .preview{display:none}
+  .preview.show{display:block}
+  .pv{border-left:5px solid var(--pd);border-radius:6px 16px 16px 6px}
+  .pv.gfx{border-left-color:var(--gfx)} .pv.hc{border-left-color:var(--hc)}
+  .pv h3{font-family:var(--disp);font-size:1.05rem;margin:0 0 6px}
+  .pv.pd h3{color:var(--pd)} .pv.gfx h3{color:var(--gfx)} .pv.hc h3{color:var(--hc)}
+  .pv .lead{color:var(--muted);margin:0 0 12px;font-size:.95rem}
+  .yr{font-family:var(--ui);text-transform:uppercase;letter-spacing:.16em;font-size:.76rem;color:var(--amber);margin:14px 0 6px}
+  .topics{display:flex;flex-wrap:wrap;gap:6px}
+  .topics span{font-family:var(--ui);font-size:.8rem;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:3px 9px;background:rgba(255,255,255,.03)}
+  .soonline{font-family:var(--ui);font-size:.85rem;color:var(--muted);margin-top:14px;text-transform:uppercase;letter-spacing:.1em}
+
+  /* reference library */
+  .reflib p{color:var(--muted);font-size:.9rem;margin:.2em 0 14px}
+  .reflinks{display:flex;flex-wrap:wrap;gap:10px}
+  .reflinks a{font-family:var(--ui);font-weight:600;text-decoration:none;color:var(--lav);border:1px solid var(--line);border-radius:10px;padding:10px 16px;display:inline-flex;gap:8px;align-items:center;transition:.15s;font-size:.9rem}
+  .reflinks a:hover{border-color:var(--lilac);box-shadow:0 0 18px rgba(204,136,255,.25)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:50px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}.panelbox{opacity:1!important;transform:none!important}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="index.html"><span class="blink"></span> ◄ Station Hub</a>
+    <span>DT Deck · Year 10</span>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">Design &amp; Technology Station</div>
+    <h1>DESIGN<br><span class="lav">FORGE</span></h1>
+    <p class="sub">Your school offers three GCSE routes in DT. Tell the station which one is yours, and your missions will be built to match.</p>
+  </header>
+
+  <div class="section-title"><span class="bar"></span> Incoming Question</div>
+  <div class="panelbox ask">
+    <p class="q">📡 Lyra, which DT route are you taking?</p>
+    <p class="hint">Tap your route. Not sure? Ask your DT teacher which course your class is following.</p>
+    <div class="routes">
+      <button class="route pd" data-r="pd" onclick="pickRoute('pd')"><span class="ic">🪚</span><span class="rt">Product Design</span><span class="rp">Materials, mechanisms, electronics and making, with timbers as the specialism.</span><span class="split">50% NEA · 50% exam</span></button>
+      <button class="route gfx" data-r="gfx" onclick="pickRoute('gfx')"><span class="ic">🎨</span><span class="rt">Graphics</span><span class="rp">Typography, branding, packaging, illustration and design for print.</span><span class="split">60% coursework · 40% exam</span></button>
+      <button class="route hc" data-r="hc" onclick="pickRoute('hc')"><span class="ic">🍳</span><span class="rt">Hospitality &amp; Catering</span><span class="rp">Nutrition, menu planning, food safety and the hospitality industry.</span><span class="split">60% coursework · 40% exam</span></button>
+    </div>
+    <div class="picked" id="picked"></div>
+  </div>
+
+  <div class="section-title" id="pvTitle"><span class="bar"></span> Route Preview</div>
+  <div class="panelbox" id="pvNone"><p style="margin:0;color:var(--muted)">Pick a route above to see what it covers in Year 10 and Year 11.</p></div>
+
+  <div class="preview" id="pv-pd">
+    <div class="panelbox pv pd">
+      <h3>🪚 Product Design</h3>
+      <p class="lead">Learn the theory behind how products are designed and made, then design and make your own product for the NEA.</p>
+      <div class="yr">Year 10 · Theory</div>
+      <div class="topics"><span>New &amp; emerging technologies</span><span>Energy generation &amp; storage</span><span>Smart &amp; modern materials</span><span>Mechanical devices</span><span>Electronic systems</span><span>Programmable components</span><span>Metals</span><span>Papers &amp; boards</span><span>Polymers</span><span>Textiles</span><span>Timbers ★ specialism</span></div>
+      <div class="yr">Year 11 · NEA</div>
+      <div class="topics"><span>Exam-board contexts released 1 June in Year 10</span><span>Design &amp; make project</span></div>
+      <div class="soonline">◌ Missions coming soon</div>
+    </div>
+  </div>
+  <div class="preview" id="pv-gfx">
+    <div class="panelbox pv gfx">
+      <h3>🎨 Graphics</h3>
+      <p class="lead">Build practical design skills across lots of areas of graphics, then create a portfolio and a final piece on a theme set by the exam board.</p>
+      <div class="yr">Year 10 · Skills</div>
+      <div class="topics"><span>Communication graphics</span><span>Design for print</span><span>Advertising &amp; branding</span><span>Illustration</span><span>Packaging design</span><span>Typography</span><span>Interactive design</span><span>Signage &amp; exhibition graphics</span></div>
+      <div class="yr">Year 11 · Exam portfolio</div>
+      <div class="topics"><span>Choose a theme from the exam-board list</span><span>Portfolio of your design journey</span><span>Practical exam</span></div>
+      <div class="soonline">◌ Missions coming soon</div>
+    </div>
+  </div>
+  <div class="preview" id="pv-hc">
+    <div class="panelbox pv hc">
+      <h3>🍳 Hospitality &amp; Catering</h3>
+      <p class="lead">Plan and cook dishes that meet a brief, and learn how hospitality and catering businesses work.</p>
+      <div class="yr">Year 10 · Nutrition &amp; cooking</div>
+      <div class="topics"><span>Nutrition</span><span>Menu planning</span><span>Nutritional needs of different groups</span><span>How cooking methods affect nutrition</span><span>Meeting customer requirements</span><span>Food preparation &amp; presentation</span><span>Food safety skills</span></div>
+      <div class="yr">Year 11 · The industry</div>
+      <div class="topics"><span>Types of hospitality business</span><span>Customer service</span><span>Food safety</span><span>Health &amp; safety</span><span>Job roles</span></div>
+      <div class="soonline">◌ Missions coming soon</div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="bar"></span> Reference Library</div>
+  <div class="panelbox reflib">
+    <p>The official Sir William Robertson Academy DT curriculum documents (open in a new tab).</p>
+    <div class="reflinks">
+      <a href="https://www.swracademy.org/attachments/download.asp?file=215&type=pdf" target="_blank" rel="noopener">🗺️ DT Curriculum Map</a>
+      <a href="https://www.swracademy.org/page/?title=Design+%26amp%3B+Technology&pid=58" target="_blank" rel="noopener">🛠️ DT subject page</a>
+      <a href="https://www.swracademy.org/page/?title=Subject+Curriculum&pid=29" target="_blank" rel="noopener">📄 Subject Curriculum page</a>
+    </div>
+  </div>
+
+  <footer>Stellar Lab · DT Deck · Built for Lyra<br><span style="font-size:.65rem;opacity:.5;letter-spacing:.1em">Last updated: 24 Oct 2026</span></footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<150;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(255,138,61,','rgba(255,122,217,','rgba(126,224,122,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.1});
+document.querySelectorAll('.panelbox').forEach(s=>io.observe(s));
+
+/* route picker: the choice is remembered on this device only */
+const ROUTE_NAME={pd:'Product Design',gfx:'Graphics',hc:'Hospitality & Catering'};
+const KEY='stellar-dt-route';
+function showRoute(r){
+  document.querySelectorAll('.route').forEach(b=>{b.classList.toggle('on',b.dataset.r===r);b.setAttribute('aria-pressed',b.dataset.r===r);});
+  document.querySelectorAll('.preview').forEach(p=>p.classList.toggle('show',p.id==='pv-'+r));
+  document.getElementById('pvNone').style.display=r?'none':'';
+  const pk=document.getElementById('picked');
+  if(r){
+    pk.innerHTML='✓ Route logged: <b>'+ROUTE_NAME[r]+'</b>. Now tell them at home, so your DT missions can be built for this route! <button onclick="clearRoute()">Change</button>';
+    pk.classList.add('show');
+    document.querySelectorAll('#pv-'+r+' .panelbox').forEach(el=>el.classList.add('in'));
+  } else pk.classList.remove('show');
+}
+function pickRoute(r){
+  try{localStorage.setItem(KEY,r);}catch(e){}
+  showRoute(r);
+  if(!reduce)document.getElementById('pvTitle').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function clearRoute(){
+  try{localStorage.removeItem(KEY);}catch(e){}
+  showRoute(null);
+}
+let saved=null;
+try{saved=localStorage.getItem(KEY);}catch(e){}
+showRoute(ROUTE_NAME[saved]?saved:null);
+</script>
+</body>
+</html>

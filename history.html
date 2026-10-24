@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History Deck // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d;
+    --ww1:#ff5a6e; --health:#46e6a0; --ger:#f5d06f; --norm:#b48cff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden;min-height:100vh}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(200,162,255,.55),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:1000px;margin:0 auto;padding:24px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:26px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  header.hero{text-align:center;margin-bottom:6px}
+  .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.4em;font-size:.8rem;color:var(--amber);margin-bottom:14px}
+  h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.4rem,8vw,4.6rem);line-height:.95;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 46px rgba(255,31,61,.45);animation:flicker 7s infinite}
+  h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 46px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,18%,20%,22%,80%,100%{opacity:1}19%,21%{opacity:.7}}
+  .sub{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .strands{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin:36px 0 8px}
+  @media(max-width:680px){.strands{grid-template-columns:1fr 1fr}}
+  .strand{position:relative;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s,box-shadow .25s,border-color .25s;cursor:pointer}
+  .strand.in{opacity:1;transform:none}
+  .strand .ic{font-size:2.3rem}
+  .strand h2{font-family:var(--disp);font-size:.98rem;margin:.4em 0 .1em;letter-spacing:.04em}
+  .strand .count{font-family:var(--ui);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+  .strand.ww1 h2{color:var(--ww1)} .strand.health h2{color:var(--health)} .strand.ger h2{color:var(--ger)} .strand.norm h2{color:var(--norm)}
+  .strand.ww1:hover,.strand.ww1.active{border-color:var(--ww1);box-shadow:0 0 24px rgba(255,90,110,.28)}
+  .strand.health:hover,.strand.health.active{border-color:var(--health);box-shadow:0 0 24px rgba(70,230,160,.28)}
+  .strand.ger:hover,.strand.ger.active{border-color:var(--ger);box-shadow:0 0 24px rgba(245,208,111,.28)}
+  .strand.norm:hover,.strand.norm.active{border-color:var(--norm);box-shadow:0 0 24px rgba(180,140,255,.28)}
+  .slicehint{display:none;align-items:center;margin:16px 2px 0;font-family:var(--ui);text-transform:uppercase;letter-spacing:.12em;font-size:.82rem;color:var(--lav)}
+  .slicehint button{font-family:var(--ui);text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:6px 12px;margin-left:12px;cursor:pointer}
+  .slicehint button:hover{border-color:var(--lilac);color:var(--lav)}
+  .mg.hide{display:none}
+  .section-title{display:flex;align-items:center;gap:12px;margin:42px 0 16px;font-family:var(--ui);text-transform:uppercase;letter-spacing:.2em;font-size:1rem;color:var(--amber)}
+  .section-title .bar{width:6px;height:22px;border-radius:3px;background:var(--amber);box-shadow:0 0 12px var(--amber)}
+  .lessons{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:680px){.lessons{grid-template-columns:1fr}}
+  a.lesson,.lesson{display:block;text-decoration:none;color:inherit;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-left:5px solid var(--ww1);border-radius:6px 16px 16px 6px;padding:22px;transition:.22s;opacity:0;transform:translateY(22px)}
+  .lesson.in{opacity:1;transform:none}
+  .lesson.ww1{border-left-color:var(--ww1)} .lesson.health{border-left-color:var(--health)} .lesson.ger{border-left-color:var(--ger)} .lesson.norm{border-left-color:var(--norm)}
+  .tagrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .chip{font-family:var(--ui);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:999px;font-weight:700}
+  .chip.ww1{background:rgba(255,90,110,.16);color:var(--ww1)}
+  .chip.health{background:rgba(70,230,160,.16);color:var(--health)}
+  .chip.ger{background:rgba(245,208,111,.16);color:var(--ger)}
+  .chip.norm{background:rgba(180,140,255,.16);color:var(--norm)}
+  .chip.ready{background:rgba(70,230,160,.16);color:#46e6a0}
+  .chip.soon{background:rgba(255,255,255,.05);color:var(--muted)}
+  .chip.gcse{background:rgba(255,177,59,.16);color:var(--amber)}
+  .lesson h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.18rem;letter-spacing:.01em}
+  .lesson p{margin:0;color:var(--muted);font-size:.92rem}
+  .topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .topics span{font-family:var(--ui);font-size:.74rem;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:rgba(255,255,255,.03)}
+  .go{font-family:var(--ui);margin-top:14px;font-size:.82rem;color:var(--lav);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .lesson.locked{cursor:default}
+  .lesson.locked h3{color:var(--muted)}
+  a.lesson:hover{transform:translateY(-4px);box-shadow:0 14px 36px rgba(200,162,255,.18)}
+  /* exam map + skills */
+  .panelbox{background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:16px;padding:22px;opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
+  .panelbox.in{opacity:1;transform:none}
+  .papers{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.papers{grid-template-columns:1fr}}
+  .paper{border:1px solid var(--line);border-radius:13px;padding:16px;background:rgba(255,255,255,.02)}
+  .paper h4{font-family:var(--disp);font-size:.9rem;margin:0 0 4px;color:var(--lav);letter-spacing:.04em}
+  .paper .meta{font-family:var(--ui);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+  .paper .row{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:.92rem}
+  .paper .row .dot{width:10px;height:10px;border-radius:50%;margin-top:.5em;flex:0 0 auto}
+  .paper .row small{display:block;color:var(--muted);font-size:.8rem}
+  .note{font-family:var(--ui);font-size:.82rem;color:var(--muted);margin-top:12px}
+  .skills{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media(max-width:760px){.skills{grid-template-columns:repeat(2,1fr)}}
+  .skill{border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;background:rgba(255,255,255,.02)}
+  .skill .e{font-size:1.5rem}
+  .skill h5{font-family:var(--ui);margin:.2em 0 .1em;font-size:.95rem;color:var(--ink)}
+  .skill p{margin:0;color:var(--muted);font-size:.8rem;line-height:1.4}
+  /* reference library */
+  .reflib p{color:var(--muted);font-size:.9rem;margin:.2em 0 14px}
+  .reflinks{display:flex;flex-wrap:wrap;gap:10px}
+  .reflinks a{font-family:var(--ui);font-weight:600;text-decoration:none;color:var(--lav);border:1px solid var(--line);border-radius:10px;padding:10px 16px;display:inline-flex;gap:8px;align-items:center;transition:.15s;font-size:.9rem}
+  .reflinks a:hover{border-color:var(--lilac);box-shadow:0 0 18px rgba(204,136,255,.25)}
+  /* mission drawer */
+  .moverlay{position:fixed;inset:0;z-index:200;display:none}
+  .moverlay.on{display:block}
+  .moverlay .backdrop{position:absolute;inset:0;background:rgba(2,4,10,.66);backdrop-filter:blur(3px)}
+  .moverlay .panel{position:absolute;top:0;right:0;height:100%;width:min(940px,94vw);background:var(--bg);border-left:1px solid var(--line);box-shadow:-22px 0 70px rgba(0,0,0,.55);display:flex;flex-direction:column;transform:translateX(100%);animation:slidein .32s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes slidein{to{transform:translateX(0)}}
+  .mbar{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .mbar .mt{font-family:var(--ui);font-weight:700;letter-spacing:.03em;color:var(--ink);font-size:.96rem;flex:1;display:flex;align-items:center;gap:9px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .mbar .mt .chip{flex:0 0 auto;font-family:var(--ui);font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:999px;font-weight:700;background:rgba(204,136,255,.16);color:var(--lav)}
+  .mbar a.mopen{flex:0 0 auto;font-family:var(--ui);text-transform:uppercase;letter-spacing:.08em;font-size:.7rem;font-weight:700;color:var(--lav);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:7px 11px}
+  .mbar a.mopen:hover{border-color:var(--lilac)}
+  .mbar .mx{flex:0 0 auto;width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--lav);font-size:1.05rem;cursor:pointer}
+  .mbar .mx:hover{border-color:var(--st);color:#ffc0c9}
+  .mframe{flex:1;border:0;width:100%;background:var(--bg)}
+  .mload{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--ui);text-transform:uppercase;letter-spacing:.2em;font-size:.78rem;color:var(--muted)}
+  @media(max-width:640px){.moverlay .panel{width:100vw}}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:50px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important}.strand,.lesson,.panelbox{opacity:1!important;transform:none!important}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="index.html"><span class="blink"></span> ◄ Station Hub</a>
+    <span>History Deck · Year 10</span>
+  </div>
+
+  <header class="hero">
+    <div class="kicker">History Station · AQA GCSE</div>
+    <h1>HISTORY<br><span class="lav">DECK</span></h1>
+    <p class="sub">Four GCSE units, from the Norman Conquest to the NHS, matched to your school's AQA History course. Pick a strand.</p>
+  </header>
+
+  <div class="strands">
+    <div class="strand ww1" data-sci="ww1" role="button" tabindex="0" onclick="sliceStrand('ww1')"><div class="ic">🪖</div><h2>Conflict &amp; Tension</h2><div class="count">WWI · Coming soon</div></div>
+    <div class="strand health" data-sci="health" role="button" tabindex="0" onclick="sliceStrand('health')"><div class="ic">⚕️</div><h2>Health &amp; the People</h2><div class="count">c1000–now · Coming soon</div></div>
+    <div class="strand ger" data-sci="ger" role="button" tabindex="0" onclick="sliceStrand('ger')"><div class="ic">🏛️</div><h2>Germany</h2><div class="count">1890–1945 · Coming soon</div></div>
+    <div class="strand norm" data-sci="norm" role="button" tabindex="0" onclick="sliceStrand('norm')"><div class="ic">🏰</div><h2>Norman England</h2><div class="count">Year 11 · Coming soon</div></div>
+  </div>
+  <div class="slicehint" id="sliceHint"><span class="lab"></span><button onclick="showAllStrands()">✕ Show all</button></div>
+
+  <div class="section-title mg" data-sci="ww1"><span class="bar" style="background:var(--ww1);box-shadow:0 0 12px var(--ww1)"></span> Conflict &amp; Tension · Year 10</div>
+  <div class="lessons mg" data-sci="ww1">
+    <div class="lesson ww1 locked">
+      <div class="tagrow"><span class="chip ww1">The First World War, 1894–1918</span><span class="chip gcse">Paper 1B</span><span class="chip soon">Coming soon</span></div>
+      <h3>Next transmission incoming…</h3>
+      <p>How rival alliances and an arms race dragged Europe into war, and how the fighting finally ended.</p>
+      <div class="topics"><span>Alliances</span><span>Arms race</span><span>Assassination</span><span>The Somme</span><span>Gallipoli</span><span>Mk I tank</span><span>Russian Revolution</span><span>Armistice</span></div>
+    </div>
+  </div>
+
+  <div class="section-title mg" data-sci="health"><span class="bar" style="background:var(--health);box-shadow:0 0 12px var(--health)"></span> Health &amp; the People · Year 10</div>
+  <div class="lessons mg" data-sci="health">
+    <div class="lesson health locked">
+      <div class="tagrow"><span class="chip health">Britain, c1000 to the present day</span><span class="chip gcse">Paper 2A</span><span class="chip soon">Coming soon</span></div>
+      <h3>Next transmission incoming…</h3>
+      <p>A thousand years of medicine: how ideas about the causes of disease, and how to treat it, changed over time.</p>
+      <div class="topics"><span>Four Humours</span><span>Islamic surgery</span><span>Barber surgeons</span><span>Quacks</span><span>Vaccination</span><span>Germ theory</span><span>Magic bullets</span><span>The NHS</span></div>
+    </div>
+  </div>
+
+  <div class="section-title mg" data-sci="ger"><span class="bar" style="background:var(--ger);box-shadow:0 0 12px var(--ger)"></span> Germany · Year 10</div>
+  <div class="lessons mg" data-sci="ger">
+    <div class="lesson ger locked">
+      <div class="tagrow"><span class="chip ger">Democracy &amp; dictatorship, 1890–1945</span><span class="chip gcse">Paper 1A</span><span class="chip soon">Coming soon</span></div>
+      <h3>Next transmission incoming…</h3>
+      <p>From the Kaiser to the Weimar Republic to the Nazi dictatorship: how and why Germany changed so dramatically.</p>
+      <div class="topics"><span>Navy Laws</span><span>Socialism</span><span>Abdication</span><span>Hyperinflation</span><span>Golden Age</span><span>Wall St Crash</span><span>Dictatorship</span><span>War</span></div>
+    </div>
+  </div>
+
+  <div class="section-title mg" data-sci="norm"><span class="bar" style="background:var(--norm);box-shadow:0 0 12px var(--norm)"></span> Norman England · Year 11</div>
+  <div class="lessons mg" data-sci="norm">
+    <div class="lesson norm locked">
+      <div class="tagrow"><span class="chip norm">Norman England, c1066–c1100</span><span class="chip gcse">Paper 2B</span><span class="chip soon">Year 11</span></div>
+      <h3>Scheduled for Year 11</h3>
+      <p>How William the Conqueror took England and kept it, plus a study of one real historic site.</p>
+      <div class="topics"><span>Hastings</span><span>March on London</span><span>Harrying of the North</span><span>Castles</span><span>Norman towns</span><span>Law &amp; order</span><span>Marcher Earls</span><span>Historic environment</span></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="bar"></span> Exam Map</div>
+  <div class="panelbox">
+    <div class="papers">
+      <div class="paper">
+        <h4>Paper 1 · Understanding the modern world</h4>
+        <div class="meta">1 hr 45 min · 50% of GCSE</div>
+        <div class="row"><span class="dot" style="background:var(--ger)"></span><span><b>Section A, period study:</b> Germany, 1890–1945<small>Change and development over about 50 years</small></span></div>
+        <div class="row"><span class="dot" style="background:var(--ww1)"></span><span><b>Section B, wider world depth study:</b> Conflict &amp; Tension, 1894–1918<small>A short, intense period seen from different countries' points of view</small></span></div>
+      </div>
+      <div class="paper">
+        <h4>Paper 2 · Shaping the nation</h4>
+        <div class="meta">1 hr 45 min · 50% of GCSE</div>
+        <div class="row"><span class="dot" style="background:var(--health)"></span><span><b>Section A, thematic study:</b> Health &amp; the People, c1000–present<small>One big theme traced across a thousand years</small></span></div>
+        <div class="row"><span class="dot" style="background:var(--norm)"></span><span><b>Section B, British depth study:</b> Norman England, c1066–c1100<small>Includes a question on a specific historic site</small></span></div>
+      </div>
+    </div>
+    <div class="note">Based on AQA GCSE History (8145) and the units on the school's 2026 curriculum map. Check with your teacher if anything changes.</div>
+  </div>
+
+  <div class="section-title"><span class="bar"></span> Historian's Toolkit</div>
+  <div class="panelbox">
+    <div class="skills">
+      <div class="skill"><div class="e">🕰️</div><h5>Chronology</h5><p>Putting events in order, and knowing what came when.</p></div>
+      <div class="skill"><div class="e">🔗</div><h5>Causation</h5><p>Why things happened, and which causes mattered most.</p></div>
+      <div class="skill"><div class="e">🔍</div><h5>Evidence</h5><p>Reading sources: who made them, why, and how useful they are.</p></div>
+      <div class="skill"><div class="e">⭐</div><h5>Significance</h5><p>Why an event or person really matters.</p></div>
+      <div class="skill"><div class="e">⚖️</div><h5>Similarity &amp; difference</h5><p>Comparing people, places and periods.</p></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="bar"></span> Reference Library</div>
+  <div class="panelbox reflib">
+    <p>The official Sir William Robertson Academy History curriculum documents (open in a new tab).</p>
+    <div class="reflinks">
+      <a href="https://www.swracademy.org/attachments/download.asp?file=240&type=pdf" target="_blank" rel="noopener">🗺️ Curriculum Map (KS3/KS4)</a>
+      <a href="https://www.swracademy.org/page/?title=History&pid=62" target="_blank" rel="noopener">📜 History subject page</a>
+      <a href="https://www.swracademy.org/page/?title=Subject+Curriculum&pid=29" target="_blank" rel="noopener">📄 Subject Curriculum page</a>
+    </div>
+  </div>
+
+  <footer>Stellar Lab · History Deck · Built for Lyra<br><span style="font-size:.65rem;opacity:.5;letter-spacing:.1em">Last updated: 24 Oct 2026</span></footer>
+</div>
+
+<!-- MISSION DRAWER -->
+<div class="moverlay" id="moverlay" aria-hidden="true">
+  <div class="backdrop" onclick="closeMission()"></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-label="Mission viewer">
+    <div class="mbar">
+      <div class="mt"><span class="chip">Mission</span><span id="mvTitle">—</span></div>
+      <a class="mopen" id="mvOpen" href="#" target="_blank" rel="noopener">Full page ↗</a>
+      <button class="mx" onclick="closeMission()" aria-label="Close mission viewer">✕</button>
+    </div>
+    <div style="position:relative;flex:1;display:flex">
+      <div class="mload" id="mvLoad">Loading mission…</div>
+      <iframe class="mframe" id="mvFrame" title="Mission viewer" src="about:blank" onload="document.getElementById('mvLoad').style.display='none'"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<150;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(245,208,111,','rgba(255,90,110,','rgba(204,136,255,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.1});
+document.querySelectorAll('.strand,.lesson,.panelbox').forEach(s=>io.observe(s));
+
+/* strand cards = slicers for the mission sections below */
+const STRAND_NAME={ww1:'Conflict & Tension',health:'Health & the People',ger:'Germany',norm:'Norman England'};
+let activeStrand=null;
+function applySlice(){
+  document.querySelectorAll('.mg').forEach(el=>{
+    const s=el.dataset.sci;
+    const show=activeStrand?(s===activeStrand):true;
+    el.classList.toggle('hide',!show);
+  });
+  document.querySelectorAll('.strand').forEach(c=>c.classList.toggle('active',!!activeStrand&&c.dataset.sci===activeStrand));
+  const hint=document.getElementById('sliceHint');
+  if(activeStrand){hint.style.display='flex';hint.querySelector('.lab').textContent='Showing '+STRAND_NAME[activeStrand]+' only';}
+  else hint.style.display='none';
+}
+function sliceStrand(sci){activeStrand=(activeStrand===sci)?null:sci;applySlice();}
+function showAllStrands(){activeStrand=null;applySlice();}
+document.querySelectorAll('.strand').forEach(c=>c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sliceStrand(c.dataset.sci);}}));
+applySlice();
+
+/* mission drawer — open missions in-page */
+function missionOpen(){const o=document.getElementById('moverlay');return o&&o.classList.contains('on');}
+function openMission(url,title){const ov=document.getElementById('moverlay');document.getElementById('mvLoad').style.display='';document.getElementById('mvFrame').src=url;document.getElementById('mvTitle').textContent=title;document.getElementById('mvOpen').href=url;ov.classList.add('on');ov.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+function closeMission(){const ov=document.getElementById('moverlay');ov.classList.remove('on');ov.setAttribute('aria-hidden','true');document.getElementById('mvFrame').src='about:blank';document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&missionOpen())closeMission();});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a.lesson');if(!a)return;
+  const href=a.getAttribute('href');if(!href||/^(https?:|#|mailto:)/.test(href))return;
+  e.preventDefault();const h=a.querySelector('h3');
+  openMission(href,h?h.textContent.trim():'Mission');
+});
+</script>
+</body>
+</html>

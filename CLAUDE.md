@@ -17,6 +17,9 @@ stellar-lab/              ← THE WEBSITE = the Git repo root (this folder)
 ├─ index.html               (Station Hub — subject picker)
 ├─ science.html             (Science Deck — Year 10 strands + Year 9 archive + Reference Library)
 ├─ computing.html           (Computing Deck — Systems / Programming strands + Reference Library)
+├─ maths.html               (Maths Deck — Number / Algebra / Geometry / Data strands)
+├─ history.html             (History Deck — 4 AQA GCSE unit strands + Exam Map + Reference Library)
+├─ dt.html                  (DT Deck — GCSE route picker + route previews + Reference Library)
 ├─ lessons/                 (one .html per mission)
 ├─ CLAUDE.md                ← this file (committed with the repo)
 ├─ .gitattributes           (forces LF line endings — keeps diffs clean on OneDrive/Windows)
@@ -37,7 +40,11 @@ stellar-lab/              ← THE WEBSITE = the Git repo root (this folder)
 - The Reference Library links to the school's **live PDF URLs**, so nothing extra to host.
 
 ## 4. Current state
-**Architecture:** `index.html` (Station Hub) → subject **deck** pages → `lessons/` missions. Subjects: Science (live), Computing (live), Maths (live, in progress); English, DT, History (locked, decks not built yet — tiles on `index.html` show "Coming soon").
+**Architecture:** `index.html` (Station Hub) → subject **deck** pages → `lessons/` missions. Subjects: Science (live), Computing (live), Maths (live, in progress), History (deck live, no missions yet), DT (deck live, waiting on route choice); English (locked, deck not built yet — tile on `index.html` shows "Coming soon").
+
+`history.html` (built 24 Oct 2026): Lyra **is taking AQA GCSE History (8145)**. Four strands matching the school's map: **Conflict & Tension WWI 1894–1918** (Paper 1B, crimson `--ww1`), **Health & the People c1000–present** (Paper 2A, green `--health`), **Germany 1890–1945** (Paper 1A, gold `--ger`) — all Year 10 — and **Norman England c1066–c1100** (Paper 2B incl. historic environment, lilac `--norm`) — Year 11. Each strand has one "coming soon" card listing its key topics; replace it with real mission cards (`<a class="lesson ww1" href="lessons/...">`) as missions are built. Also has an Exam Map panel and a Historian's Toolkit (chronology, causation, evidence, significance, similarity & difference — the school's assessed skills). History missions use topbar labels like `Hist-01 // ...` and a "◄ History Deck" back-link.
+
+`dt.html` (built 24 Oct 2026): **Lyra's GCSE DT route is not known yet** (Oct 2026). The deck asks her to pick one of the school's three routes — **Product Design** (orange `--pd`, 50% NEA/50% exam, timbers specialism), **Graphics** (pink `--gfx`, 60/40), **Hospitality & Catering** (green `--hc`, 60/40) — and shows a preview of that route's Year 10/11 topics. The choice is saved in `localStorage` on her device only, so the user has to be told it; ask them before building DT missions. Once known, add a strand + mission grid for that route (and consider hiding the picker).
 
 **Single clone:** `c:\Users\andre\OneDrive\Documents\GitHub\stellar-lab` (this file's folder) is the one and only local clone, and GitHub Desktop points here. The old `D:\My_Dev_Repo` clone (where the Maths deck was first built) was merged in and then deleted in Oct 2026.
 
@@ -67,18 +74,18 @@ All pages carry a "Last updated" timestamp in the footer (plain static text next
 1. Continue the **Year 10 Science** strands from the curriculum plan (more Chemistry/Biology/Physics topics as the school year progresses).
 2. Continue the **Computing** Systems strand and start the **Programming** strand (searching/sorting algorithms, hands-on Python) — Computing was requested next, before DT or History.
 3. Decide whether to migrate **Maths** to Year 10/11 (like Science) or keep building out its Year 9 Number/Data strands — ask the user, since it wasn't planned as part of the Year 10 push.
-4. Build the **DT** deck (curriculum Plan/Map not yet fetched from the school site — ask to add it when it's time).
-5. Build the **History** deck (curriculum Plan/Map not yet fetched — ask to add it when it's time).
+4. Build **History** missions (deck done) — start with the Year 10 units: Conflict & Tension WWI, Health & the People, Germany.
+5. Build **DT** missions once the user confirms Lyra's route (deck done, route picker live).
 6. Build the **English** deck, then Year 10/11 English missions.
 
-Curriculum source of truth: `References/` and https://www.swracademy.org/page/?title=Subject+Curriculum&pid=29 (Science is AQA-aligned; Maths uses White Rose/Edexcel). Computing's Plan and Map are already extracted to `Computing-Curriculum-Plan.md` / `Computing-Curriculum-Map.md`. DT and History have no curriculum docs in `References/` yet — fetch and extract them (same pattern as `_Curriculum-Index.md`) before planning those decks.
+Curriculum source of truth: `References/` and https://www.swracademy.org/page/?title=Subject+Curriculum&pid=29 (Science is AQA-aligned; Maths uses White Rose/Edexcel). Computing's Plan and Map are already extracted to `Computing-Curriculum-Plan.md` / `Computing-Curriculum-Map.md`. DT and History have no published Curriculum Plan, only a Map — extracted to `DT-Curriculum-Map.md` and `History-Curriculum-Map.md` (24 Oct 2026). History KS4 is AQA; the DT map doesn't name exam boards.
 
 ## 5. Design system ("Stellar Lab")
 Sci-fi starship console blending **Star Trek LCARS** (amber/lilac angled panels, blinking status dots), **Stranger Things** (dark starfield, red neon flicker title, drifting "spore" particles), and **Taylor Swift / Midnights** (lavender glow). Lyra likes all three.
 
 - **Fonts (Google CDN):** Orbitron (display/headings), Rajdhani (UI/labels), Exo 2 (body).
 - **Palette (CSS vars):** `--bg:#04060f`, `--ink:#eaf2ff`, `--muted:#8fa0c8`, `--amber:#ffb13b`, `--lilac:#cc88ff`, `--lav:#c8a2ff`, `--st:#ff1f3d` (title glow), plus accents `--exo:#ff3b5c`, `--endo:#2de2ff`, `--green:#46e6a0`, `--blue:#5aa6ff`, `--teal:#39d6c8`.
-- **Subject accent:** Science — Chemistry = orange/lilac, Biology = green (`--green`), Physics = cyan (`--endo`). Computing — Systems = blue (`--blue` / `#5aa6ff`), Programming = teal (`--teal` / `#39d6c8`). Use the accent for the lesson section left-border, the hero kicker, and the deck mission card. Give each new subject its own two-ish accent colours, distinct from existing subjects.
+- **Subject accent:** Science — Chemistry = orange/lilac, Biology = green (`--green`), Physics = cyan (`--endo`). Computing — Systems = blue (`--blue` / `#5aa6ff`), Programming = teal (`--teal` / `#39d6c8`). History — hub tile gold `#f5d06f`; strands WWI `#ff5a6e`, Health `#46e6a0`, Germany `#f5d06f`, Norman `#b48cff`. DT — hub tile orange `#ff8a3d`; routes Product Design `#ff8a3d`, Graphics `#ff7ad9`, Hospitality & Catering `#7ee07a`. Use the accent for the lesson section left-border, the hero kicker, and the deck mission card. Give each new subject its own two-ish accent colours, distinct from existing subjects.
 - **Accessibility:** always include the `@media (prefers-reduced-motion: reduce)` block that disables animations and the custom cursor.
 - Each page is **one self-contained .html** (inline CSS + JS). No build step, no external JS libs. This keeps it portable.
 
