@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molecules and Matter // Stellar Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#04060f; --ink:#eaf2ff; --muted:#8fa0c8;
+    --exo:#ff3b5c; --exo2:#ff7a3d; --endo:#2de2ff; --amber:#ffb13b; --lilac:#cc88ff; --lav:#c8a2ff; --st:#ff1f3d; --green:#46e6a0; --blue:#5aa6ff;
+    --acc:#2de2ff;
+    --panel:rgba(16,22,46,.72); --line:rgba(122,140,210,.28);
+    --disp:'Orbitron',sans-serif; --ui:'Rajdhani',sans-serif; --body:'Exo 2',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;overflow-x:hidden}
+  canvas#stars{position:fixed;inset:0;z-index:0;display:block}
+  .cursor{position:fixed;width:26px;height:26px;border-radius:50%;pointer-events:none;z-index:99;background:radial-gradient(circle,rgba(45,226,255,.5),transparent 70%);transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:22px 20px 90px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;font-family:var(--ui);text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--muted);margin-bottom:30px}
+  .topbar a{color:var(--lilac);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .topbar a:hover{color:var(--lav);text-shadow:0 0 12px var(--lav)}
+  .blink{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .hero{text-align:center;padding:30px 0 22px}
+  .hero .kicker{font-family:var(--ui);text-transform:uppercase;letter-spacing:.42em;font-size:.8rem;color:var(--acc);margin-bottom:14px}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.2rem,7vw,4.6rem);line-height:.98;margin:0;color:#fff;text-shadow:0 0 18px var(--st),0 0 42px rgba(255,31,61,.5);animation:flicker 6s infinite}
+  .hero h1 .lav{color:var(--lav);text-shadow:0 0 18px var(--lav),0 0 44px rgba(200,162,255,.5)}
+  @keyframes flicker{0%,19%,21%,23%,80%,100%{opacity:1}20%,22%{opacity:.72}}
+  .hero p{color:var(--muted);max-width:560px;margin:18px auto 0;font-size:1.05rem}
+  .scrollcue{margin-top:30px;font-family:var(--ui);letter-spacing:.3em;font-size:.7rem;color:var(--muted);text-transform:uppercase}
+  .scrollcue span{display:block;font-size:1.3rem;animation:bob 1.8s infinite;color:var(--lilac)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+  section{position:relative;background:var(--panel);backdrop-filter:blur(6px);border-radius:6px 22px 22px 6px;padding:26px 26px 28px 30px;margin:30px 0;border:1px solid var(--line);border-left:6px solid var(--acc);opacity:0;transform:translateY(26px);transition:opacity .7s,transform .7s}
+  section.in{opacity:1;transform:none}
+  section::before{content:"";position:absolute;left:-6px;top:18px;width:6px;height:44px;background:var(--amber);border-radius:3px}
+  .seclabel{font-family:var(--ui);text-transform:uppercase;letter-spacing:.26em;font-size:.74rem;color:var(--amber);margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:700;font-size:1.5rem;margin:0 0 12px}
+  .lead{color:var(--muted);margin:0 0 16px;font-size:1rem}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.cards{grid-template-columns:1fr}}
+  .fact{border-radius:14px;padding:18px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .fact h3{font-family:var(--ui);margin:.1em 0 .3em;font-size:1.05rem;color:var(--acc)}
+  .fact p{margin:0;color:var(--muted);font-size:.92rem}
+  .fact b{color:var(--ink)}
+  .tri{display:inline-block;font-family:var(--ui);font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#ff9ad8;background:rgba(255,90,200,.12);border:1px solid rgba(255,120,210,.5);border-radius:999px;padding:1px 9px;margin-right:6px;vertical-align:middle;white-space:nowrap}
+  .gcse-tag{display:inline-block;font-family:var(--ui);font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);background:rgba(255,177,59,.14);border:1px solid rgba(255,177,59,.4);border-radius:999px;padding:3px 10px;margin-bottom:12px}
+
+  /* states of matter strip */
+  .states{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  @media(max-width:640px){.states{grid-template-columns:1fr}}
+  .stcard{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.02);text-align:center}
+  .stcard svg{max-width:120px;margin:0 auto 6px}
+  .stcard h4{font-family:var(--ui);margin:0;font-size:1rem;color:var(--acc)}
+  .stcard p{margin:.2em 0 0;color:var(--muted);font-size:.85rem}
+
+  /* phase lab */
+  .lab{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  @media(max-width:760px){.lab{grid-template-columns:1fr}}
+  .screen{background:radial-gradient(120% 120% at 50% 0,rgba(45,226,255,.06),transparent),#060a18;border:1px solid var(--line);border-radius:14px;padding:10px}
+  .screen .cap{font-family:var(--ui);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:2px 4px 6px;display:flex;justify-content:space-between}
+  .screen canvas{width:100%;height:auto;display:block}
+  svg{width:100%;height:auto;display:block}
+  .controls{border:1px solid var(--line);border-radius:14px;padding:16px;background:rgba(255,255,255,.03);margin-top:16px}
+  .srow{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+  .srow label{font-family:var(--ui);font-size:.9rem;color:var(--muted);width:120px;flex:0 0 auto}
+  .srow input[type=range]{flex:1;min-width:140px;accent-color:var(--acc)}
+  .srow input[type=range]:disabled{opacity:.4}
+  .srow .val{font-family:var(--disp);font-size:.9rem;color:var(--acc);width:78px;text-align:right}
+  .btnrow{display:flex;gap:10px;margin-top:6px}
+  .lbtn{flex:1;font-family:var(--ui);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:.86rem;border:1px solid var(--line);border-radius:10px;padding:11px;cursor:pointer;background:rgba(45,226,255,.14);color:var(--acc)}
+  .lbtn:hover{border-color:var(--acc);box-shadow:0 0 14px rgba(45,226,255,.3)}
+  .lbtn.alt{background:rgba(255,255,255,.03);color:var(--muted)}
+  .readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+  @media(max-width:640px){.readouts{grid-template-columns:repeat(2,1fr)}}
+  .ro{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.02)}
+  .ro .k{font-family:var(--ui);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .ro .v{font-family:var(--disp);font-size:1.15rem;color:var(--ink)}
+  .bars{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media(max-width:640px){.bars{grid-template-columns:1fr}}
+  .bar .k{font-family:var(--ui);font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between}
+  .bar .track{height:12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);overflow:hidden}
+  .bar .fill{height:100%;width:0;border-radius:999px;transition:width .15s linear}
+  .lmsg{font-family:var(--ui);font-size:.95rem;color:var(--muted);margin-top:14px;min-height:3.2em;border-left:3px solid var(--acc);padding:6px 12px;background:rgba(45,226,255,.05);border-radius:0 10px 10px 0}
+  .lmsg b{color:var(--ink)}
+  .lmsg .eq{display:block;font-family:var(--disp);font-size:.82rem;color:var(--amber);margin-top:4px}
+
+  /* density practical */
+  .dlab{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  @media(max-width:720px){.dlab{grid-template-columns:1fr}}
+  .objs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .objs button{font-family:var(--ui);font-weight:600;font-size:.88rem;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:rgba(255,255,255,.03);color:var(--ink);cursor:pointer;transition:.15s}
+  .objs button:hover{border-color:var(--lilac)}
+  .objs button.on{border-color:var(--acc);background:rgba(45,226,255,.12)}
+  .dout{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.03);font-family:var(--ui);color:var(--muted);font-size:.95rem;min-height:9em}
+  .dout b{color:var(--ink)}
+  .dout .big{font-family:var(--disp);font-size:1.2rem;color:var(--acc)}
+  .verdict{display:inline-block;margin-top:8px;padding:4px 12px;border-radius:999px;font-weight:700;font-size:.85rem}
+  .verdict.float{background:rgba(70,230,160,.14);color:var(--green);border:1px solid rgba(70,230,160,.5)}
+  .verdict.sink{background:rgba(255,177,59,.14);color:var(--amber);border:1px solid rgba(255,177,59,.5)}
+
+  .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:640px){.spec{grid-template-columns:1fr}}
+  .scard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:13px;padding:16px}
+  .scard .emoji{font-size:1.6rem}
+  .scard h4{font-family:var(--ui);margin:.3em 0 .15em;font-size:1.02rem;color:var(--acc)}
+  .scard p{margin:0;color:var(--muted);font-size:.88rem}
+
+  .decrypt{border:1px dashed var(--lilac);border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(204,136,255,.07),transparent)}
+  .decrypt .head{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+  .decrypt .head .t{font-family:var(--ui);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--lav)}
+  .decrypt .btn{font-family:var(--ui);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--lilac);color:var(--lav);background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .decrypt .body{max-height:0;overflow:hidden;transition:max-height .6s ease;opacity:0}
+  .decrypt.open .body{max-height:2600px;opacity:1;transition:max-height .8s ease,opacity .8s ease .1s}
+  .decrypt .body .inner{padding-top:14px}
+  .key{display:flex;gap:10px;align-items:flex-start;margin:.5em 0}.key .dot{width:10px;height:10px;border-radius:50%;margin-top:.55em;flex:0 0 auto}
+  code{font-family:var(--ui);background:#060a18;padding:3px 9px;border-radius:6px;color:var(--amber);border:1px solid var(--line)}
+  .syr{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(255,255,255,.03);margin-top:14px}
+  .syr h4{font-family:var(--ui);margin:0 0 8px;color:var(--lav);font-size:1rem}
+
+  .q{margin-bottom:18px}.qtext{font-family:var(--ui);font-weight:600;font-size:1.04rem;margin-bottom:10px}
+  .opts{display:grid;gap:8px}
+  .opt{font-family:var(--body);text-align:left;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:12px 15px;border-radius:11px;cursor:pointer;font-size:.95rem;transition:.15s}
+  .opt:hover{border-color:var(--lilac)}
+  .opt.correct{background:rgba(70,230,160,.15);border-color:var(--green);color:#c8f7e3}
+  .opt.wrong{background:rgba(255,59,92,.14);border-color:var(--exo);color:#ffd0d8;animation:shake .35s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .opt:disabled{cursor:default}
+  .fb{margin-top:8px;font-size:.9rem;display:none;padding:9px 12px;border-radius:9px}
+  .fb.show{display:block}.fb.ok{background:rgba(70,230,160,.1);color:#bff0d8}.fb.no{background:rgba(255,59,92,.1);color:#ffc0c9}
+  .score{font-family:var(--disp);text-align:center;font-size:1.1rem;margin-top:16px;min-height:1.4em}
+  .resetbtn{font-family:var(--ui);letter-spacing:.1em;text-transform:uppercase;display:block;margin:12px auto 0;background:var(--lilac);color:#0c0820;border:0;padding:11px 26px;border-radius:10px;cursor:pointer;font-weight:700}
+  .resetbtn:hover{box-shadow:0 0 22px var(--lav)}
+  footer{text-align:center;color:var(--muted);font-family:var(--ui);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;margin-top:40px}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;scroll-behavior:auto}section{opacity:1;transform:none}.cursor{display:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="wrap">
+  <div class="topbar">
+    <a href="../science.html"><span class="blink"></span> ◄ Science Deck</a>
+    <span>Phys-05 // Molecules &amp; Matter</span>
+  </div>
+  <header class="hero">
+    <div class="kicker">Science Station · Year 10 GCSE</div>
+    <h1>PHASE<br><span class="lav">SHIFT</span></h1>
+    <p>Everything around you is made of particles that are always moving. Heat a block of ice all the way to steam and see where the energy really goes.</p>
+    <div class="scrollcue">Begin Briefing<span>▾</span></div>
+  </header>
+
+  <!-- 1 CORE CONCEPT -->
+  <section>
+    <div class="seclabel">Section 01 // Core Concept</div>
+    <h2>The particle model</h2>
+    <p class="lead">Solids, liquids and gases are made of the <b>same particles</b>. The difference is how they're arranged and how much energy they have.</p>
+    <div class="states">
+      <div class="stcard">
+        <svg viewBox="0 0 100 70" aria-label="Solid: particles in a regular lattice">
+          <rect x="4" y="4" width="92" height="62" rx="8" fill="none" stroke="#20304f" stroke-width="2"/>
+          <g fill="#9fd8ff"><circle cx="26" cy="20" r="7"/><circle cx="42" cy="20" r="7"/><circle cx="58" cy="20" r="7"/><circle cx="74" cy="20" r="7"/><circle cx="26" cy="36" r="7"/><circle cx="42" cy="36" r="7"/><circle cx="58" cy="36" r="7"/><circle cx="74" cy="36" r="7"/><circle cx="26" cy="52" r="7"/><circle cx="42" cy="52" r="7"/><circle cx="58" cy="52" r="7"/><circle cx="74" cy="52" r="7"/></g>
+        </svg>
+        <h4>Solid</h4><p>Regular pattern, touching. Particles <b>vibrate</b> in fixed positions.</p>
+      </div>
+      <div class="stcard">
+        <svg viewBox="0 0 100 70" aria-label="Liquid: particles touching but jumbled">
+          <rect x="4" y="4" width="92" height="62" rx="8" fill="none" stroke="#20304f" stroke-width="2"/>
+          <g fill="#2de2ff"><circle cx="20" cy="54" r="7"/><circle cx="35" cy="56" r="7"/><circle cx="50" cy="53" r="7"/><circle cx="65" cy="56" r="7"/><circle cx="80" cy="53" r="7"/><circle cx="28" cy="41" r="7"/><circle cx="44" cy="40" r="7"/><circle cx="60" cy="42" r="7"/><circle cx="75" cy="39" r="7"/><circle cx="36" cy="27" r="7"/><circle cx="54" cy="28" r="7"/><circle cx="70" cy="26" r="7"/></g>
+        </svg>
+        <h4>Liquid</h4><p>Close together but random. Particles <b>slide past</b> each other.</p>
+      </div>
+      <div class="stcard">
+        <svg viewBox="0 0 100 70" aria-label="Gas: particles far apart">
+          <rect x="4" y="4" width="92" height="62" rx="8" fill="none" stroke="#20304f" stroke-width="2"/>
+          <g fill="#c8a2ff"><circle cx="18" cy="18" r="7"/><circle cx="60" cy="14" r="7"/><circle cx="84" cy="34" r="7"/><circle cx="38" cy="44" r="7"/><circle cx="70" cy="56" r="7"/><circle cx="16" cy="56" r="7"/></g>
+        </svg>
+        <h4>Gas</h4><p>Far apart, random. Particles <b>move fast</b> in all directions.</p>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="fact"><h3>Density</h3><p><code>ρ = m ÷ V</code>, the mass in each unit of volume (kg/m³ or g/cm³). Solids and liquids are dense because their particles are packed together. Gases are about <b>1000× less dense</b> because their particles are spread out.</p></div>
+      <div class="fact"><h3>Changes of state</h3><p>Melting, freezing, boiling, evaporating, condensing and subliming are <b>physical changes</b>. They can be reversed, and <b>mass is conserved</b> because no particles are made or destroyed.</p></div>
+    </div>
+  </section>
+
+  <!-- 2 PHASE LAB -->
+  <section>
+    <div class="seclabel">Section 02 // Phase Lab</div>
+    <h2>Ice to steam</h2>
+    <p class="lead">Start with ice at −20 °C, switch the heater on and watch the particles and the heating curve together. Look out for the flat parts!</p>
+    <div class="lab">
+      <div class="screen">
+        <div class="cap"><span>Particle chamber</span><span id="stateCap">SOLID</span></div>
+        <canvas id="pbox" width="340" height="260" aria-label="Animated particle chamber"></canvas>
+      </div>
+      <div class="screen">
+        <div class="cap"><span>Heating curve</span><span>T vs energy in</span></div>
+        <canvas id="curve" width="340" height="260" aria-label="Live heating curve graph"></canvas>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="srow"><label>Heater power</label><input type="range" id="pow" min="500" max="3000" step="100" value="2000"><span class="val" id="powV">2000 W</span></div>
+      <div class="srow"><label>Mass of ice</label><input type="range" id="mass" min="0.1" max="1" step="0.1" value="0.5"><span class="val" id="massV">0.5 kg</span></div>
+      <div class="btnrow">
+        <button class="lbtn" id="runBtn" onclick="toggleRun()">▶ Heat</button>
+        <button class="lbtn alt" onclick="resetLab()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="readouts">
+      <div class="ro"><div class="k">Temperature</div><div class="v" id="roT">−20.0 °C</div></div>
+      <div class="ro"><div class="k">State</div><div class="v" id="roS">Solid</div></div>
+      <div class="ro"><div class="k">Energy in</div><div class="v" id="roE">0.0 kJ</div></div>
+      <div class="ro"><div class="k">Lab time (sim)</div><div class="v" id="roTime">0 s</div></div>
+    </div>
+    <div class="bars">
+      <div class="bar"><div class="k"><span>⚡ Kinetic energy of particles</span><span>sets temperature</span></div><div class="track"><div class="fill" id="keBar" style="background:linear-gradient(90deg,#2de2ff,#ffb13b)"></div></div></div>
+      <div class="bar"><div class="k"><span>🔗 Potential energy of particles</span><span>bonds / separation</span></div><div class="track"><div class="fill" id="peBar" style="background:linear-gradient(90deg,#cc88ff,#ff3b5c)"></div></div></div>
+    </div>
+    <div class="lmsg" id="lMsg"></div>
+  </section>
+
+  <!-- 3 DENSITY PRACTICAL -->
+  <section>
+    <div class="seclabel">Section 03 // Required Practical</div>
+    <h2>Density detective</h2>
+    <p class="lead">Irregular objects can't be measured with a ruler, so <b>displace water</b> instead. Weigh the object, drop it in, and read how far the water rises.</p>
+    <div class="dlab">
+      <div class="screen">
+        <svg viewBox="0 0 320 260" role="img" aria-label="Balance and measuring cylinder">
+          <!-- balance -->
+          <rect x="12" y="214" width="96" height="30" rx="6" fill="#0b1020" stroke="#20304f" stroke-width="2"/>
+          <rect x="22" y="204" width="76" height="8" rx="3" fill="#2a3a5e"/>
+          <rect x="24" y="222" width="72" height="16" rx="3" fill="#03140f"/>
+          <text id="balRead" x="60" y="235" text-anchor="middle" fill="#46e6a0" font-family="Orbitron" font-size="11">0.0 g</text>
+          <text x="60" y="256" text-anchor="middle" fill="#8fa0c8" font-family="Rajdhani" font-size="11">BALANCE</text>
+          <!-- cylinder -->
+          <rect id="water" x="152" y="176" width="76" height="60" fill="rgba(45,226,255,.28)"/>
+          <line id="meniscus" x1="152" y1="176" x2="228" y2="176" stroke="#2de2ff" stroke-width="2"/>
+          <path d="M150 40 V238 H230 V40" fill="none" stroke="#cfe6f5" stroke-width="3" stroke-linejoin="round"/>
+          <g id="ticks"></g>
+          <line id="pin" x1="190" y1="30" x2="190" y2="30" stroke="#cfe6f5" stroke-width="1.5" opacity="0"/>
+          <text id="obj" x="190" y="20" text-anchor="middle" font-size="24" opacity="0">🪨</text>
+          <text id="lvlRead" x="300" y="180" text-anchor="end" fill="#2de2ff" font-family="Rajdhani" font-size="12">50 cm³</text>
+        </svg>
+      </div>
+      <div>
+        <div class="objs" id="objBtns">
+          <button onclick="testObj('pebble',this)">🪨 Pebble</button>
+          <button onclick="testObj('bolt',this)">🔩 Steel bolt</button>
+          <button onclick="testObj('lead',this)">⚓ Lead weight</button>
+          <button onclick="testObj('ice',this)">🧊 Ice cube</button>
+          <button onclick="testObj('cork',this)">🟤 Cork</button>
+        </div>
+        <div class="dout" id="dOut">Pick an object to test. The cylinder starts with <b>50 cm³</b> of water.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 REAL WORLD -->
+  <section>
+    <div class="seclabel">Section 04 // Out in the World</div>
+    <h2>Particles at work</h2>
+    <div class="spec">
+      <div class="scard"><div class="emoji">🧊</div><h4>Ice floats</h4><p>Water is unusual: when it freezes, its particles lock into an open pattern, so ice is <b>less dense</b> than water. Ponds freeze from the top down, which keeps fish alive underneath.</p></div>
+      <div class="scard"><div class="emoji">🥵</div><h4>Sweating cools you</h4><p>When sweat <b>evaporates</b>, the fastest particles escape. That lowers the average kinetic energy of what's left, so your skin cools.</p></div>
+      <div class="scard"><div class="emoji">♨️</div><h4>Steam burns are worse</h4><p>Steam at 100 °C releases its huge latent heat of vaporisation as it <b>condenses</b> on your skin, before it cools any further.</p></div>
+      <div class="scard"><div class="emoji">🌊</div><h4>Water heats slowly</h4><p>Water has a very high <b>specific heat capacity</b>, which is why the sea stays cool on a hot day and makes a great coolant in car engines.</p></div>
+    </div>
+  </section>
+
+  <!-- 5 DECRYPT -->
+  <section>
+    <div class="seclabel">Section 05 // Encrypted: GCSE Stretch</div>
+    <h2>Advanced data</h2>
+    <div class="gcse-tag">GCSE · Exam equations &amp; higher tier</div>
+    <p class="lead" style="font-size:.9rem">Anything marked <span class="tri">Triple only</span> is only examined in separate (Triple) Physics, not Combined Science. Everything else on this page is for everyone.</p>
+    <div class="decrypt" id="decrypt">
+      <div class="head" onclick="toggleDecrypt()"><span class="t">🔒 Internal energy, heat equations &amp; gas pressure</span><button class="btn" id="decBtn">Decrypt ▸</button></div>
+      <div class="body"><div class="inner">
+        <div class="key"><span class="dot" style="background:#2de2ff"></span><span><strong>Internal energy</strong> is the <em>total</em> kinetic energy plus potential energy of all the particles in a system. Heating either raises the temperature (more kinetic energy) <em>or</em> changes the state (more potential energy), but not both at once.</span></div>
+        <div class="key"><span class="dot" style="background:#ffb13b"></span><span><strong>Specific heat capacity:</strong> <code>ΔE = m c Δθ</code>, the energy needed to raise 1 kg by 1 °C. Water: c = 4200 J/kg °C.</span></div>
+        <div class="key"><span class="dot" style="background:#cc88ff"></span><span><strong>Specific latent heat:</strong> <code>E = m L</code>, the energy needed to change the state of 1 kg <em>with no change in temperature</em>. Water: L<sub>f</sub> (fusion, melting) = 334 000 J/kg and L<sub>v</sub> (vaporisation, boiling) = 2 260 000 J/kg. L<sub>v</sub> is about 7× bigger because boiling has to pull the particles completely apart.</span></div>
+        <div class="key"><span class="dot" style="background:#46e6a0"></span><span><strong>Gas pressure:</strong> gas particles collide with the walls of their container and exert a force on them. At a fixed volume, a higher temperature means faster particles, which hit the walls <em>harder and more often</em>, so the pressure goes up.</span></div>
+        <div class="key"><span class="dot" style="background:#ff3b5c"></span><span><span class="tri">Triple only</span><strong>Boyle's law:</strong> for a fixed mass of gas at constant temperature, <code>p × V = constant</code>. Squash it into half the volume and the pressure doubles.<br><span class="tri">Triple only · Higher tier</span>Doing <strong>work</strong> on a gas (like pumping a bike tyre) also raises its internal energy, so its temperature rises.</span></div>
+        <div class="syr">
+          <h4><span class="tri">Triple only</span>💉 Syringe test: squeeze the gas</h4>
+          <svg viewBox="0 0 320 90" role="img" aria-label="Syringe with gas particles">
+            <rect x="20" y="20" width="250" height="50" rx="6" fill="#0b1020" stroke="#cfe6f5" stroke-width="2"/>
+            <rect x="270" y="38" width="30" height="14" rx="3" fill="#cfe6f5"/>
+            <rect id="plunger" x="200" y="16" width="8" height="58" rx="2" fill="#cc88ff"/>
+            <rect id="plRod" x="208" y="40" width="92" height="10" fill="#8a6bb8"/>
+            <g id="gasDots" fill="#c8a2ff"></g>
+          </svg>
+          <div class="srow" style="margin-top:10px"><label>Volume</label><input type="range" id="sv" min="20" max="100" step="5" value="60"><span class="val" id="svV">60 cm³</span></div>
+          <div class="lmsg" id="sMsg" style="margin-top:4px"></div>
+        </div>
+        <p style="margin-top:12px"><strong>Worked example:</strong> how much energy does it take to boil away 0.2 kg of water that's already at 100 °C? <code>E = m L<sub>v</sub> = 0.2 × 2 260 000 = 452 000 J</code> (452 kJ). Heating that same water from 20 °C up to 100 °C only takes <code>0.2 × 4200 × 80 = 67 200 J</code>.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- 6 QUIZ -->
+  <section>
+    <div class="seclabel">Section 06 // Diagnostic</div>
+    <h2>System check</h2>
+    <p class="lead">Five questions at a time, pulled from a bank of 15. Tap "New questions" for a fresh set.</p>
+    <div id="quiz"></div>
+    <div class="score" id="scoreLine"></div>
+    <button class="resetbtn" onclick="resetQuiz()">↻ New questions</button>
+  </section>
+
+  <footer>Stellar Lab · Module 16 · For Lyra<br><span style="font-size:.65rem;opacity:.5;letter-spacing:.1em">Last updated: 24 Oct 2026</span></footer>
+</div>
+
+<script>
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,stars=[],spores=[];
+  function size(){w=c.width=innerWidth;h=c.height=innerHeight;}size();addEventListener('resize',size);
+  for(let i=0;i<140;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,t:Math.random()*6.28,s:Math.random()*.5+.2});
+  const pal=['rgba(45,226,255,','rgba(204,136,255,','rgba(255,177,59,'];
+  for(let i=0;i<26;i++)spores.push({x:Math.random(),y:Math.random(),r:Math.random()*2+1,vy:-(Math.random()*.0006+.0002),vx:(Math.random()-.5)*.0003,c:pal[i%3],a:Math.random()*.4+.2});
+  function draw(t){x.clearRect(0,0,w,h);
+    for(const s of stars){const tw=.5+.5*Math.sin(t*.001*s.s+s.t);x.fillStyle='rgba(220,230,255,'+(.25+tw*.6)+')';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}
+    for(const p of spores){p.y+=p.vy;p.x+=p.vx;if(p.y<-.02){p.y=1.02;p.x=Math.random();}x.fillStyle=p.c+p.a+')';x.shadowBlur=8;x.shadowColor=p.c+'1)';x.beginPath();x.arc(p.x*w,p.y*h,p.r,0,7);x.fill();x.shadowBlur=0;}
+    requestAnimationFrame(draw);}
+  if(!reduce)requestAnimationFrame(draw);else{for(const s of stars){x.fillStyle='rgba(220,230,255,.5)';x.beginPath();x.arc(s.x*w,s.y*h,s.r,0,7);x.fill();}}
+})();
+if(!reduce){const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});addEventListener('mousedown',()=>{cur.style.width='40px';cur.style.height='40px';});addEventListener('mouseup',()=>{cur.style.width='26px';cur.style.height='26px';});}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.12});
+document.querySelectorAll('section').forEach(s=>io.observe(s));
+
+/* ===== Phase Lab ===== */
+const C_ICE=2100, C_WATER=4200, C_STEAM=2000, L_F=334000, L_V=2260000, T0=-20, TMAX=120, SPEED=20;
+function bounds(m){
+  const E1=m*C_ICE*(0-T0), E2=E1+m*L_F, E3=E2+m*C_WATER*100, E4=E3+m*L_V, E5=E4+m*C_STEAM*(TMAX-100);
+  return [E1,E2,E3,E4,E5];
+}
+// analytic state of the sample for a given energy supplied
+function stateAt(E,m){
+  const [E1,E2,E3,E4,E5]=bounds(m);
+  if(E<=E1) return {seg:0,T:T0+E/(m*C_ICE),melt:0,boil:0};
+  if(E<=E2) return {seg:1,T:0,melt:(E-E1)/(m*L_F),boil:0};
+  if(E<=E3) return {seg:2,T:(E-E2)/(m*C_WATER),melt:1,boil:0};
+  if(E<=E4) return {seg:3,T:100,melt:1,boil:(E-E3)/(m*L_V)};
+  return {seg:4,T:100+(Math.min(E,E5)-E4)/(m*C_STEAM),melt:1,boil:1};
+}
+let mass=0.5, power=2000, Ein=0, simT=0, running=false;
+
+const pc=document.getElementById('pbox'), px=pc.getContext('2d');
+const cc=document.getElementById('curve'), cx=cc.getContext('2d');
+function hiDPI(cv,ctx){const r=window.devicePixelRatio||1;const w=cv.width,h=cv.height;cv.width=w*r;cv.height=h*r;ctx.scale(r,r);cv.dataset.w=w;cv.dataset.h=h;}
+hiDPI(pc,px); hiDPI(cc,cx);
+
+const BOX={x0:22,y0:18,x1:318,y1:232}, R=6, N=42;
+let parts=[];
+function initParts(){
+  parts=[];
+  for(let row=0;row<6;row++)for(let col=0;col<7;col++){
+    const hx=170-54+col*18, hy=BOX.y1-R-2-row*18;
+    parts.push({hx,hy,x:hx,y:hy,vx:0,vy:0,ph:0,a:Math.random()*6.28,b:Math.random()*6.28});
+  }
+}
+function promote(target,fromPh,toPh){
+  let n=parts.filter(p=>p.ph>=toPh).length;
+  while(n<target){
+    let best=null;
+    for(const p of parts) if(p.ph===fromPh&&(!best||p.y<best.y)) best=p;
+    if(!best) break;
+    best.ph=toPh;
+    if(toPh===1){best.vx=(Math.random()-.5)*60;best.vy=-20;}
+    else{best.vx=(Math.random()-.5)*200;best.vy=-160-Math.random()*80;}
+    n++;
+  }
+}
+function stepParts(dt,T,now){
+  const TK=T+273;
+  // speeds exaggerated beyond real sqrt(T) scaling so "hotter = faster" is visible
+  const vl=22+0.45*Math.max(0,T), vg=140+3*Math.max(0,T-100);
+  const amp=reduce?0:Math.max(.6,Math.min(3,.6+2.4*(T-T0)/(0-T0)));
+  for(const p of parts){
+    if(p.ph===0){p.x=p.hx+amp*Math.sin(now*.025+p.a);p.y=p.hy+amp*Math.cos(now*.031+p.b);continue;}
+    if(p.ph===1){p.vy+=300*dt;p.vx+=(Math.random()-.5)*600*dt;p.vy+=(Math.random()-.5)*600*dt;}
+    const sp=Math.hypot(p.vx,p.vy)||1, vt=p.ph===1?vl:vg;
+    const k=1+0.08*(vt/sp-1); p.vx*=k; p.vy*=k;
+    p.x+=p.vx*dt; p.y+=p.vy*dt;
+    if(p.x<BOX.x0+R){p.x=BOX.x0+R;p.vx=Math.abs(p.vx);}
+    if(p.x>BOX.x1-R){p.x=BOX.x1-R;p.vx=-Math.abs(p.vx);}
+    if(p.y<BOX.y0+R){p.y=BOX.y0+R;p.vy=Math.abs(p.vy);}
+    if(p.y>BOX.y1-R){p.y=BOX.y1-R;p.vy=-Math.abs(p.vy)*(p.ph===1?.4:1);}
+  }
+  // soft overlap correction so particles don't pass through each other
+  const D=2*R+1;
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+    const a=parts[i],b=parts[j]; if(a.ph===0&&b.ph===0) continue;
+    const dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy);
+    if(d>0&&d<D){const o=(D-d)/d;
+      if(a.ph===0){b.x+=dx*o;b.y+=dy*o;}
+      else if(b.ph===0){a.x-=dx*o;a.y-=dy*o;}
+      else{a.x-=dx*o/2;a.y-=dy*o/2;b.x+=dx*o/2;b.y+=dy*o/2;}
+    }
+  }
+}
+const PCOL=['#9fd8ff','#2de2ff','#c8a2ff'];
+function drawParts(){
+  const w=+pc.dataset.w,h=+pc.dataset.h;
+  px.clearRect(0,0,w,h);
+  // heater glow
+  const g=running?power/3000:0;
+  px.fillStyle='rgba(255,90,40,'+(0.12+0.6*g)+')';
+  px.fillRect(BOX.x0,BOX.y1+6,BOX.x1-BOX.x0,8);
+  if(running){px.shadowBlur=18*g;px.shadowColor='#ff5a28';px.fillRect(BOX.x0,BOX.y1+6,BOX.x1-BOX.x0,8);px.shadowBlur=0;}
+  px.strokeStyle='#2a3a5e';px.lineWidth=2;
+  px.strokeRect(BOX.x0,BOX.y0,BOX.x1-BOX.x0,BOX.y1-BOX.y0);
+  for(const p of parts){
+    px.fillStyle=PCOL[p.ph];px.shadowBlur=p.ph===2?10:4;px.shadowColor=PCOL[p.ph];
+    px.beginPath();px.arc(p.x,p.y,R,0,7);px.fill();
+  }
+  px.shadowBlur=0;
+}
+const CA={x0:44,x1:330,y0:14,y1:226};
+function yOf(T){return CA.y1-(T-T0)/(TMAX-T0)*(CA.y1-CA.y0);}
+function drawCurve(){
+  const w=+cc.dataset.w,h=+cc.dataset.h, B=bounds(mass), E5=B[4];
+  const xOf=E=>CA.x0+E/E5*(CA.x1-CA.x0);
+  cx.clearRect(0,0,w,h);
+  cx.font='11px Rajdhani';cx.fillStyle='#8fa0c8';cx.textAlign='right';
+  [-20,0,20,40,60,80,100,120].forEach(T=>{cx.fillText(T+'°',CA.x0-6,yOf(T)+4);});
+  cx.strokeStyle='#2a3a5e';cx.lineWidth=1;cx.beginPath();cx.moveTo(CA.x0,CA.y0);cx.lineTo(CA.x0,CA.y1);cx.lineTo(CA.x1,CA.y1);cx.stroke();
+  cx.setLineDash([4,4]);cx.strokeStyle='rgba(143,160,200,.35)';
+  [0,100].forEach(T=>{cx.beginPath();cx.moveTo(CA.x0,yOf(T));cx.lineTo(CA.x1,yOf(T));cx.stroke();});
+  cx.setLineDash([]);cx.textAlign='left';cx.fillStyle='rgba(143,160,200,.7)';
+  cx.fillText('melting point',CA.x0+6,yOf(0)-5);cx.fillText('boiling point',CA.x0+6,yOf(100)-5);
+  cx.textAlign='center';cx.fillText('energy supplied →',(CA.x0+CA.x1)/2,h-12);
+  // traced curve: piecewise-linear through the segment breakpoints
+  const pts=[[0,T0],[B[0],0],[B[1],0],[B[2],100],[B[3],100],[B[4],TMAX]];
+  const cols=['#9fd8ff','#ffb13b','#2de2ff','#ffb13b','#c8a2ff'];
+  cx.lineWidth=3;cx.lineCap='round';
+  for(let i=0;i<5;i++){
+    const [ea,ta]=pts[i],[eb,tb]=pts[i+1]; if(Ein<=ea) break;
+    const e=Math.min(Ein,eb), t=ta+(tb-ta)*(e-ea)/(eb-ea);
+    cx.strokeStyle=cols[i];cx.shadowBlur=8;cx.shadowColor=cols[i];
+    cx.beginPath();cx.moveTo(xOf(ea),yOf(ta));cx.lineTo(xOf(e),yOf(t));cx.stroke();
+  }
+  cx.shadowBlur=0;
+  const s=stateAt(Ein,mass);
+  cx.fillStyle='#fff';cx.beginPath();cx.arc(xOf(Math.min(Ein,E5)),yOf(s.T),4.5,0,7);cx.fill();
+}
+const fmtK=J=>(J/1000).toLocaleString('en-GB',{maximumFractionDigits:1,minimumFractionDigits:1})+' kJ';
+const fmtJ=J=>Math.round(J).toLocaleString('en-GB')+' J';
+const d1=v=>Math.abs(v).toFixed(1); // rounded Δθ, also used in the product so the sum adds up
+function updateReadouts(){
+  const s=stateAt(Ein,mass), B=bounds(mass), m=mass;
+  const names=['Solid','Melting','Liquid','Boiling','Gas'];
+  const done=Ein>=B[4];
+  document.getElementById('roT').textContent=(s.T<0?'−':'')+Math.abs(s.T).toFixed(1)+' °C';
+  document.getElementById('roS').textContent=names[s.seg];
+  document.getElementById('stateCap').textContent=names[s.seg].toUpperCase();
+  document.getElementById('roE').textContent=fmtK(Ein);
+  document.getElementById('roTime').textContent=Math.round(simT)+' s';
+  const sens=m*C_ICE*20+m*C_WATER*100+m*C_STEAM*20, lat=m*L_F+m*L_V;
+  const latNow=m*L_F*s.melt+m*L_V*s.boil, sensNow=Math.min(Ein,B[4])-latNow;
+  document.getElementById('keBar').style.width=(100*sensNow/sens).toFixed(1)+'%';
+  document.getElementById('peBar').style.width=(100*latNow/lat).toFixed(1)+'%';
+  const msg=document.getElementById('lMsg');
+  if(Ein===0){msg.innerHTML='Press <b>▶ Heat</b> to switch the heater on. Time runs 20× faster than real life.';return;}
+  if(done){msg.innerHTML='🛑 <b>Safety cut-off at 120 °C.</b> Total energy supplied: <b>'+fmtK(B[4])+'</b>. Boiling alone used <b>'+Math.round(100*m*L_V/B[4])+'%</b> of it. That long flat line is the latent heat of vaporisation.';return;}
+  const txt=[
+    ['🧊 <b>Heating solid ice.</b> The particles vibrate faster, so their kinetic energy and the temperature rise.','ΔE = m c Δθ = '+m.toFixed(1)+' × 2100 × '+d1(s.T-T0)+' = '+fmtJ(m*C_ICE*+d1(s.T-T0))],
+    ['🫠 <b>Melting at 0 °C. The temperature stays flat!</b> Energy is overcoming the forces holding the particles in place, which raises the particles’ <b>potential</b> energy instead of their kinetic energy.','E = m L<sub>f</sub> = '+m.toFixed(1)+' × 334 000 = '+fmtJ(m*L_F)+' · melted '+Math.round(100*s.melt)+'%'],
+    ['💧 <b>Heating liquid water.</b> Water’s specific heat capacity is double that of ice, so each degree takes twice the energy. The line is less steep.','ΔE = m c Δθ = '+m.toFixed(1)+' × 4200 × '+d1(s.T)+' = '+fmtJ(m*C_WATER*+d1(s.T))],
+    ['♨️ <b>Boiling at 100 °C. Flat again, and for much longer!</b> The particles have to be pulled completely apart to become a gas.','E = m L<sub>v</sub> = '+m.toFixed(1)+' × 2 260 000 = '+fmtJ(m*L_V)+' · boiled '+Math.round(100*s.boil)+'%'],
+    ['☁️ <b>Heating steam.</b> All the water has boiled, so the gas can now be heated above 100 °C (superheated steam). The particles speed up even more.','ΔE = m c Δθ = '+m.toFixed(1)+' × 2000 × '+d1(s.T-100)+' = '+fmtJ(m*C_STEAM*+d1(s.T-100))]
+  ][s.seg];
+  msg.innerHTML=txt[0]+'<span class="eq">'+txt[1]+'</span>';
+}
+function toggleRun(){
+  if(Ein>=bounds(mass)[4]) resetLab();
+  running=!running;
+  document.getElementById('runBtn').textContent=running?'⏸ Pause':'▶ Heat';
+  document.getElementById('mass').disabled=Ein>0||running;
+}
+function resetLab(){
+  running=false;Ein=0;simT=0;initParts();
+  document.getElementById('runBtn').textContent='▶ Heat';
+  document.getElementById('mass').disabled=false;
+  updateReadouts();
+}
+document.getElementById('pow').addEventListener('input',e=>{power=+e.target.value;document.getElementById('powV').textContent=power+' W';});
+document.getElementById('mass').addEventListener('input',e=>{mass=+e.target.value;document.getElementById('massV').textContent=mass.toFixed(1)+' kg';resetLab();});
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  const E5=bounds(mass)[4];
+  if(running){
+    Ein=Math.min(E5,Ein+power*dt*SPEED); simT+=dt*SPEED;
+    if(Ein>=E5){running=false;document.getElementById('runBtn').textContent='↺ Again';}
+    updateReadouts();
+  }
+  const s=stateAt(Ein,mass);
+  promote(Math.round(s.melt*N),0,1);
+  promote(Math.round(s.boil*N),1,2);
+  stepParts(dt,s.T,now);
+  drawParts(); drawCurve();
+  requestAnimationFrame(loop);
+}
+initParts(); updateReadouts(); requestAnimationFrame(loop);
+
+/* ===== Density practical ===== */
+const OBJ={
+  pebble:{n:'granite pebble',e:'🪨',m:78,v:30},
+  bolt:{n:'steel bolt',e:'🔩',m:62.4,v:8},
+  lead:{n:'lead fishing weight',e:'⚓',m:113,v:10},
+  ice:{n:'ice cube',e:'🧊',m:18.4,v:20},
+  cork:{n:'cork',e:'🟤',m:6,v:25}
+};
+const CYL_B=236, PX_CM3=1.2, START=50;
+const yVol=v=>CYL_B-v*PX_CM3;
+(function(){const g=document.getElementById('ticks');let s='';
+  for(let v=10;v<=160;v+=10){const y=yVol(v),big=v%50===0;
+    s+='<line x1="230" y1="'+y+'" x2="'+(big?240:235)+'" y2="'+y+'" stroke="#8fa0c8" stroke-width="1"/>';
+    if(big)s+='<text x="244" y="'+(y+4)+'" fill="#8fa0c8" font-family="Rajdhani" font-size="11">'+v+'</text>';}
+  g.innerHTML=s;})();
+function setLevel(v){
+  const y=yVol(v);
+  const w=document.getElementById('water');w.setAttribute('y',y);w.setAttribute('height',CYL_B-y);
+  const mn=document.getElementById('meniscus');mn.setAttribute('y1',y);mn.setAttribute('y2',y);
+  const lr=document.getElementById('lvlRead');lr.setAttribute('y',y+4);lr.textContent=Math.round(v)+' cm³';
+}
+let dAnim=0;
+function testObj(key,btn){
+  document.querySelectorAll('#objBtns button').forEach(b=>b.classList.toggle('on',b===btn));
+  const o=OBJ[key], floats=o.m/o.v<1, finalLvl=START+o.v;
+  const ob=document.getElementById('obj'), pin=document.getElementById('pin'), bal=document.getElementById('balRead');
+  ob.textContent=o.e; ob.setAttribute('opacity',1); pin.setAttribute('opacity',0);
+  document.getElementById('dOut').innerHTML='Measuring the <b>'+o.n+'</b>…';
+  const yEnd=floats?Math.max(yVol(finalLvl)+30,yVol(START)+24):CYL_B-4;
+  const id=++dAnim, t0=performance.now(), DUR=reduce?1:2000;
+  function frame(now){
+    if(id!==dAnim) return;
+    const t=Math.min(1,(now-t0)/DUR);
+    let x,y,lvl=START;
+    if(t<.3){x=60;y=200;bal.textContent=(o.m*Math.min(1,t/.15)).toFixed(1)+' g';}
+    else if(t<.55){const u=(t-.3)/.25;x=60+130*u;y=200-180*Math.sin(u*Math.PI/2);bal.textContent='0.0 g';}
+    else{const u=(t-.55)/.45;x=190;y=20+(yEnd-20)*Math.min(1,u*1.4);
+      // water only rises once the object has gone under the surface; the 20 px matches the emoji height
+      lvl=START+o.v*Math.max(0,Math.min(1,(y-yVol(START))/20));}
+    ob.setAttribute('x',x);ob.setAttribute('y',y);setLevel(lvl);
+    if(floats&&t>.85){pin.setAttribute('opacity',1);pin.setAttribute('y1',30);pin.setAttribute('y2',y-18);}
+    if(t<1) requestAnimationFrame(frame); else showDensity(o,floats,finalLvl);
+  }
+  requestAnimationFrame(frame);
+}
+function showDensity(o,floats,lvl){
+  const rho=o.m/o.v;
+  document.getElementById('dOut').innerHTML=
+    'Mass (balance): <b>'+o.m.toFixed(1)+' g</b><br>'+
+    'Volume: '+lvl+' − '+START+' = <b>'+o.v+' cm³</b>'+(floats?' <span style="font-size:.85em">(it floats, so it was pushed under with a pin)</span>':'')+'<br>'+
+    'Density = m ÷ V = '+o.m+' ÷ '+o.v+' = <span class="big">'+rho.toFixed(2)+' g/cm³</span><br>'+
+    '= <b>'+Math.round(rho*1000).toLocaleString('en-GB')+' kg/m³</b><br>'+
+    '<span class="verdict '+(floats?'float':'sink')+'">'+(floats?'🛟 Floats: less dense than water (1 g/cm³)':'⬇ Sinks: denser than water (1 g/cm³)')+'</span>';
+}
+setLevel(START);
+
+/* ===== Syringe (Boyle's law) ===== */
+const gasPts=Array.from({length:22},()=>[Math.random(),Math.random()]);
+function updSyr(){
+  const V=+document.getElementById('sv').value, p=6000/V;
+  const xP=24+(V/100)*240;
+  document.getElementById('plunger').setAttribute('x',xP);
+  document.getElementById('plRod').setAttribute('x',xP+8);
+  document.getElementById('plRod').setAttribute('width',Math.max(0,300-xP-8));
+  document.getElementById('gasDots').innerHTML=gasPts.map(([a,b])=>'<circle cx="'+(28+a*(xP-34)).toFixed(1)+'" cy="'+(28+b*34).toFixed(1)+'" r="3.2"/>').join('');
+  document.getElementById('svV').textContent=V+' cm³';
+  const pS=p.toFixed(1), exact=Math.abs(+pS*V-6000)<1e-9;
+  document.getElementById('sMsg').innerHTML='Pressure = <b>'+pS+' kPa</b><span class="eq">p × V = '+pS+' × '+V+(exact?' = ':' ≈ ')+'6000 kPa·cm³ (constant!)</span>';
+}
+document.getElementById('sv').addEventListener('input',updSyr); updSyr();
+
+function toggleDecrypt(){const d=document.getElementById('decrypt');d.classList.toggle('open');document.getElementById('decBtn').textContent=d.classList.contains('open')?'Encrypt ▾':'Decrypt ▸';}
+
+/* quiz */
+const questionBank=[
+  {q:"Which equation gives density?",opts:["ρ = m × V","ρ = m ÷ V","ρ = V ÷ m"],correct:1,why:"Density = mass ÷ volume, so ρ = m ÷ V."},
+  {q:"A 2 kg block has a volume of 0.001 m³. What is its density?",opts:["2 kg/m³","200 kg/m³","2000 kg/m³"],correct:2,why:"ρ = m ÷ V = 2 ÷ 0.001 = 2000 kg/m³."},
+  {q:"Why are gases much less dense than solids?",opts:["Gas particles are much smaller than the particles in a solid","Gas particles have no mass, so they weigh nothing at all","Gas particles are far apart, so there's less mass in each cubic metre"],correct:2,why:"It's the same particles, just spread much further apart, so there's far less mass in the same volume."},
+  {q:"When a substance changes state, its mass...",opts:["is conserved","increases","decreases"],correct:0,why:"No particles are created or destroyed in a change of state, so mass stays the same. It's a physical change."},
+  {q:"Internal energy is...",opts:["The total kinetic and potential energy of all the particles","Just another word for how hot an object is","The energy stored inside the nucleus of each atom"],correct:0,why:"Internal energy = the total kinetic energy + potential energy of all the particles in the system."},
+  {q:"While ice is melting, its temperature stays at 0 °C because...",opts:["The energy raises the particles' potential energy, not kinetic","The heater stops transferring energy while the ice melts","The particles stop moving until all the ice has melted"],correct:0,why:"During a change of state, the energy supplied increases the potential energy of the particles, not their kinetic energy, so the temperature doesn't rise."},
+  {q:"Specific heat capacity is the energy needed to...",opts:["Change the state of 1 kg with no temperature change","Raise the temperature of 1 kg by 1 °C","Raise the temperature of any mass by 100 °C"],correct:1,why:"Specific heat capacity is the energy needed to raise the temperature of 1 kg of a substance by 1 °C."},
+  {q:"How much energy heats 2 kg of water by 10 °C? (c = 4200 J/kg °C)",opts:["840 000 J","8 400 J","84 000 J"],correct:2,why:"ΔE = m c Δθ = 2 × 4200 × 10 = 84 000 J."},
+  {q:"Which equation is used for specific latent heat?",opts:["E = m L","E = m c Δθ","E = L ÷ m"],correct:0,why:"Energy for a change of state = mass × specific latent heat (E = m L)."},
+  {q:"How much energy melts 0.5 kg of ice at 0 °C? (L = 334 000 J/kg)",opts:["668 000 J","167 000 J","334 000 J"],correct:1,why:"E = m L = 0.5 × 334 000 = 167 000 J."},
+  {q:"For water, which is larger?",opts:["Specific latent heat of fusion","They are equal","Specific latent heat of vaporisation"],correct:2,why:"Boiling has to pull the particles completely apart, so the latent heat of vaporisation (2 260 000 J/kg) is much bigger than fusion (334 000 J/kg)."},
+  {q:"A gas turning into a liquid is called...",opts:["Condensing","Subliming","Freezing"],correct:0,why:"Gas → liquid is condensation. Subliming is solid → gas, and freezing is liquid → solid."},
+  {q:"A sealed container of gas is heated. What happens to the pressure?",opts:["It falls, because the particles spread out and slow down","It rises, because the particles move faster and hit the walls harder and more often","It stays the same, because the volume of the container hasn't changed"],correct:1,why:"Hotter gas particles move faster, so they collide with the walls more often and with more force, which increases the pressure."},
+  {q:"[Triple only] A fixed mass of gas at constant temperature has its volume halved. Its pressure...",opts:["Stays the same","Halves","Doubles"],correct:2,why:"p × V = constant, so halving V doubles p."},
+  {q:"To find the volume of an irregular stone in the density practical, you...",opts:["Measure its length, width and height with a ruler and multiply","Measure how much water it displaces in a measuring cylinder","Weigh it in air, then weigh it again on a different balance"],correct:1,why:"The rise in water level in a measuring cylinder (or the overflow from a eureka can) equals the object's volume."}
+];
+let questions=[],pool=[],answered=0,score=0,setNum=0;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function nextSet(){if(pool.length<5)pool=shuffle(questionBank.slice());questions=pool.splice(0,5);setNum++;}
+function buildQuiz(){
+  const box=document.getElementById('quiz');box.innerHTML='';answered=0;score=0;document.getElementById('scoreLine').textContent='';
+  questions.forEach((item,qi)=>{
+    const wrap=document.createElement('div');wrap.className='q';
+    const qt=document.createElement('div');qt.className='qtext';qt.textContent=(qi+1)+'. '+item.q;
+    const opts=document.createElement('div');opts.className='opts';
+    item.opts.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>choose(wrap,item,oi,opts);opts.appendChild(b);});
+    const fb=document.createElement('div');fb.className='fb';
+    wrap.append(qt,opts,fb);box.appendChild(wrap);
+  });
+}
+function choose(wrap,item,oi,opts){
+  if(wrap.dataset.done)return;wrap.dataset.done='1';
+  opts.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add('correct');if(i===oi&&oi!==item.correct)b.classList.add('wrong');});
+  const fb=wrap.querySelector('.fb');const right=oi===item.correct;if(right)score++;
+  fb.classList.add('show',right?'ok':'no');fb.textContent=(right?'✓ Correct! ':'✗ Not quite. ')+item.why;
+  answered++;
+  if(answered===questions.length){document.getElementById('scoreLine').textContent='SET '+setNum+' · SCORE '+score+' / '+questions.length+(score===questions.length?' — PERFECT 🎉':score>=3?' — NICE 👏':' — TRY AGAIN 💪');}
+}
+function resetQuiz(){nextSet();buildQuiz();document.querySelector('#quiz').scrollIntoView({behavior:'smooth',block:'center'});}
+nextSet(); buildQuiz();
+</script>
+</body>
+</html>

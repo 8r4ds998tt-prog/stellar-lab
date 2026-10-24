@@ -27,7 +27,7 @@ stellar-lab/              ← THE WEBSITE = the Git repo root (this folder)
 ```
 > The site is served from the repo root, so `index.html` must stay at the top level.
 > An older mirror may still exist at `…\Claude Work\Projects\School Tutor\Learning Hub\` — that copy is retired; **work here in the repo**.
-> A second live clone also exists at `D:\My_Dev_Repo\stellar-lab` (see the warning in §4) — the two have diverged before. Check `git fetch && git status` at the start of a session, and confirm which clone GitHub Desktop is pointed at before assuming a push will show up.
+> The old `D:\My_Dev_Repo\stellar-lab` clone has been deleted (Oct 2026) — this OneDrive folder is the **only** local clone. Still run `git fetch && git status` at the start of a session in case changes were pushed from elsewhere.
 
 ## 3. Hosting / deploy
 - Hosted on **GitHub Pages**. Repo: `stellar-lab` (public) under GitHub user `8r4ds998tt-prog`.
@@ -39,20 +39,20 @@ stellar-lab/              ← THE WEBSITE = the Git repo root (this folder)
 ## 4. Current state
 **Architecture:** `index.html` (Station Hub) → subject **deck** pages → `lessons/` missions. Subjects: Science (live), Computing (live), Maths (live, in progress); English, DT, History (locked, decks not built yet — tiles on `index.html` show "Coming soon").
 
-**IMPORTANT — two local clones exist on this machine:** the canonical one is `c:\Users\andre\OneDrive\Documents\GitHub\stellar-lab` (this file's folder). A second clone at `D:\My_Dev_Repo\stellar-lab` was also being used directly and had drifted ahead of the OneDrive clone (it's where the Maths deck below was built) before the two were reconciled. **Before starting any session, `git fetch && git status` against `origin/main` to confirm this clone isn't behind again** — if GitHub Desktop is pointed at a different path than the one you're editing, changes won't show up there. Ideally, pick one clone going forward and stop using the other.
+**Single clone:** `c:\Users\andre\OneDrive\Documents\GitHub\stellar-lab` (this file's folder) is the one and only local clone, and GitHub Desktop points here. The old `D:\My_Dev_Repo` clone (where the Maths deck was first built) was merged in and then deleted in Oct 2026.
 
 `science.html` is split into two layers: **Year 10 (active)** strand sections at the top, matching the strand cards' slicer, and a collapsed **Year 9 Archive** panel (`toggleArchive()`) below holding all the completed Year 9 work. New Science missions go in the active Year 10 sections; don't delete the archive.
 
 `computing.html` follows the same strand-card + mission-grid pattern as `science.html` (no archive yet — it's a brand new deck). Two strands: **Systems** (architecture, memory, networks, security, system software, ethics — AQA Paper 1 territory) and **Programming** (algorithms, data structures, Python — AQA Paper 2 territory; currently a "coming soon" placeholder card).
 
-`maths.html` (built directly in the D: clone, now merged in) uses strands Number/Algebra/Geometry/Data, accents Number=green `--num`, Algebra=blue `--alg`, Geometry=teal `--geo`, Data=lilac `--data`. It currently has 11 missions live across those strands (see `lessons/` — algebraic-manipulation, area-volume, equations-inequalities, non-linear-graphs, percentages, probability, pythagoras, ratio-proportion, standard-form, straight-line-graphs, transformations). It's still Year 9-level content — hasn't been migrated to Year 10/11 yet like Science has.
+`maths.html` uses strands Number/Algebra/Geometry/Data, accents Number=green `--num`, Algebra=blue `--alg`, Geometry=teal `--geo`, Data=lilac `--data`. It currently has 11 missions live across those strands (see `lessons/` — algebraic-manipulation, area-volume, equations-inequalities, non-linear-graphs, percentages, probability, pythagoras, ratio-proportion, standard-form, straight-line-graphs, transformations). It's still Year 9-level content — hasn't been migrated to Year 10/11 yet like Science has.
 
 All pages carry a "Last updated" timestamp in the footer (plain static text next to the existing footer line) — update it when you touch a page.
 
 **Year 10 GCSE Science missions built (active):**
 - Chemistry: `structure-and-bonding.html` (Module 12)
 - Biology: `organisation-digestive-system.html` (Module 13)
-- Physics: `electricity-in-the-home.html` (Module 14)
+- Physics: `electricity-in-the-home.html` (Module 14), `molecules-and-matter.html` (Module 16)
 
 **Year 9 Science missions (archived, still on the site under "Year 9 Archive"):**
 - Chemistry: `endothermic-exothermic.html`, `atomic-structure.html`, `balancing-equations.html`, `periodic-table.html`
@@ -123,4 +123,5 @@ Keep text minimal throughout; prefer icons, chips, and visuals.
 - Verify science accuracy to AQA GCSE (Year 10/11) level for new missions, and AQA Year 9 / early GCSE level for the archived Year 9 missions; keep the simplified models the spec expects (e.g. 2,8,8 electron shells).
 - Don't pull in external JS frameworks or a build step — keep each page standalone.
 - **OneDrive + sandbox gotcha:** this repo is cloud-synced, so the Cowork bash shell **cannot overwrite or delete existing files** here ("operation not permitted on unlink") and `git restore`/`git checkout` of tracked files will fail in the sandbox. Use the host **Write/Edit** tools to change tracked files; bash can still *create new* files and run read-only `git` commands. Line endings are pinned to LF by `.gitattributes`, which keeps diffs clean — don't remove it. Do git commits/pushes from **GitHub Desktop**, not the sandbox.
+- **Combined vs Triple Science:** as of Oct 2026 the school hasn't decided whether Lyra takes Combined (Trilogy) or Triple (separate) Science, so include Triple-only content but mark it. Check each topic against the AQA spec: content that's in the separate Biology/Chemistry/Physics spec but **not** in Combined Trilogy gets a pink `<span class="tri">Triple only</span>` badge (CSS in `lessons/molecules-and-matter.html`), plus a one-line legend in the decrypt panel. Prefix quiz questions with `[Triple only]`. Mark Higher-tier-only content too (e.g. `Triple only · Higher tier`). Once the school decides, update this note.
 - Apply the warm, age-appropriate tone from §1 consistently, even in higher-tier GCSE stretch content.
